@@ -1,0 +1,43 @@
+---
+description: Peraturan projek peperiksaan dalam talian Bahasa Melayu
+globs:
+  - "**/*.{html,js,css,gs,md,csv,py}"
+alwaysApply: true
+---
+
+# Peperiksaan BM — Peraturan Cursor
+
+## Bahasa
+
+- Semua teks **antara muka pengguna** (HTML, label, butang, mesej ralat, pengesahan) **mesti Bahasa Melayu**.
+- README dan dokumentasi guru/pentadbir: **Bahasa Melayu**.
+- Komen kod boleh Inggeris ringkas; nama fungsi/API boleh Inggeris.
+
+## Seni bina
+
+- **GitHub Pages**: hanya fail statik (`index.html`, `css/`, `js/`).
+- **Google Apps Script** (`apps-script/Code.gs`): cabut soalan, gred, baca/tulis Sheet; `SPREADSHEET_ID` hanya dalam Script Properties, **jangan** commit ke Git.
+- **Google Sheet** tab: `Soalan`, `Percubaan`, `Keputusan` — kekalkan nama lajur seperti dalam README.
+
+## API GAS
+
+- `action`: `startExam` | `submitExam` | `getResult`
+- Medan: `ic`, `nama`, `attempt_id`, `jawapan` (objek `{ "idSoalan": "A" }`)
+- Respons JSON: `ok`, `ralat` (jika gagal); jangan hantar `jawapan` betul ke frontend semasa `startExam`
+
+## Bank soalan
+
+- Sumber contoh: `100 Latihan Tatabahasa Bahasa Melayu.xlsx` → `scripts/convert_xlsx_to_csv.py` → `data/questions.csv`
+- Satu baris satu soalan: `id`, `soalan`, `A`, `B`, `C`, `D`, `jawapan`
+- Sample: 100 soalan, cabut **50** (`JUMLAH_SOALAN` dalam Code.gs)
+
+## Privasi & keselamatan
+
+- Jangan commit `js/config.js` (URL deploy peribadi).
+- IC disimpan dalam Sheet — ingatkan kebenaran akses terhad; jangan log IC ke konsol produksi.
+- Frontend POST ke GAS: `Content-Type: text/plain` (elak preflight CORS).
+
+## Skop perubahan
+
+- Jangan ubah fail pelan (`.cursor/plans/`) melainkan diminta.
+- Ciri luar skop sample (pemeriksaan kamera, kocokan pilihan, soalan subjektif) — dokumentasi sahaja, jangan implement tanpa permintaan.

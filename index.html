@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ms">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Peperiksaan Tatabahasa (Contoh)</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="header">
+      <h1>Peperiksaan Tatabahasa Bahasa Melayu</h1>
+      <p class="subtitle">Sistem contoh — 50 soalan rawak daripada bank 100 soalan</p>
+    </header>
+
+    <main class="container">
+      <section id="view-login" class="card">
+        <h2>Log Masuk Peperiksaan</h2>
+        <form id="form-login" novalidate>
+          <label for="ic">No. Kad Pengenalan</label>
+          <input
+            type="text"
+            id="ic"
+            name="ic"
+            inputmode="numeric"
+            autocomplete="off"
+            placeholder="Contoh: 010101011234"
+            required
+          />
+
+          <label for="nama">Nama Penuh</label>
+          <input
+            type="text"
+            id="nama"
+            name="nama"
+            autocomplete="name"
+            placeholder="Nama seperti dalam kad pengenalan"
+            required
+          />
+
+          <p id="login-error" class="error" hidden></p>
+          <button type="submit" class="btn btn-primary" id="btn-start">
+            Mula Peperiksaan
+          </button>
+        </form>
+      </section>
+
+      <section id="view-exam" class="card" hidden>
+        <div class="exam-meta">
+          <p><strong>Peserta:</strong> <span id="meta-nama"></span></p>
+          <p><strong>ID Percubaan:</strong> <span id="meta-attempt"></span></p>
+        </div>
+        <form id="form-exam">
+          <div id="questions-list"></div>
+          <p id="exam-error" class="error" hidden></p>
+          <button type="submit" class="btn btn-primary" id="btn-submit">
+            Hantar Jawapan
+          </button>
+        </form>
+      </section>
+
+      <section id="view-result" class="card" hidden>
+        <h2>Keputusan Peperiksaan</h2>
+        <div class="score-box">
+          <p class="score-main">
+            Markah: <span id="result-skor"></span>%
+          </p>
+          <p>
+            Betul: <span id="result-betul"></span> /
+            <span id="result-jumlah"></span>
+          </p>
+          <p>Salah: <span id="result-salah"></span></p>
+          <p><strong>Nama:</strong> <span id="result-nama"></span></p>
+        </div>
+        <details class="details-review">
+          <summary>Semak jawapan mengikut soalan</summary>
+          <ul id="result-details" class="result-list"></ul>
+        </details>
+        <button type="button" class="btn btn-secondary" id="btn-back">
+          Kembali ke log masuk
+        </button>
+      </section>
+
+      <p id="config-warning" class="warning" hidden>
+        Sila sunting <code>js/config.example.js</code> dan isikan URL Web App
+        Google Apps Script.
+      </p>
+    </main>
+
+    <footer class="footer">
+      <p>Contoh / draf — bukan peperiksaan rasmi.</p>
+    </footer>
+
+    <script src="js/config.example.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
