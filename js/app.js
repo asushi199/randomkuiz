@@ -37,14 +37,11 @@
     viewResult.hidden = name !== "result";
   }
 
-  /**
-   * GAS: gunakan text/plain untuk elak preflight CORS.
-   */
   async function apiCall(action, payload) {
     const url = getApiUrl();
     if (!url) {
       throw new Error(
-        "API_URL belum dikonfigurasi. Salin js/config.example.js ke js/config.js."
+        "Perkhidmatan peperiksaan tidak tersedia. Sila hubungi pentadbir."
       );
     }
 
@@ -60,7 +57,7 @@
     try {
       data = JSON.parse(text);
     } catch {
-      throw new Error("Jawapan pelayan tidak sah. Semak URL Web App.");
+      throw new Error("Ralat sambungan. Sila cuba lagi sebentar.");
     }
     return data;
   }
@@ -188,7 +185,6 @@
       saveSession();
 
       $("#meta-nama").textContent = state.nama;
-      $("#meta-attempt").textContent = state.attemptId;
       renderQuestions(state.soalan);
       setView("exam");
     } catch (err) {
@@ -238,7 +234,7 @@
         setView("result");
       }
     } catch {
-      /* abaikan */
+      return;
     }
   }
 

@@ -3,7 +3,7 @@
  * Set SPREADSHEET_ID in Project Settings > Script properties
  */
 
-const JUMLAH_SOALAN = 50;
+const JUMLAH_SOALAN = 10;
 const SHEET_SOALAN = 'Soalan';
 const SHEET_PERCUBAAN = 'Percubaan';
 const SHEET_KEPUTUSAN = 'Keputusan';

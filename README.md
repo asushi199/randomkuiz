@@ -1,6 +1,6 @@
 # Peperiksaan Tatabahasa — Sistem Contoh (Bahasa Melayu)
 
-Sistem **contoh / draf** untuk perbincangan: pelajar log masuk dengan **No. Kad Pengenalan** dan **nama**, sistem memilih **50 soalan rawak** daripada bank **100 soalan**, menjawab di laman web, dan keputusan disimpan serta digred secara automatik melalui **Google Sheet** + **Google Apps Script**.
+Sistem **contoh / draf** untuk perbincangan: pelajar log masuk dengan **No. Kad Pengenalan** dan **nama**, sistem memilih **10 soalan rawak** daripada bank **100 soalan** (demo), menjawab di laman web, dan keputusan disimpan serta digred secara automatik melalui **Google Sheet** + **Google Apps Script**.
 
 > **Nota:** Fail `100 Latihan Tatabahasa Bahasa Melayu.xlsx` ialah bank soalan contoh. Bank rasmi (cth. 350 soalan) boleh menggantikan sheet `Soalan` tanpa mengubah reka bentuk asas.
 
@@ -81,7 +81,7 @@ Pelajar (pelayar) → GitHub Pages (HTML/JS)
 
 1. Buka laman peperiksaan.
 2. Masukkan IC ujian (contoh: `900101015432`) dan nama.
-3. Klik **Mula Peperiksaan** — 50 soalan dipaparkan.
+3. Klik **Mula Peperiksaan** — 10 soalan dipaparkan.
 4. Jawab semua soalan → **Hantar Jawapan**.
 5. Semak **Keputusan Peperiksaan** dan baris baharu dalam sheet `Keputusan`.
 
@@ -109,7 +109,7 @@ Import semula `data/questions.csv` ke helaian `Soalan`. Laras `JUMLAH_SOALAN` da
 
 - Ganti IC dengan nombor pelajar atau kod peperiksaan.
 - Papan skor guru (helaian keempat atau paparan baca sahaja).
-- Bank rasmi 350 soalan; tetap `JUMLAH_SOALAN = 50`.
+- Bank rasmi 350 soalan; laraskan `JUMLAH_SOALAN` dalam `Code.gs` (contoh 50 untuk peperiksaan penuh).
 
 ## Lesen data contoh
 

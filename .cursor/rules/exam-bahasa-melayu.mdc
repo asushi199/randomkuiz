@@ -11,7 +11,13 @@ alwaysApply: true
 
 - Semua teks **antara muka pengguna** (HTML, label, butang, mesej ralat, pengesahan) **mesti Bahasa Melayu**.
 - README dan dokumentasi guru/pentadbir: **Bahasa Melayu**.
-- Komen kod boleh Inggeris ringkas; nama fungsi/API boleh Inggeris.
+- Komen kod backend (`apps-script/`, `scripts/`) boleh Inggeris ringkas; nama fungsi/API boleh Inggeris.
+
+## Antara muka (frontend) — profesional
+
+- Fail `index.html`, `css/`, `js/app.js`, `js/config*.js`: **tiada** komen atau teks yang menyebut Google Apps Script, Sheet, API, CORS, `config.js`, laluan fail, atau butiran teknikal deploy.
+- Mesej ralat/amaan kepada pelajar: Bahasa Melayu mesra pengguna (cth. hubungi pentadbir), bukan arahan pembangun.
+- Jangan paparkan ID percubaan, URL backend, atau metadata teknikal pada skrin peperiksaan.
 
 ## Seni bina
 
@@ -29,7 +35,7 @@ alwaysApply: true
 
 - Sumber contoh: `100 Latihan Tatabahasa Bahasa Melayu.xlsx` → `scripts/convert_xlsx_to_csv.py` → `data/questions.csv`
 - Satu baris satu soalan: `id`, `soalan`, `A`, `B`, `C`, `D`, `jawapan`
-- Sample: 100 soalan, cabut **50** (`JUMLAH_SOALAN` dalam Code.gs)
+- Sample demo: bank **100** soalan, cabut **10** setiap peperiksaan (`JUMLAH_SOALAN` dalam `apps-script/Code.gs`; ubah di sana untuk peperiksaan penuh)
 
 ## Privasi & keselamatan
 
