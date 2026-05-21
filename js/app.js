@@ -7,11 +7,12 @@
   const STORAGE_BATAS_MS = "exam_batas_ms";
   const API_MAX_RETRIES = 6;
 
-  const MSJ_PENGAWAS_GAGAL =
-    "Sistem tidak dapat dihubungi selepas beberapa cubaan. " +
-    "Kemungkinan terlalu ramai peserta serentak (had kira-kira 30). " +
-    "Minta peserta tunggu 1–2 minit tanpa menutup pelayar, kemudian cuba semula. " +
-    "Jika masih gagal, hubungi pentadbir teknikal.";
+  const MSJ_TUNGGU_SOALAN =
+    "Sistem sedang menyediakan soalan. Sila tunggu 10–30 saat. " +
+    "Tempoh 1 jam bermula selepas soalan dijana.";
+  const MSJ_GAGAL_SAMBUNGAN =
+    "Gagal menyambung selepas beberapa cubaan. " +
+    "Sila angkat tangan dan maklumkan pengawas.";
 
   const $ = (sel) => document.querySelector(sel);
 
@@ -42,22 +43,6 @@
     if (!el) return;
     el.textContent = message;
     el.hidden = !message;
-  }
-
-  function showErrorWithPengawas(el, studentMsg, pengawasMsg) {
-    if (!el) return;
-    el.innerHTML = "";
-    el.hidden = false;
-    const p1 = document.createElement("p");
-    p1.textContent = studentMsg;
-    el.appendChild(p1);
-    const p2 = document.createElement("p");
-    p2.className = "pengawas-note";
-    const strong = document.createElement("strong");
-    strong.textContent = "Untuk pengawas: ";
-    p2.appendChild(strong);
-    p2.appendChild(document.createTextNode(pengawasMsg || MSJ_PENGAWAS_GAGAL));
-    el.appendChild(p2);
   }
 
   function showWait(el, on, message) {
@@ -140,11 +125,7 @@
         await new Promise((r) => setTimeout(r, retryDelay(attemptNum)));
         return apiCall(action, payload, left - 1, onStatus);
       }
-      const connectionErr = new Error(
-        "Sistem sedang sibuk. Sila tunggu sebentar dan cuba lagi, atau hubungi pengawas."
-      );
-      connectionErr.pengawas = MSJ_PENGAWAS_GAGAL;
-      throw connectionErr;
+      throw new Error(MSJ_GAGAL_SAMBUNGAN);
     }
   }
 
@@ -279,27 +260,15 @@
     const btn = $("#btn-start");
     btn.disabled = true;
     showError(loginError, "");
-    showWait(
-      loginWait,
-      true,
-      "Sistem sedang menyediakan soalan. Sila tunggu… (mungkin 10–30 saat jika ramai peserta serentak)"
-    );
+    showWait(loginWait, true, MSJ_TUNGGU_SOALAN);
 
     try {
       const data = await apiCall(
         "startExam",
         { ic: ic, nama: nama },
         undefined,
-        function (attempt, max) {
-          showWait(
-            loginWait,
-            true,
-            "Sistem sedang menyediakan soalan. Cubaan " +
-              attempt +
-              " daripada " +
-              max +
-              "…"
-          );
+        function () {
+          showWait(loginWait, true, MSJ_TUNGGU_SOALAN);
         }
       );
       if (!data.ok) {
@@ -324,11 +293,7 @@
       renderQuestions(state.soalan);
       setView("exam");
     } catch (err) {
-      showErrorWithPengawas(
-        loginError,
-        err.message || "Ralat rangkaian.",
-        err.pengawas
-      );
+      showError(loginError, err.message || MSJ_GAGAL_SAMBUNGAN);
     } finally {
       btn.disabled = false;
       showWait(loginWait, false);
@@ -355,12 +320,8 @@
           jawapan: jawapan,
         },
         undefined,
-        function (attempt, max) {
-          showWait(
-            examWait,
-            true,
-            "Sedang menghantar. Cubaan " + attempt + " daripada " + max + "…"
-          );
+        function () {
+          showWait(examWait, true, "Sedang menghantar jawapan. Sila tunggu 10–30 saat…");
         }
       );
       if (!data.ok) {
@@ -375,11 +336,7 @@
       sessionStorage.removeItem(STORAGE_BATAS_MS);
       showThanks(data.mesej_terima_kasih);
     } catch (err) {
-      showErrorWithPengawas(
-        examError,
-        err.message || "Ralat rangkaian.",
-        err.pengawas
-      );
+      showError(examError, err.message || MSJ_GAGAL_SAMBUNGAN);
     } finally {
       btn.disabled = false;
       showWait(examWait, false);
