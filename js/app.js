@@ -30,25 +30,30 @@
   }
 
   function showError(el, message) {
+    if (!el) return;
     el.textContent = message;
     el.hidden = !message;
   }
 
   function showWait(el, on) {
+    if (!el) return;
     el.hidden = !on;
   }
 
   function setView(name) {
-    viewLogin.hidden = name !== "login";
-    viewExam.hidden = name !== "exam";
-    viewThanks.hidden = name !== "thanks";
+    if (viewLogin) viewLogin.hidden = name !== "login";
+    if (viewExam) viewExam.hidden = name !== "exam";
+    if (viewThanks) viewThanks.hidden = name !== "thanks";
   }
 
   function showThanks(mesej) {
     const text =
       mesej ||
       "Terima kasih. Jawapan anda telah direkodkan. Keputusan akan diumumkan oleh pihak pengurusan.";
-    $("#thanks-message").textContent = text;
+    const msgEl = $("#thanks-message");
+    if (msgEl) {
+      msgEl.textContent = text;
+    }
     setView("thanks");
   }
 
