@@ -109,7 +109,7 @@
           row.ic || "-",
           row.betul + " / " + row.jumlah,
           row.skor + "%",
-          row.masa_hantar || "-",
+          row.tempoh_label || "-",
         ];
         cells.forEach((text) => {
           const td = document.createElement("td");
@@ -126,8 +126,12 @@
   function renderAdminResult(data) {
     $("#admin-nama").textContent = data.nama || "-";
     $("#admin-ic").textContent = data.ic || "-";
+    const mulaEl = $("#admin-mula");
+    if (mulaEl) mulaEl.textContent = data.masa_mula_label || "-";
     const masaEl = $("#admin-masa");
     if (masaEl) masaEl.textContent = data.masa_hantar || "-";
+    const tempohEl = $("#admin-tempoh");
+    if (tempohEl) tempohEl.textContent = data.tempoh_label || "-";
     $("#admin-skor").textContent = data.skor;
     $("#admin-betul").textContent = data.betul;
     $("#admin-jumlah").textContent = data.jumlah;

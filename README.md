@@ -88,7 +88,9 @@ Pentadbir → GitHub Pages (pentadbir.html) + PIN → adminReview
 1. Buka `pentadbir.html`
 2. Masukkan **PIN** sahaja → **kedudukan keseluruhan** (ranking)
 3. Atau masukkan **PIN** + **IC peserta** → semak jawapan individu
-4. Susunan ranking: markah tertinggi dahulu; **markah sama** → siapa **hantar lebih awal** kedudukan lebih tinggi
+4. Susunan ranking: markah tertinggi dahulu; **markah sama** → siapa **tempoh jawapan lebih pendek** (masa hantar − masa mula) kedudukan lebih tinggi
+5. Tempoh kuiz: **1 jam** dari masa mula; paparan baki masa pada halaman soalan
+6. Sambungan penuh: frontend cuba sehingga **6 kali**; jika gagal, mesej untuk pengawas dipaparkan
 
 ## API (ringkas)
 

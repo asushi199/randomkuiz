@@ -51,8 +51,9 @@
       <section id="view-admin-ranking" class="card" hidden>
         <h2>Kedudukan Keseluruhan</h2>
         <p class="ranking-meta">
-          <span id="ranking-count"></span> — susunan: markah tertinggi, sama
-          markah ikut masa hantar terawal.
+          <span id="ranking-count"></span> — susunan: markah tertinggi; sama
+          markah ikut <strong>tempoh jawapan</strong> (siapa siap lebih cepat
+          kedudukan lebih tinggi).
         </p>
         <div class="table-wrap">
           <table class="ranking-table">
@@ -63,7 +64,7 @@
                 <th>No. KP</th>
                 <th>Betul</th>
                 <th>Markah</th>
-                <th>Masa Hantar</th>
+                <th>Tempoh Jawapan</th>
               </tr>
             </thead>
             <tbody id="ranking-body"></tbody>
@@ -76,7 +77,9 @@
         <div class="score-box">
           <p><strong>Nama:</strong> <span id="admin-nama"></span></p>
           <p><strong>No. KP:</strong> <span id="admin-ic"></span></p>
-          <p><strong>Masa hantar:</strong> <span id="admin-masa"></span></p>
+          <p><strong>Mula kuiz:</strong> <span id="admin-mula"></span></p>
+          <p><strong>Hantar:</strong> <span id="admin-masa"></span></p>
+          <p><strong>Tempoh jawapan:</strong> <span id="admin-tempoh"></span></p>
           <p class="score-main">
             Markah: <span id="admin-skor"></span>%
           </p>
@@ -94,7 +97,7 @@
       </p>
     </main>
 
-    <script src="js/config.example.js?v=5"></script>
-    <script src="js/pentadbir.js?v=5"></script>
+    <script src="js/config.example.js?v=6"></script>
+    <script src="js/pentadbir.js?v=6"></script>
   </body>
 </html>

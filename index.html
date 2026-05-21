@@ -43,7 +43,9 @@
           />
 
           <p id="login-error" class="error" hidden></p>
-          <p id="login-wait" class="wait-msg" hidden>Sila tunggu…</p>
+          <p id="login-wait" class="wait-msg" hidden>
+            Sistem sedang menyediakan soalan. Sila tunggu…
+          </p>
           <button type="submit" class="btn btn-primary" id="btn-start">
             Mula Kuiz
           </button>
@@ -53,11 +55,19 @@
       <section id="view-exam" class="card" hidden>
         <div class="exam-meta">
           <p><strong>Peserta:</strong> <span id="meta-nama"></span></p>
+          <p><strong>Tempoh kuiz:</strong> 1 jam</p>
+          <p>
+            <strong>Jawab sehingga:</strong>
+            <span id="meta-batas"></span>
+          </p>
+          <p id="meta-countdown" class="countdown"></p>
         </div>
         <form id="form-exam">
           <div id="questions-list"></div>
           <p id="exam-error" class="error" hidden></p>
-          <p id="exam-wait" class="wait-msg" hidden>Sila tunggu…</p>
+          <p id="exam-wait" class="wait-msg" hidden>
+            Sedang menghantar jawapan. Sila tunggu…
+          </p>
           <button type="submit" class="btn btn-primary" id="btn-submit">
             Hantar Jawapan
           </button>
@@ -78,7 +88,7 @@
       </p>
     </main>
 
-    <script src="js/config.example.js?v=5"></script>
-    <script src="js/app.js?v=5"></script>
+    <script src="js/config.example.js?v=6"></script>
+    <script src="js/app.js?v=6"></script>
   </body>
 </html>

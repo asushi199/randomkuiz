@@ -20,6 +20,7 @@ const TOPIK_LIST = [
 ];
 const MSJ_TERIMA_KASIH =
   'Terima kasih. Jawapan anda telah direkodkan. Keputusan akan diumumkan oleh pihak pengurusan.';
+const TEMPOH_KUIZ_MS = 60 * 60 * 1000;
 
 function doGet(e) {
   return handleRequest(e);
@@ -278,6 +279,7 @@ function findActiveAttempt_(ic) {
   const cNama = header.indexOf('nama');
   const cIds = header.indexOf('soalan_ids');
   const cStatus = header.indexOf('status');
+  const cMula = header.indexOf('masa_mula');
 
   for (let r = data.length - 1; r >= 1; r--) {
     if (
@@ -287,6 +289,7 @@ function findActiveAttempt_(ic) {
       return {
         row: r + 1,
         attempt_id: String(data[r][cAttempt]),
+        masa_mula: cMula >= 0 ? data[r][cMula] : '',
         soalan_ids: String(data[r][cIds])
           .split(',')
           .map(function (s) {
@@ -401,14 +404,26 @@ function startExam(ic, nama) {
   let active = findActiveAttempt_(icNorm);
   if (active) {
     const questions = buildQuestionsFromIds_(bank, active.soalan_ids);
-    return {
-      ok: true,
-      attempt_id: active.attempt_id,
-      nama: active.nama || namaNorm,
-      soalan: stripAnswers_(questions),
-      jumlah: questions.length,
-      sambungan: true,
-    };
+    const timing = buildTimingInfo_(active.masa_mula);
+    const now = Date.now();
+    if (now > timing.batas_masa_ms) {
+      return {
+        ok: false,
+        ralat:
+          'Masa kuiz 1 jam telah tamat. Sila hubungi pengawas untuk bantuan.',
+      };
+    }
+    return Object.assign(
+      {
+        ok: true,
+        attempt_id: active.attempt_id,
+        nama: active.nama || namaNorm,
+        soalan: stripAnswers_(questions),
+        jumlah: questions.length,
+        sambungan: true,
+      },
+      timing
+    );
   }
 
   const paper = buildExamPaper_(bank);
@@ -425,14 +440,18 @@ function startExam(ic, nama) {
   ]);
 
   const questions = buildQuestionsFromIds_(bank, paper.ids);
-  return {
-    ok: true,
-    attempt_id: attemptId,
-    nama: namaNorm,
-    soalan: stripAnswers_(questions),
-    jumlah: questions.length,
-    sambungan: false,
-  };
+  const timing = buildTimingInfo_(new Date());
+  return Object.assign(
+    {
+      ok: true,
+      attempt_id: attemptId,
+      nama: namaNorm,
+      soalan: stripAnswers_(questions),
+      jumlah: questions.length,
+      sambungan: false,
+    },
+    timing
+  );
 }
 
 function getAttemptRow_(attemptId, ic) {
@@ -446,6 +465,7 @@ function getAttemptRow_(attemptId, ic) {
   const cNama = header.indexOf('nama');
   const cIds = header.indexOf('soalan_ids');
   const cStatus = header.indexOf('status');
+  const cMula = header.indexOf('masa_mula');
   const cTopikLapan = header.indexOf('topik_lapan');
 
   for (let r = 1; r < data.length; r++) {
@@ -458,6 +478,7 @@ function getAttemptRow_(attemptId, ic) {
         attempt_id: String(data[r][cAttempt]),
         ic: normalizeIc_(data[r][cIc]),
         nama: String(data[r][cNama]),
+        masa_mula: cMula >= 0 ? data[r][cMula] : '',
         soalan_ids: String(data[r][cIds])
           .split(',')
           .map(function (s) {
@@ -495,6 +516,14 @@ function submitExam(ic, attemptId, jawapan) {
       ralat: 'Jawapan telah dihantar sebelum ini.',
       sudah_hantar: true,
       mesej_terima_kasih: MSJ_TERIMA_KASIH,
+    };
+  }
+
+  const timing = buildTimingInfo_(attempt.masa_mula);
+  if (Date.now() > timing.batas_masa_ms) {
+    return {
+      ok: false,
+      ralat: 'Masa kuiz 1 jam telah tamat. Sila hubungi pengawas.',
     };
   }
 
@@ -610,10 +639,82 @@ function formatMasaHantar_(value) {
   return String(value || '');
 }
 
+function formatMasaFromMs_(ms) {
+  return Utilities.formatDate(
+    new Date(ms),
+    Session.getScriptTimeZone(),
+    'dd/MM/yyyy HH:mm:ss'
+  );
+}
+
+function formatTempohMs_(ms) {
+  const totalSec = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  const pad = function (n) {
+    return n < 10 ? '0' + n : String(n);
+  };
+  if (h > 0) {
+    return pad(h) + ' jam ' + pad(m) + ' min ' + pad(s) + ' saat';
+  }
+  if (m > 0) {
+    return m + ' min ' + pad(s) + ' saat';
+  }
+  return s + ' saat';
+}
+
+function buildTimingInfo_(masaMula) {
+  const startMs = toTimeMs_(masaMula);
+  const endMs = startMs + TEMPOH_KUIZ_MS;
+  return {
+    masa_mula_ms: startMs,
+    batas_masa_ms: endMs,
+    masa_mula_label: formatMasaHantar_(masaMula),
+    batas_masa_label: formatMasaFromMs_(endMs),
+    tempoh_kuiz_minit: Math.round(TEMPOH_KUIZ_MS / 60000),
+  };
+}
+
+function getAttemptMasaMulaMap_() {
+  const sh = getSheet_(SHEET_PERCUBAAN);
+  const data = sh.getDataRange().getValues();
+  if (data.length < 2) return {};
+
+  const header = data[0].map(function (h) {
+    return String(h).toLowerCase().trim();
+  });
+  const cAttempt = header.indexOf('attempt_id');
+  const cMula = header.indexOf('masa_mula');
+  const map = {};
+
+  for (let r = 1; r < data.length; r++) {
+    const id = String(data[r][cAttempt] || '').trim();
+    if (!id) continue;
+    map[id] = cMula >= 0 ? data[r][cMula] : '';
+  }
+  return map;
+}
+
+function enrichRowWithTempoh_(row, masaMulaMap) {
+  const masaMula = masaMulaMap[row.attempt_id];
+  const startMs = toTimeMs_(masaMula);
+  const endMs = toTimeMs_(row.masa_hantar);
+  const tempohMs =
+    startMs <= endMs && startMs < Number.MAX_SAFE_INTEGER
+      ? endMs - startMs
+      : Number.MAX_SAFE_INTEGER;
+  return {
+    tempoh_ms: tempohMs,
+    tempoh_label: formatTempohMs_(tempohMs),
+    masa_mula_label: formatMasaHantar_(masaMula),
+  };
+}
+
 function isBetterKeputusan_(a, b) {
   if (a.skor > b.skor) return true;
   if (a.skor < b.skor) return false;
-  return toTimeMs_(a.masa_hantar) < toTimeMs_(b.masa_hantar);
+  return a.tempoh_ms < b.tempoh_ms;
 }
 
 function loadAllKeputusanRows_() {
@@ -651,11 +752,17 @@ function loadAllKeputusanRows_() {
 
 function buildRanking_() {
   const rows = loadAllKeputusanRows_();
+  const masaMulaMap = getAttemptMasaMulaMap_();
   const byIc = {};
+
   rows.forEach(function (row) {
+    const enriched = Object.assign(
+      row,
+      enrichRowWithTempoh_(row, masaMulaMap)
+    );
     const existing = byIc[row.ic];
-    if (!existing || isBetterKeputusan_(row, existing)) {
-      byIc[row.ic] = row;
+    if (!existing || isBetterKeputusan_(enriched, existing)) {
+      byIc[row.ic] = enriched;
     }
   });
 
@@ -665,7 +772,7 @@ function buildRanking_() {
 
   list.sort(function (a, b) {
     if (b.skor !== a.skor) return b.skor - a.skor;
-    return toTimeMs_(a.masa_hantar) - toTimeMs_(b.masa_hantar);
+    return a.tempoh_ms - b.tempoh_ms;
   });
 
   return list.map(function (row, index) {
@@ -676,8 +783,9 @@ function buildRanking_() {
       betul: row.betul,
       jumlah: row.jumlah,
       skor: row.skor,
-      masa_hantar: formatMasaHantar_(row.masa_hantar),
-      masa_hantar_ms: toTimeMs_(row.masa_hantar),
+      tempoh_label: row.tempoh_label,
+      tempoh_ms: row.tempoh_ms,
+      masa_mula_label: row.masa_mula_label,
     };
   });
 }
@@ -735,6 +843,14 @@ function adminReview(pin, ic) {
 
   const attempt = getAttemptRow_(row.attempt_id, icNorm);
   const topik_lapan = attempt && !attempt.error ? attempt.topik_lapan : '';
+  const masaMulaMap = getAttemptMasaMulaMap_();
+  const tempohInfo = enrichRowWithTempoh_(
+    {
+      attempt_id: row.attempt_id,
+      masa_hantar: row.masa_hantar,
+    },
+    masaMulaMap
+  );
 
   return {
     ok: true,
@@ -746,7 +862,9 @@ function adminReview(pin, ic) {
     jumlah: row.jumlah,
     salah: row.jumlah - row.betul,
     skor: row.skor,
+    masa_mula_label: tempohInfo.masa_mula_label,
     masa_hantar: formatMasaHantar_(row.masa_hantar),
+    tempoh_label: tempohInfo.tempoh_label,
     topik_lapan: topik_lapan,
     butiran: butiran,
   };

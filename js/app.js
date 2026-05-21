@@ -4,7 +4,14 @@
   const STORAGE_IC = "exam_ic";
   const STORAGE_NAMA = "exam_nama";
   const STORAGE_ATTEMPT = "exam_attempt_id";
-  const API_RETRIES = 2;
+  const STORAGE_BATAS_MS = "exam_batas_ms";
+  const API_MAX_RETRIES = 6;
+
+  const MSJ_PENGAWAS_GAGAL =
+    "Sistem tidak dapat dihubungi selepas beberapa cubaan. " +
+    "Kemungkinan terlalu ramai peserta serentak (had kira-kira 30). " +
+    "Minta peserta tunggu 1–2 minit tanpa menutup pelayar, kemudian cuba semula. " +
+    "Jika masih gagal, hubungi pentadbir teknikal.";
 
   const $ = (sel) => document.querySelector(sel);
 
@@ -17,11 +24,13 @@
   const examWait = $("#exam-wait");
   const configWarning = $("#config-warning");
 
+  let countdownTimer = null;
   let state = {
     ic: "",
     nama: "",
     attemptId: "",
     soalan: [],
+    batasMs: 0,
   };
 
   function getApiUrl() {
@@ -35,8 +44,25 @@
     el.hidden = !message;
   }
 
-  function showWait(el, on) {
+  function showErrorWithPengawas(el, studentMsg, pengawasMsg) {
     if (!el) return;
+    el.innerHTML = "";
+    el.hidden = false;
+    const p1 = document.createElement("p");
+    p1.textContent = studentMsg;
+    el.appendChild(p1);
+    const p2 = document.createElement("p");
+    p2.className = "pengawas-note";
+    const strong = document.createElement("strong");
+    strong.textContent = "Untuk pengawas: ";
+    p2.appendChild(strong);
+    p2.appendChild(document.createTextNode(pengawasMsg || MSJ_PENGAWAS_GAGAL));
+    el.appendChild(p2);
+  }
+
+  function showWait(el, on, message) {
+    if (!el) return;
+    if (message) el.textContent = message;
     el.hidden = !on;
   }
 
@@ -44,6 +70,10 @@
     if (viewLogin) viewLogin.hidden = name !== "login";
     if (viewExam) viewExam.hidden = name !== "exam";
     if (viewThanks) viewThanks.hidden = name !== "thanks";
+    if (name !== "exam" && countdownTimer) {
+      clearInterval(countdownTimer);
+      countdownTimer = null;
+    }
   }
 
   function showThanks(mesej) {
@@ -59,7 +89,7 @@
 
   function goBackToLogin() {
     sessionStorage.clear();
-    state = { ic: "", nama: "", attemptId: "", soalan: [] };
+    state = { ic: "", nama: "", attemptId: "", soalan: [], batasMs: 0 };
     const formLogin = $("#form-login");
     if (formLogin) formLogin.reset();
     showError(loginError, "");
@@ -67,7 +97,11 @@
     setView("login");
   }
 
-  async function apiCall(action, payload, retriesLeft) {
+  function retryDelay(attemptIndex) {
+    return 1500 + attemptIndex * 800 + Math.floor(Math.random() * 400);
+  }
+
+  async function apiCall(action, payload, retriesLeft, onStatus) {
     const url = getApiUrl();
     if (!url) {
       throw new Error(
@@ -75,7 +109,13 @@
       );
     }
 
-    const left = retriesLeft != null ? retriesLeft : API_RETRIES;
+    const left = retriesLeft != null ? retriesLeft : API_MAX_RETRIES;
+    const attemptNum = API_MAX_RETRIES - left + 1;
+
+    if (onStatus && attemptNum > 1) {
+      onStatus(attemptNum, API_MAX_RETRIES);
+    }
+
     const body = JSON.stringify(Object.assign({ action: action }, payload));
 
     try {
@@ -86,16 +126,82 @@
       });
       const text = await res.text();
       try {
-        return JSON.parse(text);
-      } catch {
+        const data = JSON.parse(text);
+        if (!data.ok && data.cuba_lagi) {
+          throw new Error("Sila tunggu");
+        }
+        return data;
+      } catch (parseErr) {
+        if (parseErr.message === "Sila tunggu") throw parseErr;
         throw new Error("Ralat sambungan. Sila cuba lagi sebentar.");
       }
     } catch (err) {
       if (left > 0) {
-        await new Promise((r) => setTimeout(r, 800));
-        return apiCall(action, payload, left - 1);
+        await new Promise((r) => setTimeout(r, retryDelay(attemptNum)));
+        return apiCall(action, payload, left - 1, onStatus);
       }
-      throw err;
+      const connectionErr = new Error(
+        "Sistem sedang sibuk. Sila tunggu sebentar dan cuba lagi, atau hubungi pengawas."
+      );
+      connectionErr.pengawas = MSJ_PENGAWAS_GAGAL;
+      throw connectionErr;
+    }
+  }
+
+  function formatCountdown(msLeft) {
+    if (msLeft <= 0) return "Masa telah tamat.";
+    const sec = Math.floor(msLeft / 1000);
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return (
+      "Baki masa: " +
+      m +
+      " min " +
+      (s < 10 ? "0" : "") +
+      s +
+      " saat"
+    );
+  }
+
+  function startCountdown(batasMs) {
+    const el = $("#meta-countdown");
+    const batasLabel = $("#meta-batas");
+    if (!el || !batasMs) return;
+
+    if (countdownTimer) clearInterval(countdownTimer);
+
+    function tick() {
+      const left = batasMs - Date.now();
+      el.textContent = formatCountdown(left);
+      if (left <= 0) {
+        el.classList.add("countdown-expired");
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+        showError(
+          examError,
+          "Masa kuiz 1 jam telah tamat. Sila hantar jawapan sekarang jika belum selesai, atau hubungi pengawas."
+        );
+      } else {
+        el.classList.remove("countdown-expired");
+      }
+    }
+
+    tick();
+    countdownTimer = setInterval(tick, 1000);
+  }
+
+  function applyExamTiming(data) {
+    const batasLabel = data.batas_masa_label || "";
+    const batasMs = data.batas_masa_ms || 0;
+    state.batasMs = batasMs;
+
+    const metaBatas = $("#meta-batas");
+    if (metaBatas) {
+      metaBatas.textContent = batasLabel || "-";
+    }
+    if (batasMs) {
+      sessionStorage.setItem(STORAGE_BATAS_MS, String(batasMs));
+      startCountdown(batasMs);
     }
   }
 
@@ -156,22 +262,46 @@
     sessionStorage.setItem(STORAGE_IC, state.ic);
     sessionStorage.setItem(STORAGE_NAMA, state.nama);
     sessionStorage.setItem(STORAGE_ATTEMPT, state.attemptId);
+    if (state.batasMs) {
+      sessionStorage.setItem(STORAGE_BATAS_MS, String(state.batasMs));
+    }
   }
 
   function loadSession() {
     state.ic = sessionStorage.getItem(STORAGE_IC) || "";
     state.nama = sessionStorage.getItem(STORAGE_NAMA) || "";
     state.attemptId = sessionStorage.getItem(STORAGE_ATTEMPT) || "";
+    const batas = sessionStorage.getItem(STORAGE_BATAS_MS);
+    state.batasMs = batas ? parseInt(batas, 10) : 0;
   }
 
   async function handleStart(ic, nama) {
     const btn = $("#btn-start");
     btn.disabled = true;
     showError(loginError, "");
-    showWait(loginWait, true);
+    showWait(
+      loginWait,
+      true,
+      "Sistem sedang menyediakan soalan. Sila tunggu… (mungkin 10–30 saat jika ramai peserta serentak)"
+    );
 
     try {
-      const data = await apiCall("startExam", { ic: ic, nama: nama });
+      const data = await apiCall(
+        "startExam",
+        { ic: ic, nama: nama },
+        undefined,
+        function (attempt, max) {
+          showWait(
+            loginWait,
+            true,
+            "Sistem sedang menyediakan soalan. Cubaan " +
+              attempt +
+              " daripada " +
+              max +
+              "…"
+          );
+        }
+      );
       if (!data.ok) {
         if (data.sudah_hantar) {
           state.ic = ic;
@@ -190,10 +320,15 @@
       saveSession();
 
       $("#meta-nama").textContent = state.nama;
+      applyExamTiming(data);
       renderQuestions(state.soalan);
       setView("exam");
     } catch (err) {
-      showError(loginError, err.message || "Ralat rangkaian.");
+      showErrorWithPengawas(
+        loginError,
+        err.message || "Ralat rangkaian.",
+        err.pengawas
+      );
     } finally {
       btn.disabled = false;
       showWait(loginWait, false);
@@ -208,15 +343,26 @@
     }
     showError(examError, "");
     btn.disabled = true;
-    showWait(examWait, true);
+    showWait(examWait, true, "Sedang menghantar jawapan. Sila tunggu…");
 
     try {
       const jawapan = collectAnswers();
-      const data = await apiCall("submitExam", {
-        ic: state.ic,
-        attempt_id: state.attemptId,
-        jawapan: jawapan,
-      });
+      const data = await apiCall(
+        "submitExam",
+        {
+          ic: state.ic,
+          attempt_id: state.attemptId,
+          jawapan: jawapan,
+        },
+        undefined,
+        function (attempt, max) {
+          showWait(
+            examWait,
+            true,
+            "Sedang menghantar. Cubaan " + attempt + " daripada " + max + "…"
+          );
+        }
+      );
       if (!data.ok) {
         if (data.sudah_hantar) {
           showThanks(data.mesej_terima_kasih);
@@ -226,23 +372,48 @@
         return;
       }
       sessionStorage.removeItem(STORAGE_ATTEMPT);
+      sessionStorage.removeItem(STORAGE_BATAS_MS);
       showThanks(data.mesej_terima_kasih);
     } catch (err) {
-      showError(examError, err.message || "Ralat rangkaian.");
+      showErrorWithPengawas(
+        examError,
+        err.message || "Ralat rangkaian.",
+        err.pengawas
+      );
     } finally {
       btn.disabled = false;
       showWait(examWait, false);
     }
   }
 
-  async function tryResumeThanks() {
+  async function tryResumeExamOrThanks() {
     loadSession();
     if (!state.ic || !getApiUrl()) return;
+
     try {
-      const data = await apiCall("getResult", { ic: state.ic });
-      if (data.ok && data.sudah_hantar) {
-        state.nama = state.nama || "";
-        showThanks(data.mesej_terima_kasih);
+      const result = await apiCall("getResult", { ic: state.ic });
+      if (result.ok && result.sudah_hantar) {
+        showThanks(result.mesej_terima_kasih);
+        return;
+      }
+    } catch {
+      return;
+    }
+
+    if (!state.attemptId || !state.soalan.length) return;
+
+    try {
+      const data = await apiCall("startExam", {
+        ic: state.ic,
+        nama: state.nama || "Peserta",
+      });
+      if (data.ok && data.soalan && data.soalan.length) {
+        state.soalan = data.soalan;
+        state.attemptId = data.attempt_id;
+        applyExamTiming(data);
+        $("#meta-nama").textContent = state.nama;
+        renderQuestions(state.soalan);
+        setView("exam");
       }
     } catch {
       return;
@@ -283,7 +454,7 @@
     }
 
     setView("login");
-    tryResumeThanks();
+    tryResumeExamOrThanks();
   }
 
   if (document.readyState === "loading") {
