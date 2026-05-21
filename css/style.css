@@ -208,3 +208,28 @@ input[type="text"] {
   font-size: 0.85rem;
   padding: 1rem;
 }
+
+.wait-msg {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin: 0.5rem 0 0;
+}
+
+.thanks-card {
+  text-align: center;
+}
+
+.thanks-text {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin: 1rem 0;
+}
+
+.thanks-note {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.header-admin {
+  background: #37474f;
+}

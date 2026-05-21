@@ -1,14 +1,25 @@
 /**
  * Peperiksaan dalam talian — Google Apps Script backend
- * Set SPREADSHEET_ID in Project Settings > Script properties
+ * Script properties: SPREADSHEET_ID, ADMIN_PIN
  */
 
-const JUMLAH_SOALAN = 10;
+const JUMLAH_SOALAN = 50;
 const SHEET_SOALAN = 'Soalan';
 const SHEET_PERCUBAAN = 'Percubaan';
 const SHEET_KEPUTUSAN = 'Keputusan';
 const STATUS_SEDANG = 'sedang';
 const STATUS_SELESAI = 'selesai';
+const TOPIK_LIST = [
+  'AKIDAH',
+  'ALQURAN',
+  'JAWI',
+  'SIRAH',
+  'HADIS',
+  'IBADAH',
+  'ADAB',
+];
+const MSJ_TERIMA_KASIH =
+  'Terima kasih. Jawapan anda telah direkodkan. Keputusan akan diumumkan oleh pihak pengurusan.';
 
 function doGet(e) {
   return handleRequest(e);
@@ -42,6 +53,8 @@ function handleRequest(e) {
         );
       case 'getResult':
         return jsonResponse(getResult(payload.ic));
+      case 'adminReview':
+        return jsonResponse(adminReview(payload.pin, payload.ic));
       default:
         return jsonResponse({ ok: false, ralat: 'Tindakan tidak dikenali.' });
     }
@@ -71,6 +84,12 @@ function getSpreadsheetId_() {
   return id;
 }
 
+function getAdminPin_() {
+  return (
+    PropertiesService.getScriptProperties().getProperty('ADMIN_PIN') || ''
+  ).trim();
+}
+
 function getSs_() {
   return SpreadsheetApp.openById(getSpreadsheetId_());
 }
@@ -88,7 +107,17 @@ function getSheet_(name) {
 function initSheetHeaders_(sh, name) {
   if (sh.getLastRow() > 0) return;
   if (name === SHEET_SOALAN) {
-    sh.appendRow(['id', 'soalan', 'A', 'B', 'C', 'D', 'jawapan']);
+    sh.appendRow([
+      'id',
+      'topik',
+      'aras',
+      'soalan',
+      'A',
+      'B',
+      'C',
+      'D',
+      'jawapan',
+    ]);
   } else if (name === SHEET_PERCUBAAN) {
     sh.appendRow([
       'attempt_id',
@@ -97,6 +126,7 @@ function initSheetHeaders_(sh, name) {
       'nama',
       'soalan_ids',
       'status',
+      'topik_lapan',
     ]);
   } else if (name === SHEET_KEPUTUSAN) {
     sh.appendRow([
@@ -108,6 +138,7 @@ function initSheetHeaders_(sh, name) {
       'jumlah',
       'skor',
       'jawapan_json',
+      'butiran_json',
     ]);
   }
 }
@@ -123,24 +154,36 @@ function normalizeNama_(nama) {
   return String(nama || '').trim();
 }
 
+function headerIndex_(header, names) {
+  const out = {};
+  names.forEach(function (n) {
+    out[n] = header.indexOf(n);
+  });
+  return out;
+}
+
 function loadQuestionBank_() {
   const sh = getSheet_(SHEET_SOALAN);
   const data = sh.getDataRange().getValues();
   if (data.length < 2) {
-    throw new Error('Bank soalan kosong. Import data/questions.csv ke Sheet Soalan.');
+    throw new Error(
+      'Bank soalan kosong. Import data/questions.csv ke Sheet Soalan.'
+    );
   }
   const header = data[0].map(function (h) {
     return String(h).toLowerCase().trim();
   });
-  const idx = {
-    id: header.indexOf('id'),
-    soalan: header.indexOf('soalan'),
-    a: header.indexOf('a'),
-    b: header.indexOf('b'),
-    c: header.indexOf('c'),
-    d: header.indexOf('d'),
-    jawapan: header.indexOf('jawapan'),
-  };
+  const idx = headerIndex_(header, [
+    'id',
+    'topik',
+    'aras',
+    'soalan',
+    'a',
+    'b',
+    'c',
+    'd',
+    'jawapan',
+  ]);
   const bank = {};
   for (let r = 1; r < data.length; r++) {
     const row = data[r];
@@ -148,6 +191,8 @@ function loadQuestionBank_() {
     const id = String(row[idx.id]).trim();
     bank[id] = {
       id: id,
+      topik: String(row[idx.topik] || '').trim().toUpperCase(),
+      aras: String(row[idx.aras] || '').trim().toLowerCase(),
       soalan: String(row[idx.soalan] || ''),
       A: String(row[idx.a] || ''),
       B: String(row[idx.b] || ''),
@@ -172,34 +217,83 @@ function shuffle_(arr) {
   return a;
 }
 
-function sampleIds_(bank, n) {
-  const ids = Object.keys(bank);
-  if (ids.length < n) {
+function sampleFromPool_(pool, n, label) {
+  if (pool.length < n) {
     throw new Error(
-      'Bank soalan hanya ' + ids.length + ' soalan; perlukan ' + n + '.'
+      'Soalan tidak mencukupi untuk ' + label + ' (perlukan ' + n + ').'
     );
   }
-  return shuffle_(ids).slice(0, n);
+  return shuffle_(pool).slice(0, n);
+}
+
+function buildExamPaper_(bank) {
+  const topikLapan = shuffle_(TOPIK_LIST)[0];
+  let ids = [];
+
+  TOPIK_LIST.forEach(function (topik) {
+    const isLapan = topik === topikLapan;
+    const nTing = isLapan ? 4 : 3;
+    const sedPool = [];
+    const tingPool = [];
+    Object.keys(bank).forEach(function (id) {
+      const q = bank[id];
+      if (q.topik !== topik) return;
+      if (q.aras === 'sederhana') sedPool.push(id);
+      else if (q.aras === 'tinggi') tingPool.push(id);
+    });
+    ids = ids.concat(
+      sampleFromPool_(sedPool, 4, topik + ' sederhana'),
+      sampleFromPool_(tingPool, nTing, topik + ' tinggi')
+    );
+  });
+
+  if (ids.length !== JUMLAH_SOALAN) {
+    throw new Error(
+      'Cabutan gagal: dijangka ' + JUMLAH_SOALAN + ' soalan, diperoleh ' + ids.length
+    );
+  }
+
+  return {
+    ids: shuffle_(ids),
+    topik_lapan: topikLapan,
+  };
+}
+
+function getPercubaanHeaders_() {
+  const sh = getSheet_(SHEET_PERCUBAAN);
+  const row = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+  return row.map(function (h) {
+    return String(h).toLowerCase().trim();
+  });
 }
 
 function findActiveAttempt_(ic) {
   const sh = getSheet_(SHEET_PERCUBAAN);
   const data = sh.getDataRange().getValues();
+  const header = data[0].map(function (h) {
+    return String(h).toLowerCase().trim();
+  });
+  const cAttempt = header.indexOf('attempt_id');
+  const cIc = header.indexOf('ic');
+  const cNama = header.indexOf('nama');
+  const cIds = header.indexOf('soalan_ids');
+  const cStatus = header.indexOf('status');
+
   for (let r = data.length - 1; r >= 1; r--) {
     if (
-      normalizeIc_(data[r][2]) === ic &&
-      data[r][5] === STATUS_SEDANG
+      normalizeIc_(data[r][cIc]) === ic &&
+      data[r][cStatus] === STATUS_SEDANG
     ) {
       return {
         row: r + 1,
-        attempt_id: String(data[r][0]),
-        soalan_ids: String(data[r][4])
+        attempt_id: String(data[r][cAttempt]),
+        soalan_ids: String(data[r][cIds])
           .split(',')
           .map(function (s) {
             return s.trim();
           })
           .filter(Boolean),
-        nama: String(data[r][3]),
+        nama: String(data[r][cNama]),
       };
     }
   }
@@ -209,12 +303,19 @@ function findActiveAttempt_(ic) {
 function findFinishedAttempt_(ic) {
   const sh = getSheet_(SHEET_PERCUBAAN);
   const data = sh.getDataRange().getValues();
+  const header = data[0].map(function (h) {
+    return String(h).toLowerCase().trim();
+  });
+  const cAttempt = header.indexOf('attempt_id');
+  const cIc = header.indexOf('ic');
+  const cStatus = header.indexOf('status');
+
   for (let r = data.length - 1; r >= 1; r--) {
     if (
-      normalizeIc_(data[r][2]) === ic &&
-      data[r][5] === STATUS_SELESAI
+      normalizeIc_(data[r][cIc]) === ic &&
+      data[r][cStatus] === STATUS_SELESAI
     ) {
-      return { attempt_id: String(data[r][0]) };
+      return { attempt_id: String(data[r][cAttempt]) };
     }
   }
   return null;
@@ -242,6 +343,31 @@ function buildQuestionsFromIds_(bank, ids) {
   });
 }
 
+function gradeAnswers_(questions, jawapanMap) {
+  let betul = 0;
+  const butiran = [];
+  questions.forEach(function (q, i) {
+    const student = String(jawapanMap[q.id] || '')
+      .trim()
+      .toUpperCase();
+    const isCorrect = student === q.jawapan;
+    if (isCorrect) betul++;
+    butiran.push({
+      id: q.id,
+      topik: q.topik,
+      aras: q.aras,
+      nombor: i + 1,
+      soalan: q.soalan,
+      jawapan_pelajar: student || '-',
+      jawapan_betul: q.jawapan,
+      betul: isCorrect,
+    });
+  });
+  const jumlah = questions.length;
+  const skor = jumlah ? Math.round((betul / jumlah) * 100) : 0;
+  return { betul: betul, jumlah: jumlah, skor: skor, butiran: butiran };
+}
+
 function newAttemptId_() {
   return (
     'ATT-' +
@@ -264,19 +390,11 @@ function startExam(ic, nama) {
   const bank = loadQuestionBank_();
   const finished = findFinishedAttempt_(icNorm);
   if (finished) {
-    const last = getResult(icNorm);
-    if (last.ok) {
-      return {
-        ok: false,
-        ralat: 'Anda telah menghantar peperiksaan ini.',
-        sudah_hantar: true,
-        keputusan: last,
-      };
-    }
     return {
       ok: false,
       ralat: 'Anda telah menghantar peperiksaan ini.',
       sudah_hantar: true,
+      mesej_terima_kasih: MSJ_TERIMA_KASIH,
     };
   }
 
@@ -293,7 +411,7 @@ function startExam(ic, nama) {
     };
   }
 
-  const ids = sampleIds_(bank, JUMLAH_SOALAN);
+  const paper = buildExamPaper_(bank);
   const attemptId = newAttemptId_();
   const sh = getSheet_(SHEET_PERCUBAAN);
   sh.appendRow([
@@ -301,11 +419,12 @@ function startExam(ic, nama) {
     new Date(),
     icNorm,
     namaNorm,
-    ids.join(','),
+    paper.ids.join(','),
     STATUS_SEDANG,
+    paper.topik_lapan,
   ]);
 
-  const questions = buildQuestionsFromIds_(bank, ids);
+  const questions = buildQuestionsFromIds_(bank, paper.ids);
   return {
     ok: true,
     attempt_id: attemptId,
@@ -319,23 +438,35 @@ function startExam(ic, nama) {
 function getAttemptRow_(attemptId, ic) {
   const sh = getSheet_(SHEET_PERCUBAAN);
   const data = sh.getDataRange().getValues();
+  const header = data[0].map(function (h) {
+    return String(h).toLowerCase().trim();
+  });
+  const cAttempt = header.indexOf('attempt_id');
+  const cIc = header.indexOf('ic');
+  const cNama = header.indexOf('nama');
+  const cIds = header.indexOf('soalan_ids');
+  const cStatus = header.indexOf('status');
+  const cTopikLapan = header.indexOf('topik_lapan');
+
   for (let r = 1; r < data.length; r++) {
-    if (String(data[r][0]) === String(attemptId)) {
-      if (normalizeIc_(data[r][2]) !== ic) {
+    if (String(data[r][cAttempt]) === String(attemptId)) {
+      if (normalizeIc_(data[r][cIc]) !== ic) {
         return { error: 'Percubaan tidak sepadan dengan IC.' };
       }
       return {
         row: r + 1,
-        attempt_id: String(data[r][0]),
-        ic: normalizeIc_(data[r][2]),
-        nama: String(data[r][3]),
-        soalan_ids: String(data[r][4])
+        attempt_id: String(data[r][cAttempt]),
+        ic: normalizeIc_(data[r][cIc]),
+        nama: String(data[r][cNama]),
+        soalan_ids: String(data[r][cIds])
           .split(',')
           .map(function (s) {
             return s.trim();
           })
           .filter(Boolean),
-        status: String(data[r][5]),
+        status: String(data[r][cStatus]),
+        topik_lapan:
+          cTopikLapan >= 0 ? String(data[r][cTopikLapan] || '') : '',
       };
     }
   }
@@ -353,39 +484,29 @@ function submitExam(ic, attemptId, jawapan) {
 
   const attempt = getAttemptRow_(attemptId, icNorm);
   if (!attempt || attempt.error) {
-    return { ok: false, ralat: attempt ? attempt.error : 'Percubaan tidak dijumpai.' };
+    return {
+      ok: false,
+      ralat: attempt ? attempt.error : 'Percubaan tidak dijumpai.',
+    };
   }
   if (attempt.status === STATUS_SELESAI) {
-    return { ok: false, ralat: 'Jawapan telah dihantar sebelum ini.' };
+    return {
+      ok: false,
+      ralat: 'Jawapan telah dihantar sebelum ini.',
+      sudah_hantar: true,
+      mesej_terima_kasih: MSJ_TERIMA_KASIH,
+    };
   }
 
   const bank = loadQuestionBank_();
   const questions = buildQuestionsFromIds_(bank, attempt.soalan_ids);
   const jawapanMap = jawapan || {};
-  let betul = 0;
-  const butiran = [];
-
-  questions.forEach(function (q, i) {
-    const student = String(jawapanMap[q.id] || '')
-      .trim()
-      .toUpperCase();
-    const isCorrect = student === q.jawapan;
-    if (isCorrect) betul++;
-    butiran.push({
-      id: q.id,
-      nombor: i + 1,
-      soalan: q.soalan,
-      jawapan_pelajar: student || '-',
-      jawapan_betul: q.jawapan,
-      betul: isCorrect,
-    });
-  });
-
-  const jumlah = questions.length;
-  const skor = jumlah ? Math.round((betul / jumlah) * 100) : 0;
+  const graded = gradeAnswers_(questions, jawapanMap);
 
   const shPercubaan = getSheet_(SHEET_PERCUBAAN);
-  shPercubaan.getRange(attempt.row, 6).setValue(STATUS_SELESAI);
+  const header = getPercubaanHeaders_();
+  const cStatus = header.indexOf('status');
+  shPercubaan.getRange(attempt.row, cStatus + 1).setValue(STATUS_SELESAI);
 
   const shKeputusan = getSheet_(SHEET_KEPUTUSAN);
   shKeputusan.appendRow([
@@ -393,21 +514,16 @@ function submitExam(ic, attemptId, jawapan) {
     new Date(),
     icNorm,
     attempt.nama,
-    betul,
-    jumlah,
-    skor,
+    graded.betul,
+    graded.jumlah,
+    graded.skor,
     JSON.stringify(jawapanMap),
+    JSON.stringify(graded.butiran),
   ]);
 
   return {
     ok: true,
-    attempt_id: attempt.attempt_id,
-    nama: attempt.nama,
-    betul: betul,
-    jumlah: jumlah,
-    salah: jumlah - betul,
-    skor: skor,
-    butiran: butiran,
+    mesej_terima_kasih: MSJ_TERIMA_KASIH,
   };
 }
 
@@ -417,52 +533,107 @@ function getResult(ic) {
     return { ok: false, ralat: 'IC diperlukan.' };
   }
 
-  const sh = getSheet_(SHEET_KEPUTUSAN);
-  const data = sh.getDataRange().getValues();
-  if (data.length < 2) {
-    return { ok: false, ralat: 'Tiada keputusan dijumpai.' };
+  if (findFinishedAttempt_(icNorm)) {
+    return {
+      ok: true,
+      sudah_hantar: true,
+      mesej_terima_kasih: MSJ_TERIMA_KASIH,
+    };
   }
 
-  for (let r = data.length - 1; r >= 1; r--) {
-    if (normalizeIc_(data[r][2]) === icNorm) {
-      const bank = loadQuestionBank_();
-      const attempt = getAttemptRow_(data[r][0], icNorm);
-      let butiran = [];
-      if (attempt && !attempt.error) {
-        const questions = buildQuestionsFromIds_(bank, attempt.soalan_ids);
-        let jawapanMap = {};
-        try {
-          jawapanMap = JSON.parse(data[r][7] || '{}');
-        } catch (e) {
-          jawapanMap = {};
-        }
-        questions.forEach(function (q, i) {
-          const student = String(jawapanMap[q.id] || '')
-            .trim()
-            .toUpperCase();
-          butiran.push({
-            id: q.id,
-            nombor: i + 1,
-            soalan: q.soalan,
-            jawapan_pelajar: student || '-',
-            jawapan_betul: q.jawapan,
-            betul: student === q.jawapan,
-          });
-        });
-      }
+  return { ok: false, ralat: 'Tiada rekod peperiksaan.' };
+}
 
+function findKeputusanByIc_(icNorm) {
+  const sh = getSheet_(SHEET_KEPUTUSAN);
+  const data = sh.getDataRange().getValues();
+  if (data.length < 2) return null;
+
+  const header = data[0].map(function (h) {
+    return String(h).toLowerCase().trim();
+  });
+  const cAttempt = header.indexOf('attempt_id');
+  const cIc = header.indexOf('ic');
+  const cNama = header.indexOf('nama');
+  const cBetul = header.indexOf('betul');
+  const cJumlah = header.indexOf('jumlah');
+  const cSkor = header.indexOf('skor');
+  const cJawapan = header.indexOf('jawapan_json');
+  const cButiran = header.indexOf('butiran_json');
+
+  for (let r = data.length - 1; r >= 1; r--) {
+    if (normalizeIc_(data[r][cIc]) === icNorm) {
       return {
-        ok: true,
-        attempt_id: String(data[r][0]),
-        nama: String(data[r][3]),
-        betul: Number(data[r][4]),
-        jumlah: Number(data[r][5]),
-        skor: Number(data[r][6]),
-        salah: Number(data[r][5]) - Number(data[r][4]),
-        butiran: butiran,
+        attempt_id: String(data[r][cAttempt]),
+        nama: String(data[r][cNama]),
+        betul: Number(data[r][cBetul]),
+        jumlah: Number(data[r][cJumlah]),
+        skor: Number(data[r][cSkor]),
+        jawapan_json: data[r][cJawapan],
+        butiran_json: cButiran >= 0 ? data[r][cButiran] : '',
+        row: r,
       };
     }
   }
+  return null;
+}
 
-  return { ok: false, ralat: 'Tiada keputusan dijumpai.' };
+function adminReview(pin, ic) {
+  const expectedPin = getAdminPin_();
+  if (!expectedPin) {
+    return { ok: false, ralat: 'PIN pentadbir belum dikonfigurasi.' };
+  }
+  if (String(pin || '').trim() !== expectedPin) {
+    return { ok: false, ralat: 'PIN tidak sah.' };
+  }
+
+  const icNorm = normalizeIc_(ic);
+  if (!icNorm) {
+    return { ok: false, ralat: 'No. Kad Pengenalan diperlukan.' };
+  }
+
+  const row = findKeputusanByIc_(icNorm);
+  if (!row) {
+    return { ok: false, ralat: 'Tiada rekod peperiksaan untuk IC ini.' };
+  }
+
+  let butiran = [];
+  if (row.butiran_json) {
+    try {
+      butiran = JSON.parse(row.butiran_json);
+    } catch (e) {
+      butiran = [];
+    }
+  }
+
+  if (!butiran.length) {
+    const bank = loadQuestionBank_();
+    const attempt = getAttemptRow_(row.attempt_id, icNorm);
+    if (attempt && !attempt.error) {
+      const questions = buildQuestionsFromIds_(bank, attempt.soalan_ids);
+      let jawapanMap = {};
+      try {
+        jawapanMap = JSON.parse(row.jawapan_json || '{}');
+      } catch (e2) {
+        jawapanMap = {};
+      }
+      butiran = gradeAnswers_(questions, jawapanMap).butiran;
+    }
+  }
+
+  const attempt = getAttemptRow_(row.attempt_id, icNorm);
+  const topik_lapan = attempt && !attempt.error ? attempt.topik_lapan : '';
+
+  return {
+    ok: true,
+    ic: icNorm,
+    nama: row.nama,
+    attempt_id: row.attempt_id,
+    betul: row.betul,
+    jumlah: row.jumlah,
+    salah: row.jumlah - row.betul,
+    skor: row.skor,
+    topik_lapan: topik_lapan,
+    butiran: butiran,
+  };
 }

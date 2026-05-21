@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ms">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Semakan Jawapan — Pentadbir</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="header header-admin">
+      <h1>Semakan Jawapan</h1>
+      <p class="subtitle">Untuk pengguna pentadbir dan juri sahaja</p>
+    </header>
+
+    <main class="container">
+      <section class="card">
+        <h2>Carian Peserta</h2>
+        <form id="form-admin" novalidate>
+          <label for="pin">PIN Pentadbir</label>
+          <input
+            type="password"
+            id="pin"
+            name="pin"
+            autocomplete="off"
+            required
+          />
+
+          <label for="ic-admin">No. Kad Pengenalan Peserta</label>
+          <input
+            type="text"
+            id="ic-admin"
+            name="ic"
+            inputmode="numeric"
+            autocomplete="off"
+            required
+          />
+
+          <p id="admin-error" class="error" hidden></p>
+          <p id="admin-wait" class="wait-msg" hidden>Sila tunggu…</p>
+          <button type="submit" class="btn btn-primary" id="btn-admin">
+            Semak Jawapan
+          </button>
+        </form>
+      </section>
+
+      <section id="view-admin-result" class="card" hidden>
+        <h2>Keputusan Peserta</h2>
+        <div class="score-box">
+          <p><strong>Nama:</strong> <span id="admin-nama"></span></p>
+          <p><strong>No. KP:</strong> <span id="admin-ic"></span></p>
+          <p class="score-main">
+            Markah: <span id="admin-skor"></span>%
+          </p>
+          <p>
+            Betul: <span id="admin-betul"></span> /
+            <span id="admin-jumlah"></span>
+            (Salah: <span id="admin-salah"></span>)
+          </p>
+        </div>
+        <ul id="admin-details" class="result-list"></ul>
+      </section>
+
+      <p id="config-warning" class="warning" hidden>
+        Perkhidmatan tidak tersedia. Sila hubungi pentadbir sistem.
+      </p>
+    </main>
+
+    <footer class="footer">
+      <p>Halaman ini tidak untuk peserta peperiksaan.</p>
+    </footer>
+
+    <script src="js/config.example.js"></script>
+    <script src="js/pentadbir.js"></script>
+  </body>
+</html>

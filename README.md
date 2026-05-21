@@ -1,116 +1,126 @@
-# Peperiksaan Tatabahasa — Sistem Contoh (Bahasa Melayu)
+# Peperiksaan Agama — Pertandingan Peringkat Negeri
 
-Sistem **contoh / draf** untuk perbincangan: pelajar log masuk dengan **No. Kad Pengenalan** dan **nama**, sistem memilih **10 soalan rawak** daripada bank **100 soalan** (demo), menjawab di laman web, dan keputusan disimpan serta digred secara automatik melalui **Google Sheet** + **Google Apps Script**.
+Sistem peperiksaan dalam talian: pelajar log masuk dengan **No. Kad Pengenalan** dan **nama**, menjawab **50 soalan** yang dicabut mengikut peraturan 7 topik, dan hanya melihat mesej **terima kasih** selepas hantar. Pentadbir/juri menyemak jawapan melalui halaman berasingan dengan **PIN**.
 
-> **Nota:** Fail `100 Latihan Tatabahasa Bahasa Melayu.xlsx` ialah bank soalan contoh. Bank rasmi (cth. 350 soalan) boleh menggantikan sheet `Soalan` tanpa mengubah reka bentuk asas.
+## Bank soalan
+
+- **7 topik**, setiap satu **50 soalan** (1–25 aras sederhana, 26–50 aras tinggi) = **350 soalan**
+- Sumber: folder [`Bank Soalan/`](Bank%20Soalan/) (fail DOCX)
+- Jana semula CSV:
+
+```bash
+pip install -r requirements.txt
+python scripts/convert_docx_bank.py
+```
+
+Import [`data/questions.csv`](data/questions.csv) ke helaian Google Sheet **`Soalan`** (ganti kandungan lama).
+
+| Kod topik | Fail |
+|-----------|------|
+| AKIDAH | SOALAN TOPIK AKIDAH.docx |
+| ALQURAN | SOALAN TOPIK AL-QURAN.docx |
+| JAWI | SOALAN TOPIK JAWI.docx |
+| SIRAH | SOALAN TOPIK SIRAH.docx |
+| HADIS | 50 SOALAN HADIS.docx |
+| IBADAH | 50 SOALAN IBADAH.docx |
+| ADAB | 50 SOALAN ADAB.docx |
+
+## Peraturan cabutan 50 soalan
+
+1. Satu topik dipilih secara rawak untuk **8 soalan**; enam topik lain **7 soalan** setiap satu.
+2. Topik 7 soalan: **4 sederhana** + **3 tinggi**
+3. Topik 8 soalan: **4 sederhana** + **4 tinggi**
+4. Urutan 50 soalan dikocok untuk paparan
 
 ## Seni bina
 
 ```
-Pelajar (pelayar) → GitHub Pages (HTML/JS)
-                 → Google Apps Script (Web App)
-                 → Google Sheet (Soalan, Percubaan, Keputusan)
+Pelajar → GitHub Pages (index.html)
+       → Google Apps Script (Web App)
+       → Google Sheet (Soalan, Percubaan, Keputusan)
+
+Pentadbir → GitHub Pages (pentadbir.html) + PIN → adminReview
 ```
 
-- Laman web: paparan soalan & keputusan (Bahasa Melayu).
-- Apps Script: cabut soalan, simpan percubaan, gred, tulis keputusan.
-- **Jangan** simpan kunci Google atau `SPREADSHEET_ID` dalam repositori Git.
+## Google Sheet
+
+### Soalan
+
+`id` | `topik` | `aras` | `soalan` | `A` | `B` | `C` | `D` | `jawapan`
+
+### Percubaan
+
+`attempt_id` | `masa_mula` | `ic` | `nama` | `soalan_ids` | `status` | `topik_lapan`
+
+### Keputusan
+
+`attempt_id` | `masa_hantar` | `ic` | `nama` | `betul` | `jumlah` | `skor` | `jawapan_json` | `butiran_json`
+
+> Jika helaian lama tiada lajur baharu, tambah lajur mengikut urutan di atas atau buat helaian baharu dan import semula.
+
+## Google Apps Script
+
+1. Tampal [`apps-script/Code.gs`](apps-script/Code.gs)
+2. **Script properties:**
+
+| Property | Nilai |
+|----------|--------|
+| `SPREADSHEET_ID` | ID spreadsheet |
+| `ADMIN_PIN` | PIN untuk halaman pentadbir (contoh 6–8 digit) |
+
+3. **Deploy** → Web app → Execute as: **Me** → Who has access: **Anyone**
+4. Salin URL `/exec` ke [`js/config.example.js`](js/config.example.js)
+
+## GitHub Pages
+
+- Laman pelajar: `https://<pengguna>.github.io/<repo>/`
+- Laman pentadbir: `https://<pengguna>.github.io/<repo>/pentadbir.html`  
+  (jangan pautkan dari laman pelajar)
+
+## Aliran pelajar
+
+1. IC + nama → **Mula Peperiksaan**
+2. Jawab 50 soalan → **Hantar Jawapan**
+3. Paparan **Terima kasih** sahaja (tiada markah)
+
+## Aliran pentadbir
+
+1. Buka `pentadbir.html`
+2. Masukkan **PIN** + **IC peserta**
+3. Lihat markah dan senarai betul/salah setiap soalan
+
+## API (ringkas)
+
+| action | Pengguna | Nota |
+|--------|----------|------|
+| `startExam` | Pelajar | Pulangkan soalan tanpa jawapan |
+| `submitExam` | Pelajar | Simpan keputusan; respons terima kasih sahaja |
+| `getResult` | Pelajar | `sudah_hantar` + mesej terima kasih |
+| `adminReview` | Pentadbir | `pin` + `ic` → markah + `butiran` |
+
+## Pertandingan ~36 peserta serentak
+
+Skala disasarkan **12 daerah × 3 peserta**. Platform semasa (**GAS + Sheet**) biasanya mencukupi jika:
+
+- Peserta dibenarkan log masuk **2–3 minit lebih awal** (elak semua klik serentak)
+- Masa hantar berbeza (tiada konflik tulis antara IC berbeza)
+- Ujian pra-perlawanan: **5–10 IC ujian** serentak
+
+Frontend sudah ada **retry automatik** (2 kali) pada ralat sambungan.
+
+Jika ujian pra-perlawanan gagal kerap, pertimbangkan akaun **Google Workspace** (kuota lebih tinggi). Untuk 36 orang, **tidak perlu** tukar platform secara lalai.
+
+## Privasi
+
+- IC disimpan dalam Sheet — hadkan akses, jangan kongsi pautan spreadsheet
+- Jangan commit PIN dalam Git; hanya dalam Script properties
 
 ## Struktur repositori
 
 | Laluan | Fungsi |
 |--------|--------|
-| `index.html`, `css/`, `js/` | Antara muka peperiksaan |
-| `js/config.example.js` | URL Web App GAS (sunting sebelum deploy) |
-| `data/questions.csv` | Bank soalan untuk import ke Sheet |
-| `scripts/convert_xlsx_to_csv.py` | Tukar Excel → CSV |
-| `apps-script/Code.gs` | Kod backend untuk tampal ke GAS |
-
-## Langkah 1: Sediakan Google Sheet
-
-1. Cipta Spreadsheet baharu.
-2. Tambah tiga helaian dengan nama tepat: **`Soalan`**, **`Percubaan`**, **`Keputusan`**.
-3. Pada helaian **`Soalan`**, baris pertama (header):
-
-   `id` | `soalan` | `A` | `B` | `C` | `D` | `jawapan`
-
-4. Import fail [`data/questions.csv`](data/questions.csv) ke helaian `Soalan` (Fail → Import).
-5. Helaian **`Percubaan`** dan **`Keputusan`** boleh dibiarkan kosong — header akan dicipta automatik oleh skrip pada percubaan pertama, atau anda boleh letakkan header seperti dalam jadual di bawah.
-
-**Percubaan:** `attempt_id`, `masa_mula`, `ic`, `nama`, `soalan_ids`, `status`  
-**Keputusan:** `attempt_id`, `masa_hantar`, `ic`, `nama`, `betul`, `jumlah`, `skor`, `jawapan_json`
-
-6. Salin **ID Spreadsheet** daripada URL (rentetan antara `/d/` dan `/edit`).
-7. Kongsi sheet dengan akaun Google yang akan deploy skrip (sekurang-kurangnya Editor).
-
-## Langkah 2: Google Apps Script
-
-1. Dalam Spreadsheet: **Extensions** → **Apps Script**.
-2. Padam kandungan lalai; tampal semua kod daripada [`apps-script/Code.gs`](apps-script/Code.gs).
-3. **Project Settings** → **Script properties** → tambah:
-
-   | Property | Nilai |
-   |----------|--------|
-   | `SPREADSHEET_ID` | ID spreadsheet anda |
-
-4. **Deploy** → **New deployment** → jenis **Web app**:
-   - Execute as: **Me**
-   - Who has access: **Anyone**
-5. Salin **URL Web App** (berakhir dengan `/exec`).
-
-## Langkah 3: Konfigurasi laman web
-
-1. Buka [`js/config.example.js`](js/config.example.js).
-2. Gantikan `YOUR_DEPLOYMENT_ID` dengan URL penuh Web App anda, contoh:
-
-   ```javascript
-   window.EXAM_CONFIG = {
-     API_URL: "https://script.google.com/macros/s/AKfycb.../exec",
-   };
-   ```
-
-3. (Pilihan tempatan) Salin ke `js/config.js` dan ubah `index.html` untuk memuatkan `config.js` — fail ini diabaikan oleh Git.
-
-## Langkah 4: GitHub Pages
-
-1. Push repositori ke GitHub.
-2. **Settings** → **Pages** → Source: branch `main`, folder **/ (root)**.
-3. Buka URL Pages (`https://<pengguna>.github.io/<repo>/`).
-
-## Langkah 5: Ujian aliran
-
-1. Buka laman peperiksaan.
-2. Masukkan IC ujian (contoh: `900101015432`) dan nama.
-3. Klik **Mula Peperiksaan** — 10 soalan dipaparkan.
-4. Jawab semua soalan → **Hantar Jawapan**.
-5. Semak **Keputusan Peperiksaan** dan baris baharu dalam sheet `Keputusan`.
-
-**Peraturan sample:**
-
-- Satu IC: satu peperiksaan (selepas hantar, tidak boleh mula semula; hanya lihat keputusan).
-- Jika pelayar ditutup semasa `status = sedang`, log masuk semula dengan IC sama akan **sambung** set soalan yang sama.
-
-## Kemas kini bank soalan
-
-```bash
-pip install openpyxl
-python scripts/convert_xlsx_to_csv.py
-```
-
-Import semula `data/questions.csv` ke helaian `Soalan`. Laras `JUMLAH_SOALAN` dalam `Code.gs` jika bilangan soalan peperiksaan berubah.
-
-## Privasi & had
-
-- No. Kad Pengenalan disimpan dalam Google Sheet — hadkan akses sheet, jangan kongsi pautan awam.
-- Pelajar perlu akses ke `script.google.com` (sambungan ke Google).
-- Tiada pemeriksaan kamera, had masa, atau kocokan pilihan jawapan dalam sample ini.
-
-## Rancangan seterusnya (cadangan)
-
-- Ganti IC dengan nombor pelajar atau kod peperiksaan.
-- Papan skor guru (helaian keempat atau paparan baca sahaja).
-- Bank rasmi 350 soalan; laraskan `JUMLAH_SOALAN` dalam `Code.gs` (contoh 50 untuk peperiksaan penuh).
-
-## Lesen data contoh
-
-Fail Excel/CSV dalam repo ialah bahan latihan contoh untuk demonstrasi teknikal.
+| `index.html`, `js/app.js` | Peperiksaan pelajar |
+| `pentadbir.html`, `js/pentadbir.js` | Semakan juri |
+| `apps-script/Code.gs` | Backend |
+| `data/questions.csv` | Bank untuk import Sheet |
+| `scripts/convert_docx_bank.py` | DOCX → CSV |

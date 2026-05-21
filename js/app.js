@@ -4,14 +4,17 @@
   const STORAGE_IC = "exam_ic";
   const STORAGE_NAMA = "exam_nama";
   const STORAGE_ATTEMPT = "exam_attempt_id";
+  const API_RETRIES = 2;
 
   const $ = (sel) => document.querySelector(sel);
 
   const viewLogin = $("#view-login");
   const viewExam = $("#view-exam");
-  const viewResult = $("#view-result");
+  const viewThanks = $("#view-thanks");
   const loginError = $("#login-error");
+  const loginWait = $("#login-wait");
   const examError = $("#exam-error");
+  const examWait = $("#exam-wait");
   const configWarning = $("#config-warning");
 
   let state = {
@@ -31,13 +34,25 @@
     el.hidden = !message;
   }
 
+  function showWait(el, on) {
+    el.hidden = !on;
+  }
+
   function setView(name) {
     viewLogin.hidden = name !== "login";
     viewExam.hidden = name !== "exam";
-    viewResult.hidden = name !== "result";
+    viewThanks.hidden = name !== "thanks";
   }
 
-  async function apiCall(action, payload) {
+  function showThanks(mesej) {
+    const text =
+      mesej ||
+      "Terima kasih. Jawapan anda telah direkodkan. Keputusan akan diumumkan oleh pihak pengurusan.";
+    $("#thanks-message").textContent = text;
+    setView("thanks");
+  }
+
+  async function apiCall(action, payload, retriesLeft) {
     const url = getApiUrl();
     if (!url) {
       throw new Error(
@@ -45,21 +60,28 @@
       );
     }
 
+    const left = retriesLeft != null ? retriesLeft : API_RETRIES;
     const body = JSON.stringify(Object.assign({ action: action }, payload));
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: body,
-    });
 
-    const text = await res.text();
-    let data;
     try {
-      data = JSON.parse(text);
-    } catch {
-      throw new Error("Ralat sambungan. Sila cuba lagi sebentar.");
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: body,
+      });
+      const text = await res.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        throw new Error("Ralat sambungan. Sila cuba lagi sebentar.");
+      }
+    } catch (err) {
+      if (left > 0) {
+        await new Promise((r) => setTimeout(r, 800));
+        return apiCall(action, payload, left - 1);
+      }
+      throw err;
     }
-    return data;
   }
 
   function renderQuestions(soalan) {
@@ -71,7 +93,8 @@
       card.dataset.questionId = q.id;
 
       const title = document.createElement("h3");
-      title.textContent = "Soalan " + (index + 1) + " daripada " + soalan.length;
+      title.textContent =
+        "Soalan " + (index + 1) + " daripada " + soalan.length;
       card.appendChild(title);
 
       const stem = document.createElement("p");
@@ -114,39 +137,6 @@
     });
   }
 
-  function renderResult(data) {
-    $("#result-nama").textContent = data.nama || state.nama;
-    $("#result-skor").textContent = data.skor;
-    $("#result-betul").textContent = data.betul;
-    $("#result-jumlah").textContent = data.jumlah;
-    $("#result-salah").textContent =
-      data.salah != null ? data.salah : data.jumlah - data.betul;
-
-    const ul = $("#result-details");
-    ul.innerHTML = "";
-    (data.butiran || []).forEach((item) => {
-      const li = document.createElement("li");
-      const tag = document.createElement("span");
-      tag.className = "tag " + (item.betul ? "tag-betul" : "tag-salah");
-      tag.textContent = item.betul ? "Betul" : "Salah";
-      li.appendChild(tag);
-      li.appendChild(
-        document.createTextNode(
-          " Soalan " +
-            item.nombor +
-            ": " +
-            (item.soalan || "").slice(0, 80) +
-            (item.soalan && item.soalan.length > 80 ? "…" : "") +
-            " — Anda: " +
-            item.jawapan_pelajar +
-            ", Betul: " +
-            item.jawapan_betul
-        )
-      );
-      ul.appendChild(li);
-    });
-  }
-
   function saveSession() {
     sessionStorage.setItem(STORAGE_IC, state.ic);
     sessionStorage.setItem(STORAGE_NAMA, state.nama);
@@ -163,15 +153,15 @@
     const btn = $("#btn-start");
     btn.disabled = true;
     showError(loginError, "");
+    showWait(loginWait, true);
 
     try {
       const data = await apiCall("startExam", { ic: ic, nama: nama });
       if (!data.ok) {
-        if (data.sudah_hantar && data.keputusan && data.keputusan.ok) {
+        if (data.sudah_hantar) {
           state.ic = ic;
           state.nama = nama;
-          renderResult(data.keputusan);
-          setView("result");
+          showThanks(data.mesej_terima_kasih);
           return;
         }
         showError(loginError, data.ralat || "Gagal memulakan peperiksaan.");
@@ -191,6 +181,7 @@
       showError(loginError, err.message || "Ralat rangkaian.");
     } finally {
       btn.disabled = false;
+      showWait(loginWait, false);
     }
   }
 
@@ -202,6 +193,7 @@
     }
     showError(examError, "");
     btn.disabled = true;
+    showWait(examWait, true);
 
     try {
       const jawapan = collectAnswers();
@@ -211,27 +203,31 @@
         jawapan: jawapan,
       });
       if (!data.ok) {
+        if (data.sudah_hantar) {
+          showThanks(data.mesej_terima_kasih);
+          return;
+        }
         showError(examError, data.ralat || "Gagal menghantar jawapan.");
         return;
       }
-      renderResult(data);
-      setView("result");
+      sessionStorage.removeItem(STORAGE_ATTEMPT);
+      showThanks(data.mesej_terima_kasih);
     } catch (err) {
       showError(examError, err.message || "Ralat rangkaian.");
     } finally {
       btn.disabled = false;
+      showWait(examWait, false);
     }
   }
 
-  async function tryResumeResult() {
+  async function tryResumeThanks() {
     loadSession();
     if (!state.ic || !getApiUrl()) return;
     try {
       const data = await apiCall("getResult", { ic: state.ic });
-      if (data.ok) {
-        state.nama = data.nama;
-        renderResult(data);
-        setView("result");
+      if (data.ok && data.sudah_hantar) {
+        state.nama = state.nama || "";
+        showThanks(data.mesej_terima_kasih);
       }
     } catch {
       return;
@@ -266,15 +262,8 @@
       handleSubmit();
     });
 
-    $("#btn-back").addEventListener("click", () => {
-      sessionStorage.clear();
-      state = { ic: "", nama: "", attemptId: "", soalan: [] };
-      $("#form-login").reset();
-      setView("login");
-    });
-
     setView("login");
-    tryResumeResult();
+    tryResumeThanks();
   }
 
   if (document.readyState === "loading") {

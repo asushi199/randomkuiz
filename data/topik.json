@@ -1,0 +1,54 @@
+{
+  "topik": [
+    {
+      "topik": "AKIDAH",
+      "fail": "SOALAN TOPIK AKIDAH.docx",
+      "jumlah": 50,
+      "sederhana": 25,
+      "tinggi": 25
+    },
+    {
+      "topik": "ALQURAN",
+      "fail": "SOALAN TOPIK AL-QURAN.docx",
+      "jumlah": 50,
+      "sederhana": 25,
+      "tinggi": 25
+    },
+    {
+      "topik": "JAWI",
+      "fail": "SOALAN TOPIK JAWI.docx",
+      "jumlah": 50,
+      "sederhana": 25,
+      "tinggi": 25
+    },
+    {
+      "topik": "SIRAH",
+      "fail": "SOALAN TOPIK SIRAH.docx",
+      "jumlah": 50,
+      "sederhana": 25,
+      "tinggi": 25
+    },
+    {
+      "topik": "HADIS",
+      "fail": "50 SOALAN HADIS.docx",
+      "jumlah": 50,
+      "sederhana": 25,
+      "tinggi": 25
+    },
+    {
+      "topik": "IBADAH",
+      "fail": "50 SOALAN IBADAH.docx",
+      "jumlah": 50,
+      "sederhana": 25,
+      "tinggi": 25
+    },
+    {
+      "topik": "ADAB",
+      "fail": "50 SOALAN ADAB.docx",
+      "jumlah": 50,
+      "sederhana": 25,
+      "tinggi": 25
+    }
+  ],
+  "jumlah_keseluruhan": 350
+}

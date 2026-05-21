@@ -15,35 +15,41 @@ alwaysApply: true
 
 ## Antara muka (frontend) — profesional
 
-- Fail `index.html`, `css/`, `js/app.js`, `js/config*.js`: **tiada** komen atau teks yang menyebut Google Apps Script, Sheet, API, CORS, `config.js`, laluan fail, atau butiran teknikal deploy.
+- Fail `index.html`, `pentadbir.html`, `css/`, `js/app.js`, `js/pentadbir.js`, `js/config*.js`: **tiada** komen atau teks yang menyebut Google Apps Script, Sheet, API, CORS, `config.js`, laluan fail, atau butiran teknikal deploy.
 - Mesej ralat/amaan kepada pelajar: Bahasa Melayu mesra pengguna (cth. hubungi pentadbir), bukan arahan pembangun.
-- Jangan paparkan ID percubaan, URL backend, atau metadata teknikal pada skrin peperiksaan.
+- Jangan paparkan ID percubaan, URL backend, atau metadata teknikal pada skrin peperiksaan pelajar.
+
+## Pelajar vs pentadbir
+
+- **Pelajar** (`index.html`): selepas hantar hanya **Terima kasih** — tiada markah, tiada semak jawapan.
+- **Pentadbir** (`pentadbir.html`): semak IC dengan **PIN** (`ADMIN_PIN` dalam Script properties); papar markah dan `butiran`.
 
 ## Seni bina
 
-- **GitHub Pages**: hanya fail statik (`index.html`, `css/`, `js/`).
-- **Google Apps Script** (`apps-script/Code.gs`): cabut soalan, gred, baca/tulis Sheet; `SPREADSHEET_ID` hanya dalam Script Properties, **jangan** commit ke Git.
-- **Google Sheet** tab: `Soalan`, `Percubaan`, `Keputusan` — kekalkan nama lajur seperti dalam README.
+- **GitHub Pages**: hanya fail statik.
+- **Google Apps Script** (`apps-script/Code.gs`): cabut soalan berstrata, gred, baca/tulis Sheet; `SPREADSHEET_ID` dan `ADMIN_PIN` hanya dalam Script properties.
+- **Google Sheet** tab: `Soalan`, `Percubaan`, `Keputusan`.
+
+## Cabutan soalan (wajib)
+
+- Bank: 7 topik × 50 (25 sederhana + 25 tinggi).
+- Set peperiksaan: **50** soalan — 6 topik × 7 + 1 topik rawak × 8.
+- Topik 7: 4 sederhana + 3 tinggi; topik 8: 4 sederhana + 4 tinggi.
+- Lajur Sheet `Soalan`: `id`, `topik`, `aras`, `soalan`, `A`–`D`, `jawapan`.
+- Konstanta: `JUMLAH_SOALAN = 50`, `TOPIK_LIST` dalam `Code.gs`.
 
 ## API GAS
 
-- `action`: `startExam` | `submitExam` | `getResult`
-- Medan: `ic`, `nama`, `attempt_id`, `jawapan` (objek `{ "idSoalan": "A" }`)
-- Respons JSON: `ok`, `ralat` (jika gagal); jangan hantar `jawapan` betul ke frontend semasa `startExam`
+- `action`: `startExam` | `submitExam` | `getResult` | `adminReview`
+- Jangan hantar `jawapan` betul ke pelajar semasa `startExam`.
+- `submitExam` / `getResult` untuk pelajar: tiada skor/butiran dalam respons.
 
 ## Bank soalan
 
-- Sumber contoh: `100 Latihan Tatabahasa Bahasa Melayu.xlsx` → `scripts/convert_xlsx_to_csv.py` → `data/questions.csv`
-- Satu baris satu soalan: `id`, `soalan`, `A`, `B`, `C`, `D`, `jawapan`
-- Sample demo: bank **100** soalan, cabut **10** setiap peperiksaan (`JUMLAH_SOALAN` dalam `apps-script/Code.gs`; ubah di sana untuk peperiksaan penuh)
-
-## Privasi & keselamatan
-
+- Sumber: `Bank Soalan/*.docx` → `scripts/convert_docx_bank.py` → `data/questions.csv`
 - Jangan commit `js/config.js` (URL deploy peribadi).
-- IC disimpan dalam Sheet — ingatkan kebenaran akses terhad; jangan log IC ke konsol produksi.
-- Frontend POST ke GAS: `Content-Type: text/plain` (elak preflight CORS).
 
-## Skop perubahan
+## Skop
 
 - Jangan ubah fail pelan (`.cursor/plans/`) melainkan diminta.
-- Ciri luar skop sample (pemeriksaan kamera, kocokan pilihan, soalan subjektif) — dokumentasi sahaja, jangan implement tanpa permintaan.
+- Ciri luar skop (kamera, had masa ketat, kocokan pilihan) — dokumentasi sahaja tanpa implement melainkan diminta.

@@ -3,13 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Peperiksaan Tatabahasa (Contoh)</title>
+    <title>Peperiksaan Agama — Pertandingan</title>
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
     <header class="header">
-      <h1>Peperiksaan Tatabahasa Bahasa Melayu</h1>
-      <p class="subtitle">Sistem contoh — 10 soalan rawak daripada bank 100 soalan</p>
+      <h1>Peperiksaan Agama</h1>
+      <p class="subtitle">
+        50 soalan merentas semua topik — sila jawab dengan teliti
+      </p>
     </header>
 
     <main class="container">
@@ -38,6 +40,7 @@
           />
 
           <p id="login-error" class="error" hidden></p>
+          <p id="login-wait" class="wait-msg" hidden>Sila tunggu…</p>
           <button type="submit" class="btn btn-primary" id="btn-start">
             Mula Peperiksaan
           </button>
@@ -51,32 +54,20 @@
         <form id="form-exam">
           <div id="questions-list"></div>
           <p id="exam-error" class="error" hidden></p>
+          <p id="exam-wait" class="wait-msg" hidden>Sila tunggu…</p>
           <button type="submit" class="btn btn-primary" id="btn-submit">
             Hantar Jawapan
           </button>
         </form>
       </section>
 
-      <section id="view-result" class="card" hidden>
-        <h2>Keputusan Peperiksaan</h2>
-        <div class="score-box">
-          <p class="score-main">
-            Markah: <span id="result-skor"></span>%
-          </p>
-          <p>
-            Betul: <span id="result-betul"></span> /
-            <span id="result-jumlah"></span>
-          </p>
-          <p>Salah: <span id="result-salah"></span></p>
-          <p><strong>Nama:</strong> <span id="result-nama"></span></p>
-        </div>
-        <details class="details-review">
-          <summary>Semak jawapan mengikut soalan</summary>
-          <ul id="result-details" class="result-list"></ul>
-        </details>
-        <button type="button" class="btn btn-secondary" id="btn-back">
-          Kembali ke log masuk
-        </button>
+      <section id="view-thanks" class="card thanks-card" hidden>
+        <h2>Terima Kasih</h2>
+        <p id="thanks-message" class="thanks-text"></p>
+        <p class="thanks-note">
+          Jawapan anda telah direkodkan. Keputusan akan diumumkan oleh pihak
+          pengurusan.
+        </p>
       </section>
 
       <p id="config-warning" class="warning" hidden>
@@ -86,7 +77,7 @@
     </main>
 
     <footer class="footer">
-      <p>Contoh / draf — bukan peperiksaan rasmi.</p>
+      <p>Pertandingan peringkat negeri.</p>
     </footer>
 
     <script src="js/config.example.js"></script>

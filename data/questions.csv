@@ -1,101 +1,351 @@
-﻿id,soalan,A,B,C,D,jawapan
-1,_____ ialah nama guru besar sekolah itu?,Apa,Siapa,Bila,Di mana,B
-2,Cikgu Zaliya sedang _____ maklumat tentang aplikasi baharu.,mencari,dicarikan,tercari,pencarian,A
-3,Murid-murid SK Sungai Tiram teruja melihat _____ dron itu terbang tinggi.,sebuah,seekor,sebatang,sehelai,A
-4,Beliau bertugas di Pejabat Pendidikan Daerah _____.,Manjung,Kuala Lumpur,Johor Bahru,Melaka,A
-5,SMK Raja Shahriman melancarkan program _____ menggunakan teknologi VR.,NILAM,Sukan,Kantin,Disiplin,A
-6,Guru-guru SJKC Zhi Min _____ bengkel teknologi kecerdasan buatan semalam.,menghadiri,dihadiri,kehadiran,hadir,A
-7,_____ besarnya sekolah SJKC Qun Xian ini!,Aduh,Wah,Eh,Cis,B
-8,Kami bertolak ke Kedah _____ hari Isnin yang lalu.,pada,di,dari,kepada,A
-9,"Aminah suka membaca buku, _____ dia digelar ulat buku.",oleh itu,kerana,dan,sambil,A
-10,Ibu memotong sayur menggunakan _____ pisau yang tajam.,sebilah,sebuah,sebatang,sekeping,A
-11,Abang membeli _____ telefon pintar jenama Honor untuk ayah.,sebuah,sebijik,selaras,sepucuk,A
-12,Ayah menasihati kami _____ sentiasa rajin berusaha.,agar,dan,atau,sambil,A
-13,_____ sakitnya kaki saya!,Aduh,Wah,Oh,Eh,A
-14,Kucing itu tidur _____ bawah meja.,di,ke,dari,daripada,A
-15,Siti menyanyi _____ menari di atas pentas.,sambil,atau,kerana,lalu,A
-16,Pasukan bola sepak itu berlatih dengan _____ setiap petang.,bersungguh-sungguh,main-main,malas-malas,cepat-cepat,A
-17,Buku cerita itu dipinjam _____ perpustakaan.,dari,daripada,ke,kepada,A
-18,Baju sukan ini diperbuat _____ kain kapas yang selesa.,daripada,dari,pada,kepada,A
-19,_____ kamu pun ada di sini!,Eh,Wah,Aduh,Syabas,A
-20,Pemuda itu bekerja sebagai _____ di syarikat tersebut.,kerani,keranian,pekerani,dikerani,A
-21,Nelayan itu menangkap ikan menggunakan _____ jala.,serawan,seutas,selembar,sebidang,A
-22,Rumah Ali terletak di _____ jalan itu.,hujung,pangkal,tepi,atas,A
-23,Ayah minum _____ kopi panas pada waktu pagi.,secawan,sepiring,semangkuk,sebotol,A
-24,Bunga mawar itu sungguh _____ .,harum,busuk,hapak,tengik,A
-25,Pertandingan itu diadakan _____ memupuk semangat perpaduan.,untuk,bagi,akan,demi,A
-26,Adik menangis _____ kelaparan.,kerana,agar,supaya,dan,A
-27,_____ murid dikehendaki beratur sebelum masuk ke kelas.,Semua,Setengah,Banyak,Sedikit,A
-28,Datuk sedang berehat di _____ rumah.,serambi,dapur,bilik mandi,stor,A
-29,Lelaki _____ itu berjaya mendaki gunung.,cacat penglihatan,rabun,buta,pejam,A
-30,Kami akan bertolak _____ pukul lapan pagi.,pada,di,dari,kepada,A
-31,Buku-buku di atas meja itu telah _____ oleh Cikgu Zaliya.,disusun,menyusun,tersusun,susunan,A
-32,Masyarakat Malaysia terdiri daripada pelbagai _____ .,kaum,bangsa,puak,kumpulan,A
-33,Suhu di kawasan pergunungan itu sangat _____ .,sejuk,panas,suam,hangat,A
-34,Jalan raya di bandar Sitiawan sangat _____ pada waktu puncak.,sibuk,lengang,sunyi,sepi,A
-35,Sultan Perak akan _____ majlis perasmian itu.,mencemar duli,berangkat,bersiram,beradu,B
-36,_____ titah perintah tuanku akan patik laksanakan.,Segala,Beberapa,Setiap,Masing-masing,A
-37,Pemandangan di tepi pantai itu amat _____ sekali.,indah,buruk,hodoh,kotor,A
-38,Kanak-kanak itu bermain layang-layang di _____ yang lapang.,padang,kelas,kantin,pejabat,A
-39,Dia merenung _____ wajah ibunya.,ke arah,di,daripada,dari,A
-40,Baju kurung itu dijahit oleh _____ .,tukang jahit,tukang kayu,tukang besi,tukang masak,A
-41,Sayur-sayuran itu _____ kerana baru dipetik.,segar,layu,busuk,kering,A
-42,Mereka saling _____ semasa bergotong-royong.,bantu-membantu,membantu,dibantu,bantuan,A
-43,Air sungai itu mengalir dengan sangat _____ selepas hujan lebat.,deras,perlahan,lambat,cepat,A
-44,Kakak sedang _____ nasi di dapur.,menanak,merebus,menggoreng,membakar,A
-45,SJKC Qun Xian telah memenangi tempat _____ dalam pertandingan itu.,pertama,satu,kesatu,awal,A
-46,Pelajar itu didenda kerana selalu datang _____ ke sekolah.,lewat,awal,cepat,pantas,A
-47,Dia bercita-cita untuk menjadi seorang _____ yang berjaya.,usahawan,peniaga,penjual,pembeli,A
-48,Kotak yang _____ itu tidak terangkat oleh adik.,berat,ringan,nipis,tebal,A
-49,Perabot rumahnya diperbuat daripada kayu _____ .,jati,getah,cengal,meranti,A
-50,Mereka bersorak dengan _____ apabila pasukan mereka menang.,gembira,sedih,marah,kecewa,A
-51,Ahmad adalah anak _____ dalam keluarganya.,bongsu,sulung,tengah,tunggal,B
-52,Pertandingan bercerita itu terbuka _____ murid tahap satu.,kepada,pada,di,ke,A
-53,Lampu isyarat itu bertukar warna daripada merah _____ hijau.,kepada,pada,ke,dari,A
-54,Hadiah ini adalah _____ ibu sempena Hari Ibu.,untuk,daripada,dari,pada,A
-55,Hati-hati semasa menyeberang jalan _____ tidak dilanggar kereta.,supaya,kerana,lalu,sambil,A
-56,Buah rambutan itu sangat _____ rasanya.,manis,pahit,masin,masam,A
-57,Penduduk kampung sedang _____ balai raya.,membersihkan,kebersihan,pembersihan,dibersihkan,A
-58,Tolong _____ tingkap itu kerana hari hendak hujan.,tutup,tutupkan,penutup,ditutup,B
-59,_____ helai daun kering gugur ke tanah.,Beberapa,Semua,Setiap,Seluruh,A
-60,Azim tidak hadir ke sekolah _____ demam panas.,kerana,hingga,agar,kalau,A
-61,Perompak itu telah ditangkap oleh pihak _____ .,polis,tentera,bomba,hospital,A
-62,Kawasan taman permainan itu _____ oleh pihak majlis perbandaran.,diperindah,keindahan,mengindahkan,indah,A
-63,Kereta mewah itu dipandu dengan amat _____ sekali.,laju,pantas,deras,lambat,A
-64,_____ tidak dibenarkan masuk ke kawasan larangan ini.,Anda,Kamu,Awak,Mereka,A
-65,Majlis itu dimulakan dengan _____ doa.,bacaan,membaca,pembaca,dibaca,A
-66,Kerjasama _____ ibu bapa dan guru amat penting.,antara,dalam,pada,kepada,A
-67,Dia terpaksa beratur panjang di kaunter _____ .,pembayaran,bayaran,membayar,dibayar,A
-68,_____ kasut sukan itu telah rosak.,Sepasang,Sebelah,Satu,Sehelai,A
-69,Penduduk taman perumahan itu mengadakan rondaan _____ malam.,setiap,semua,beberapa,segala,A
-70,Kucing kesayangannya mati _____ dilanggar lori.,akibat,sebab,kerana,untuk,A
-71,Kerajaan menggalakkan rakyat _____ barangan buatan Malaysia.,membeli,belian,pembeli,dibeli,A
-72,Kasut sekolahnya masih _____ walaupun sudah lama dipakai.,putih,hitam,kuning,merah,A
-73,Mereka sekeluarga akan _____ ke luar negara pada cuti sekolah nanti.,melancong,pelancong,lancongan,dilancong,A
-74,Harga barang runcit itu semakin _____ dari sehari ke sehari.,mahal,murah,rendah,tinggi,A
-75,Dia sangat sedih _____ menerima berita buruk itu.,apabila,lalu,kerana,tetapi,A
-76,Pak Cik Muthu _____ rumput di halaman rumahnya.,mesin,memesin,bermesin,termesin,B
-77,Kereta api itu akan bertolak dari stesen pada pukul lapan _____ .,malam,siang,pagi,petang,C
-78,Peserta pertandingan nyanyian itu mempunyai suara yang _____ .,merdu,sumbang,garau,serak,A
-79,Bangunan yang _____ itu ialah Menara Berkembar Petronas.,tinggi,rendah,panjang,pendek,A
-80,Anak kucing itu sedang _____ di bawah kerusi.,mengiau,menyalak,Menderam,Mengaum,A
-81,Warna bendera Malaysia terdiri daripada merah putih biru dan _____ .,kuning,hijau,hitam,ungu,A
-82,Ayah menanam _____ pokok rambutan di dusunnya.,beberapa,semua,tiap-tiap,para,A
-83,Mereka berbual-bual di pondok itu sehingga _____ malam.,larut,awal,siang,petang,A
-84,Kain songket itu ditenun dengan benang _____ .,emas,perak,besi,tembaga,A
-85,Sayur kangkung itu sesuai ditanam di kawasan yang _____ .,berair,kering,gontang,tandus,A
-86,Ketua kelas mengarahkan semua murid supaya _____ semasa guru tiada.,senyap,bising,riuh,diam,A
-87,Mereka terpaksa _____ sungai yang deras itu menggunakan jambatan gantung.,menyeberangi,menyeberang,seberang,keseberangan,A
-88,Pokok durian itu berbuah lebat pada _____ ini.,musim,masa,waktu,zaman,A
-89,Sikap suka _____ barang orang lain adalah amalan yang buruk.,mencuri,meminjam,membeli,meminta,A
-90,Ibu menyimpan wang di dalam _____ .,bank,sekolah,pejabat pos,balai polis,A
-91,Tingkap bilik itu terbuka kerana ditiup _____ yang kencang.,angin,ribut,taufan,udara,A
-92,Pemuda itu sentiasa _____ bersenam pada waktu petang.,rajin,malas,segan,malu,A
-93,Pasukan keselamatan berjaya _____ kumpulan pengganas itu.,menumpaskan,ditumpaskan,ketumpasan,tertumpas,A
-94,Luka di kakinya telah _____ selepas disapu ubat.,sembuh,sakit,pedih,bisa,A
-95,Anak-anak haruslah menghormati ibu bapa yang telah bersusah payah _____ mereka.,membesarkan,dibesarkan,pembesaran,kebesaran,A
-96,Suasana di kampung pada waktu pagi sangat _____ dan damai.,nyaman,bising,hiruk-pikuk,kelam-kabut,A
-97,Kamus dwibahasa itu sangat _____ untuk pelajar sekolah.,berguna,kegunaan,penggunaan,digunakan,A
-98,Mereka berkumpul di dewan untuk mendengar _____ daripada pengetua.,taklimat,berita,cerita,gosip,A
-99,Pertandingan rekacipta itu berjaya mencungkil _____ pelajar.,bakat,rupa,gaya,suara,A
-100,Majlis perpisahan itu diakhiri dengan acara _____ cenderamata.,penyampaian,menyampaikan,disampaikan,sampai,A
+﻿id,topik,aras,soalan,A,B,C,D,jawapan
+AKIDAH-01,AKIDAH,sederhana,Apakah maksud akidah?,Amalan harian,Pegangan dan kepercayaan,Peraturan hidup,Ibadah khusus,B
+AKIDAH-02,AKIDAH,sederhana,"Antara berikut, yang manakah termasuk dalam rukun iman?",Solat lima waktu,Percaya kepada malaikat,Berpuasa,Menunaikan haji,B
+AKIDAH-03,AKIDAH,sederhana,Beriman kepada Allah bermaksud…,Mengetahui kewujudan-Nya sahaja,Meyakini dan mentaatinya,Menyebut nama-Nya,Menghafal sifat-Nya,B
+AKIDAH-04,AKIDAH,sederhana,Apakah maksud beriman kepada malaikat?,Menganggap malaikat seperti manusia,Percaya malaikat makhluk Allah yang taat,Menyembah malaikat,Menghafal nama malaikat sahaja,B
+AKIDAH-05,AKIDAH,sederhana,Malaikat dicipta daripada…,Tanah,Api,Cahaya,Air,C
+AKIDAH-06,AKIDAH,sederhana,Apakah tugas malaikat Jibril?,Menurunkan hujan,Menyampaikan wahyu,Mencabut nyawa,Menulis amalan,B
+AKIDAH-07,AKIDAH,sederhana,Apakah maksud beriman kepada kitab?,Membaca semua kitab,Percaya kitab diturunkan Allah,Menghafal isi kitab,Menyimpan kitab,B
+AKIDAH-08,AKIDAH,sederhana,Kitab Al-Quran diturunkan kepada…,Nabi Musa,Nabi Isa,Nabi Muhammad,Nabi Ibrahim,C
+AKIDAH-09,AKIDAH,sederhana,Apakah maksud beriman kepada rasul?,Menyebut nama rasul,Percaya dan mengikuti ajaran mereka,Menghafal kisah mereka,Mengetahui bilangan mereka,B
+AKIDAH-10,AKIDAH,sederhana,Rasul mempunyai sifat…,Suka berdusta,Amanah,Pelupa,Lalai,B
+AKIDAH-11,AKIDAH,sederhana,Apakah maksud beriman kepada hari kiamat?,Mengetahui bila berlaku,Percaya ia pasti berlaku,Mengira tarikhnya,Melihat tanda sahaja,B
+AKIDAH-12,AKIDAH,sederhana,Apakah maksud qada’?,Ketentuan Allah sejak azali,Kejadian manusia,Amalan manusia,Kehidupan dunia,A
+AKIDAH-13,AKIDAH,sederhana,Apakah maksud qadar?,Ketentuan yang berlaku,Perbuatan manusia,Takdir yang belum berlaku,Kehendak manusia,A
+AKIDAH-14,AKIDAH,sederhana,"Antara berikut, yang manakah sifat wajib bagi Allah?",Lemah,Berkuasa,Mengantuk,Lupa,B
+AKIDAH-15,AKIDAH,sederhana,Apakah maksud Allah Maha Mendengar?,Mendengar sebahagian,Mendengar semua tanpa alat,Mendengar dengan telinga,Mendengar suara kuat sahaja,B
+AKIDAH-16,AKIDAH,sederhana,Apakah maksud Allah Maha Melihat?,Melihat waktu siang sahaja,Melihat semua tanpa batas,Melihat dengan mata,Melihat benda besar sahaja,B
+AKIDAH-17,AKIDAH,sederhana,Rasul dipilih daripada kalangan…,Malaikat,Jin,Manusia,Haiwan,C
+AKIDAH-18,AKIDAH,sederhana,Bilangan rukun iman ialah…,4,5,6,7,C
+AKIDAH-19,AKIDAH,sederhana,Apakah maksud kufur?,Percaya sepenuhnya,Tidak percaya kepada Allah,Menghafal Al-Quran,Mengamalkan ibadah,B
+AKIDAH-20,AKIDAH,sederhana,Apakah maksud syirik?,Menyembah Allah,Menyekutukan Allah,Mengingati Allah,Mentaati Allah,B
+AKIDAH-21,AKIDAH,sederhana,"Antara berikut, manakah contoh syirik?",Solat,Berdoa kepada selain Allah,Membaca Al-Quran,Bersedekah,B
+AKIDAH-22,AKIDAH,sederhana,Apakah maksud iman?,Percaya di mulut sahaja,"Percaya dengan hati, lisan dan amal",Menghafal sahaja,Menulis sahaja,B
+AKIDAH-23,AKIDAH,sederhana,Apakah kesan beriman kepada Allah?,Menjadi sombong,Tenang dan taat,Lalai,Takut manusia,B
+AKIDAH-24,AKIDAH,sederhana,Apakah maksud nabi?,Pembawa kitab sahaja,Manusia pilihan Allah,Malaikat,Jin,B
+AKIDAH-25,AKIDAH,sederhana,"Semua rasul adalah nabi, tetapi…",Semua nabi adalah rasul,Tidak semua nabi adalah rasul,Semua manusia adalah nabi,Tiada beza,B
+AKIDAH-26,AKIDAH,tinggi,Seorang murid percaya Allah wujud tetapi tidak solat. Apakah masalahnya?,Tidak tahu,Iman tidak sempurna,Terlalu rajin,Tiada masalah,B
+AKIDAH-27,AKIDAH,tinggi,"Jika seseorang percaya kepada bomoh lebih daripada Allah, ini menunjukkan…",Iman kuat,Syirik,Bijak,Berani,B
+AKIDAH-28,AKIDAH,tinggi,Mengapakah malaikat tidak pernah derhaka kepada Allah?,Mereka tiada nafsu,Mereka manusia,Mereka bebas,Mereka kuat,A
+AKIDAH-29,AKIDAH,tinggi,Apakah hikmah beriman kepada hari kiamat?,Takut tanpa sebab,Mendorong berbuat baik,Menjadi malas,Tidak peduli,B
+AKIDAH-30,AKIDAH,tinggi,Apakah kesan tidak percaya kepada qada’ dan qadar?,Redha,Mudah putus asa,Tenang,Sabar,B
+AKIDAH-31,AKIDAH,tinggi,Mengapakah rasul diutuskan kepada manusia?,Untuk hiburan,Memberi petunjuk,Untuk kekayaan,Untuk kuasa,B
+AKIDAH-32,AKIDAH,tinggi,Apakah beza malaikat dan manusia dari sudut akidah?,Malaikat berdosa,Malaikat sentiasa taat,Manusia tiada akal,Malaikat makan,B
+AKIDAH-33,AKIDAH,tinggi,Jika seseorang hanya percaya sebahagian rukun iman…,Iman sempurna,Iman tidak lengkap,Lebih baik,Tidak penting,B
+AKIDAH-34,AKIDAH,tinggi,Apakah kesan memahami sifat Allah?,Takut tanpa sebab,Lebih mengenal dan taat,Menjadi sombong,Tidak berubah,B
+AKIDAH-35,AKIDAH,tinggi,Mengapakah syirik dosa paling besar?,Mudah,Tidak diampunkan jika tidak bertaubat,Kecil,Biasa,B
+AKIDAH-36,AKIDAH,tinggi,Bagaimanakah cara menguatkan iman?,Bermain,Ibadah dan ilmu,Tidur,Makan,B
+AKIDAH-37,AKIDAH,tinggi,"Jika seseorang diuji, apakah kaitannya dengan qada’ dan qadar?",Tiada kaitan,Ketentuan Allah,Salah manusia sahaja,Nasib semata-mata,B
+AKIDAH-38,AKIDAH,tinggi,Apakah sikap terbaik apabila ditimpa musibah?,Marah,Redha dan sabar,Menyalahkan orang,Putus asa,B
+AKIDAH-39,AKIDAH,tinggi,Mengapakah penting beriman kepada kitab?,Untuk hafal,Sebagai panduan hidup,Untuk simpan,Untuk cerita,B
+AKIDAH-40,AKIDAH,tinggi,"Jika seseorang tidak percaya rasul, apakah kesannya?",Iman lengkap,Iman terbatal,Lebih baik,Tiada kesan,B
+AKIDAH-41,AKIDAH,tinggi,Apakah tanda orang beriman kepada Allah?,Sombong,Taat perintah-Nya,Lalai,Takut manusia,B
+AKIDAH-42,AKIDAH,tinggi,Mengapakah iman perlu dijaga?,Supaya terkenal,Mudah terjejas,Supaya kaya,Supaya kuat,B
+AKIDAH-43,AKIDAH,tinggi,Apakah kesan syirik dalam kehidupan?,Tenang,Rosak akidah,Bahagia,Berjaya,B
+AKIDAH-44,AKIDAH,tinggi,Bagaimanakah cara menjauhi syirik?,Abaikan,Belajar akidah dan tauhid,Ikut orang,Diam,B
+AKIDAH-45,AKIDAH,tinggi,Apakah peranan akidah dalam kehidupan Muslim?,Tidak penting,Asas utama kehidupan,Sekadar teori,Untuk peperiksaan,B
+AKIDAH-46,AKIDAH,tinggi,Mengapakah iman boleh bertambah dan berkurang?,Tiada sebab,Bergantung kepada amalan,Bergantung kepada umur,Bergantung kepada kawan,B
+AKIDAH-47,AKIDAH,tinggi,Apakah kesan meninggalkan ajaran akidah?,Tiada apa,Sesat,Bijak,Kuat,B
+AKIDAH-48,AKIDAH,tinggi,Bagaimanakah cara terbaik mempelajari akidah?,Dengar sahaja,Belajar dan faham,Hafal sahaja,Abaikan,B
+AKIDAH-49,AKIDAH,tinggi,Apakah hubungan iman dan amal?,Tiada kaitan,Saling berkaitan,Berlawanan,Tidak penting,B
+AKIDAH-50,AKIDAH,tinggi,Apakah kesimpulan tentang akidah?,Tidak penting,Asas keimanan,Sekadar ilmu,Hanya teori,B
+ALQURAN-01,ALQURAN,sederhana,Mengapakah Al-Quran diturunkan secara berperingkat?,Supaya mudah difahami dan diamalkan,Supaya cepat dihafal,Supaya pendek,Supaya mudah ditulis,A
+ALQURAN-02,ALQURAN,sederhana,Apakah kepentingan mempelajari tajwid ketika membaca Al-Quran?,Supaya suara lebih kuat,Supaya bacaan lebih tepat dan betul,Supaya cepat habis,Supaya orang kagum,B
+ALQURAN-03,ALQURAN,sederhana,Mengapakah Surah Al-Fatihah wajib dibaca dalam solat?,Kerana surah paling pendek,Kerana rukun solat,Kerana mudah dihafal,Kerana selalu dibaca,B
+ALQURAN-04,ALQURAN,sederhana,Apakah pengajaran utama daripada kisah Nabi Yusuf dalam Al-Quran?,Kepentingan kekayaan,Kesabaran dan kejujuran,Keberanian berperang,Kepintaran berniaga,B
+ALQURAN-05,ALQURAN,sederhana,Mengapakah kita digalakkan bertadabbur Al-Quran?,Untuk menghafal lebih cepat,Untuk memahami dan menghayati makna,Untuk membaca dengan kuat,Untuk menunjuk-nunjuk,B
+ALQURAN-06,ALQURAN,sederhana,Apakah kesan membaca Al-Quran dengan betul dalam kehidupan harian?,Menjadi lebih sombong,Mendapat ketenangan hati,Menjadi terkenal,Mendapat kekayaan,B
+ALQURAN-07,ALQURAN,sederhana,Mengapakah Al-Quran diturunkan dalam bahasa Arab?,Bahasa paling lama,Bahasa Nabi Muhammad dan kaumnya,Bahasa paling mudah,Bahasa semua manusia,B
+ALQURAN-08,ALQURAN,sederhana,Apakah hikmah surah Makkiyah lebih menekankan akidah?,Supaya cepat hafal,Untuk menguatkan keimanan,Untuk belajar hukum,Untuk belajar sejarah,B
+ALQURAN-09,ALQURAN,sederhana,Mengapakah Surah Al-Baqarah digalakkan dibaca di rumah?,Supaya rumah besar,Untuk menghalau syaitan,Untuk menambah rezeki sahaja,Untuk cepat tidur,B
+ALQURAN-10,ALQURAN,sederhana,Apakah tindakan terbaik jika tidak memahami ayat Al-Quran?,Abaikan,Rujuk guru atau tafsir,Tukar ayat,Hentikan bacaan,B
+ALQURAN-11,ALQURAN,sederhana,Mengapakah menjaga adab membaca Al-Quran penting?,Supaya nampak pandai,Untuk menghormati kitab suci,Supaya cepat habis,Supaya orang puji,B
+ALQURAN-12,ALQURAN,sederhana,Apakah kesan menghafal Al-Quran sejak kecil?,Mudah lupa,Membentuk disiplin dan ingatan kuat,Menjadi malas,Tidak perlu belajar lain,B
+ALQURAN-13,ALQURAN,sederhana,Mengapakah ayat Kursi sering dibaca sebelum tidur?,Untuk cepat tidur,Sebagai perlindungan diri,Untuk mimpi indah,Untuk hafal sahaja,B
+ALQURAN-14,ALQURAN,sederhana,Apakah kaitan Al-Quran dengan akhlak seorang Muslim?,Tiada kaitan,Membentuk akhlak mulia,Hanya untuk ibadah,Hanya untuk hafalan,B
+ALQURAN-15,ALQURAN,sederhana,Mengapakah kita perlu berwuduk ketika memegang mushaf?,Supaya cepat hafal,Untuk menjaga kesucian,Supaya tidak koyak,Supaya ringan,B
+ALQURAN-16,ALQURAN,sederhana,Apakah manfaat memahami kisah-kisah dalam Al-Quran?,Untuk hiburan,Untuk dijadikan pengajaran hidup,Untuk cerita kepada orang,Untuk hafal sahaja,B
+ALQURAN-17,ALQURAN,sederhana,Mengapakah penting membezakan surah Makkiyah dan Madaniyah?,Untuk hafalan,Untuk memahami konteks ayat,Untuk pertandingan,Untuk menulis,B
+ALQURAN-18,ALQURAN,sederhana,Apakah kesan membaca Al-Quran tanpa tajwid?,Lebih cepat,Boleh mengubah makna,Lebih sedap,Tiada kesan,B
+ALQURAN-19,ALQURAN,sederhana,Apakah hikmah kisah Ashabul Kahfi?,Kepentingan tidur,Keimanan dan perlindungan Allah,Kepentingan masa,Kepintaran,B
+ALQURAN-20,ALQURAN,sederhana,Mengapakah umat Islam digalakkan membaca Al-Quran setiap hari?,Supaya cepat habis,Untuk mendapat pahala dan petunjuk,Supaya terkenal,Supaya dipuji,B
+ALQURAN-21,ALQURAN,sederhana,Apakah fungsi utama Al-Quran dalam kehidupan manusia?,Buku sejarah,Petunjuk hidup,Buku cerita,Buku latihan,B
+ALQURAN-22,ALQURAN,sederhana,Mengapakah kita perlu menghormati orang yang membaca Al-Quran?,Supaya dipuji,Kerana membaca kalam Allah,Supaya senyap,Supaya cepat habis,B
+ALQURAN-23,ALQURAN,sederhana,Apakah kepentingan memahami maksud ayat Al-Quran?,Supaya cepat hafal,Supaya boleh diamalkan,Supaya pandai bercakap,Supaya nampak hebat,B
+ALQURAN-24,ALQURAN,sederhana,Apakah sikap terbaik ketika mendengar bacaan Al-Quran?,Bercakap,Mendengar dengan khusyuk,Bermain,Tidur,B
+ALQURAN-25,ALQURAN,sederhana,Mengapakah Al-Quran sesuai sepanjang zaman?,Kerana pendek,Kandungannya lengkap dan relevan,Kerana bahasa Arab,Kerana mudah,B
+ALQURAN-26,ALQURAN,tinggi,Seorang murid membaca Al-Quran tanpa tajwid. Apakah kesan paling tepat?,Tiada kesan,Boleh menukar maksud ayat,Lebih cepat,Lebih mudah,B
+ALQURAN-27,ALQURAN,tinggi,"Jika seseorang hanya membaca tanpa memahami, apakah yang kurang?",Suara,Penghayatan,Hafalan,Masa,B
+ALQURAN-28,ALQURAN,tinggi,Apakah tindakan terbaik jika rakan tidak menghormati Al-Quran?,Biarkan,Tegur dengan baik,Marah kuat,Jauhkan diri,B
+ALQURAN-29,ALQURAN,tinggi,Seorang pelajar ingin menjadi hafiz. Apakah amalan paling penting?,Bermain,Konsisten menghafal dan ulang,Tidur,Menonton TV,B
+ALQURAN-30,ALQURAN,tinggi,Mengapakah kisah dalam Al-Quran diulang dalam beberapa surah?,Supaya panjang,Untuk penegasan dan pengajaran,Untuk hafalan,Untuk hiasan,B
+ALQURAN-31,ALQURAN,tinggi,Bagaimanakah Al-Quran membentuk masyarakat yang baik?,Dengan cerita sahaja,Dengan memberi panduan hidup,Dengan hukuman sahaja,Dengan hafalan,B
+ALQURAN-32,ALQURAN,tinggi,"Jika seseorang mengamalkan ajaran Al-Quran, apakah kesannya?",Hidup teratur,Menjadi malas,Menjadi sombong,Menjadi lemah,A
+ALQURAN-33,ALQURAN,tinggi,Mengapakah penting membaca Al-Quran dengan istiqamah?,Supaya cepat habis,Untuk membina hubungan dengan Allah,Supaya terkenal,Supaya pandai sahaja,B
+ALQURAN-34,ALQURAN,tinggi,Apakah kesan tidak mengamalkan Al-Quran?,Tiada kesan,Hilang panduan hidup,Menjadi kuat,Menjadi bijak,B
+ALQURAN-35,ALQURAN,tinggi,Bagaimanakah cara terbaik mendekati Al-Quran?,Membaca sahaja,"Membaca, memahami dan mengamalkan",Menghafal sahaja,Menulis sahaja,B
+ALQURAN-36,ALQURAN,tinggi,Apakah keutamaan mengajar Al-Quran kepada orang lain?,Mendapat pujian,Mendapat pahala berterusan,Menjadi terkenal,Mendapat hadiah,B
+ALQURAN-37,ALQURAN,tinggi,"Jika pelajar sibuk, apakah cara terbaik tetap membaca Al-Quran?",Tinggalkan,Baca sedikit tetapi konsisten,Tunggu cuti,Hanya hujung minggu,B
+ALQURAN-38,ALQURAN,tinggi,Apakah kesan memahami hukum dalam Al-Quran?,Mengelirukan,Membantu membuat keputusan betul,Menyusahkan,Tidak penting,B
+ALQURAN-39,ALQURAN,tinggi,Mengapakah Al-Quran disebut sebagai mukjizat?,Kerana tebal,Kerana tiada tandingan,Kerana lama,Kerana sukar,B
+ALQURAN-40,ALQURAN,tinggi,Bagaimanakah cara menghormati Al-Quran dalam kehidupan harian?,Letak merata-rata,Jaga adab dan amalkan,Baca sekali-sekala,Simpan sahaja,B
+ALQURAN-41,ALQURAN,tinggi,Apakah tindakan jika tersalah membaca ayat?,Abaikan,Betulkan segera,Teruskan sahaja,Berhenti membaca,B
+ALQURAN-42,ALQURAN,tinggi,Mengapakah penting belajar dengan guru Al-Quran?,Supaya cepat,Untuk bacaan yang betul,Supaya mudah,Supaya terkenal,B
+ALQURAN-43,ALQURAN,tinggi,Bagaimanakah Al-Quran membantu dalam membuat keputusan?,Tidak membantu,Memberi panduan yang jelas,Mengelirukan,Melambatkan,B
+ALQURAN-44,ALQURAN,tinggi,Apakah kesan membaca Al-Quran dengan khusyuk?,Mengantuk,Mendapat ketenangan,Cepat lupa,Bosan,B
+ALQURAN-45,ALQURAN,tinggi,Mengapakah penting menjaga hafazan Al-Quran?,Supaya cepat habis,Supaya tidak lupa,Supaya dipuji,Supaya pandai,B
+ALQURAN-46,ALQURAN,tinggi,Apakah hubungan Al-Quran dengan ilmu pengetahuan?,Tiada,Menggalakkan mencari ilmu,Menghalang,Tidak penting,B
+ALQURAN-47,ALQURAN,tinggi,Apakah kesan jika masyarakat mengabaikan Al-Quran?,Tiada perubahan,Berlaku kerosakan akhlak,Menjadi maju,Menjadi kuat,B
+ALQURAN-48,ALQURAN,tinggi,Bagaimanakah cara terbaik mengajak rakan membaca Al-Quran?,Paksa,Contoh teladan dan ajakan baik,Marah,Abaikan,B
+ALQURAN-49,ALQURAN,tinggi,"Mengapakah Al-Quran perlu diamalkan, bukan sekadar dibaca?",Supaya cepat,Untuk membentuk kehidupan,Supaya hafal,Supaya terkenal,B
+ALQURAN-50,ALQURAN,tinggi,Apakah kesimpulan utama tentang peranan Al-Quran?,Buku biasa,Panduan hidup lengkap,Buku sejarah,Buku cerita,B
+JAWI-01,JAWI,sederhana,Apakah ejaan Jawi bagi “buku”?,بوكو,بوکو,بوك,بوكي,B
+JAWI-02,JAWI,sederhana,Apakah ejaan Jawi bagi “sekolah”?,سكوله,سکوله,سکولاه,سكولاه,C
+JAWI-03,JAWI,sederhana,Apakah ejaan Jawi bagi “makan”?,ماكن,ماكان,مكن,ماكنن,A
+JAWI-04,JAWI,sederhana,Apakah ejaan Jawi bagi “minum”?,مينوم,منوم,مينم,منومم,A
+JAWI-05,JAWI,sederhana,Apakah ejaan Jawi bagi “rumah”?,رومه,رومح,رومة,رومهه,A
+JAWI-06,JAWI,sederhana,Apakah ejaan Jawi bagi “kawan”?,كاون,كاونن,كوان,كاون,A
+JAWI-07,JAWI,sederhana,Apakah ejaan Jawi bagi “baju”?,باجو,باج,باجوو,باجء,A
+JAWI-08,JAWI,sederhana,Apakah ejaan Jawi bagi “ikan”?,ايكن,ايكان,ايكنن,ايكانن,A
+JAWI-09,JAWI,sederhana,Apakah ejaan Jawi bagi “api”?,اڤي,افي,اڤ,اڤى,A
+JAWI-10,JAWI,sederhana,Apakah ejaan Jawi bagi “mata”?,مات,ماتا,متا,ماتن,B
+JAWI-11,JAWI,sederhana,Apakah ejaan Jawi bagi “kaki”?,كاكي,ككي,كاكيي,كاك,A
+JAWI-12,JAWI,sederhana,Apakah ejaan Jawi bagi “susu”?,سوسو,سسو,سوس,سسوا,A
+JAWI-13,JAWI,sederhana,Apakah ejaan Jawi bagi “bunga”?,بوڠا,بوڬا,بوڠ,بوڠه,A
+JAWI-14,JAWI,sederhana,Apakah ejaan Jawi bagi “kucing”?,كوچيڠ,كچيڠ,كوجيڠ,كوچڠ,A
+JAWI-15,JAWI,sederhana,Apakah ejaan Jawi bagi “jalan”?,جالن,جالان,جالنن,جالانن,A
+JAWI-16,JAWI,sederhana,Apakah ejaan Jawi bagi “pensel”?,ڤنسل,ڤنسيل,ڤنثل,ڤنسلء,A
+JAWI-17,JAWI,sederhana,Apakah ejaan Jawi bagi “guru”?,ڬورو,ڬرو,كورو,ڬور,A
+JAWI-18,JAWI,sederhana,Apakah ejaan Jawi bagi “langit”?,لاڠيت,لڠيت,لاڠت,لڠت,A
+JAWI-19,JAWI,sederhana,Apakah ejaan Jawi bagi “air”?,اير,ائر,ايرر,ااير,A
+JAWI-20,JAWI,sederhana,Apakah ejaan Jawi bagi “hujan”?,هوجن,هوجان,هجن,هوجنن,A
+JAWI-21,JAWI,sederhana,Apakah ejaan Jawi bagi “panas”?,ڤانس,ڤاناس,ڤنس,ڤانسن,A
+JAWI-22,JAWI,sederhana,Apakah ejaan Jawi bagi “besar”?,بسر,بيسار,بسرر,بسار,D
+JAWI-23,JAWI,sederhana,Apakah ejaan Jawi bagi “kecil”?,كچيل,كچل,كچيلل,كچيلن,A
+JAWI-24,JAWI,sederhana,Apakah ejaan Jawi bagi “tinggi”?,تيڠڬي,تيڠي,تيڠڬ,تيڠڬين,A
+JAWI-25,JAWI,sederhana,Apakah ejaan Jawi bagi “rendah”?,رنده,رندح,رنداه,رندهه,A
+JAWI-26,JAWI,tinggi,Apakah ejaan Jawi bagi “bermain”?,برمين,برماين,برمينن,برماينن,B
+JAWI-27,JAWI,tinggi,Apakah ejaan Jawi bagi “membaca”?,ممباچ,ممباچا,ممبچ,ممباچن,B
+JAWI-28,JAWI,tinggi,Apakah ejaan Jawi bagi “menulis”?,منوليس,منولس,منوليسن,منولس,A
+JAWI-29,JAWI,tinggi,Apakah ejaan Jawi bagi “belajar”?,بلاجر,بلاجار,بلاجرن,بلاجارن,A
+JAWI-30,JAWI,tinggi,Apakah ejaan Jawi bagi “berjalan”?,برجالن,برجالان,برجالنن,برجالانن,A
+JAWI-31,JAWI,tinggi,Apakah ejaan Jawi bagi “makanan”?,ماكنن,ماكانن,ماكن,ماكننن,A
+JAWI-32,JAWI,tinggi,Apakah ejaan Jawi bagi “minuman”?,مينومن,مينوم,مينومنن,مينومم,A
+JAWI-33,JAWI,tinggi,Apakah ejaan Jawi bagi “permainan”?,ڤرماينن,ڤرمينن,ڤرماين,ڤرمايننن,A
+JAWI-34,JAWI,tinggi,Apakah ejaan Jawi bagi “kebaikan”?,كبايكن,كبايكنن,كبايك,كبايكان,A
+JAWI-35,JAWI,tinggi,Apakah ejaan Jawi bagi “kebersihan”?,كبيرسيهن,كبيرسيهان,كبيرسيه,كبيرسيهنن,A
+JAWI-36,JAWI,tinggi,Apakah ejaan Jawi bagi “persahabatan”?,ڤرسهابتن,ڤرسهابتان,ڤرسهابت,ڤرسهابتنن,A
+JAWI-37,JAWI,tinggi,Apakah ejaan Jawi bagi “kekuatan”?,ككواتن,ككواتان,ككوات,ككواتنن,A
+JAWI-38,JAWI,tinggi,Apakah ejaan Jawi bagi “kesihatan”?,كسيهتن,كسيهتان,كسيهت,كسيهتنن,A
+JAWI-39,JAWI,tinggi,Apakah ejaan Jawi bagi “perjalanan”?,ڤرجالنن,ڤرجالان,ڤرجالن,ڤرجالانن,A
+JAWI-40,JAWI,tinggi,Apakah ejaan Jawi bagi “kehidupan”?,كهيدوڤن,كهيدوڤان,كهيدوڤ,كهيدوڤنن,A
+JAWI-41,JAWI,tinggi,Apakah ejaan Jawi bagi “pengajaran”?,ڤڠاجرن,ڤڠاجاران,ڤڠاجر,ڤڠاجرنن,A
+JAWI-42,JAWI,tinggi,Apakah ejaan Jawi bagi “kemerdekaan”?,كمرديكأن,كمرديكان,كمرديكأنن,كمرديك,A
+JAWI-43,JAWI,tinggi,Apakah ejaan Jawi bagi “masyarakat”?,مشاركت,مشاراكهت,مشاراكت,مشاراكتن,C
+JAWI-44,JAWI,tinggi,Apakah ejaan Jawi bagi “sekolahan”?,سكولهن,سكولاهن,سكولاه,سكولهنن,A
+JAWI-45,JAWI,tinggi,Apakah ejaan Jawi bagi “pendidikan”?,ڤنديديقن,ڤنديديقان,ڤنديديق,ڤنديديقنن,A
+JAWI-46,JAWI,tinggi,Apakah ejaan Jawi bagi “kemajuan”?,كماجوان,كماجون,كماجوانن,كماجو,A
+JAWI-47,JAWI,tinggi,Apakah ejaan Jawi bagi “keamanan”?,كامانن,كامان,كامانن,كامانن,A
+JAWI-48,JAWI,tinggi,Apakah ejaan Jawi bagi “perpaduan”?,ڤرڤادوان,ڤرڤادون,ڤرڤادوانن,ڤرڤادو,A
+JAWI-49,JAWI,tinggi,Apakah ejaan Jawi bagi “kejujuran”?,كجوجورن,كجوجوران,كجوجور,كجوجورنن,A
+JAWI-50,JAWI,tinggi,Apakah ejaan Jawi bagi “tanggungjawab”?,تڠڬوڠجاواب,تڠڬوڠجواب,تڠوڠجواب,تڠڬوڠجاوابن,A
+SIRAH-01,SIRAH,sederhana,Apakah maksud sirah?,Cerita hiburan,Sejarah kehidupan Rasulullah,Kisah dongeng,Cerita sahabat sahaja,B
+SIRAH-02,SIRAH,sederhana,Mengapakah kita mempelajari sirah Rasulullah?,Untuk hiburan,Untuk mencontohi akhlak Baginda,Untuk hafalan sahaja,Untuk cerita semata-mata,B
+SIRAH-03,SIRAH,sederhana,Di manakah Nabi Muhammad dilahirkan?,Madinah,Mekah,Taif,Yaman,B
+SIRAH-04,SIRAH,sederhana,Bilakah Nabi Muhammad dilahirkan?,Tahun Hijrah,Tahun Gajah,Tahun Perang,Tahun Mekah,B
+SIRAH-05,SIRAH,sederhana,Siapakah ibu Nabi Muhammad?,Khadijah,Aminah,Aisyah,Fatimah,B
+SIRAH-06,SIRAH,sederhana,Siapakah bapa Nabi Muhammad?,Abu Talib,Abdullah,Abdul Muttalib,Hamzah,B
+SIRAH-07,SIRAH,sederhana,Siapakah yang menjaga Nabi selepas ibunya wafat?,Abu Talib,Abdul Muttalib,Hamzah,Umar,B
+SIRAH-08,SIRAH,sederhana,Apakah pekerjaan Nabi sebelum menjadi rasul?,Petani,Pedagang,Tentera,Guru,B
+SIRAH-09,SIRAH,sederhana,Apakah gelaran Nabi Muhammad sebelum menjadi rasul?,Al-Hakim,Al-Amin,Al-Faqih,Al-Qari,B
+SIRAH-10,SIRAH,sederhana,Siapakah isteri pertama Nabi Muhammad?,Aisyah,Khadijah,Hafsah,Saudah,B
+SIRAH-11,SIRAH,sederhana,Di manakah Nabi menerima wahyu pertama?,Gua Thur,Gua Hira,Masjidil Haram,Madinah,B
+SIRAH-12,SIRAH,sederhana,Siapakah orang pertama memeluk Islam?,Abu Bakar,Khadijah,Ali,Umar,B
+SIRAH-13,SIRAH,sederhana,Apakah reaksi masyarakat Mekah terhadap dakwah Nabi?,Terus menerima,Menentang,Tidak peduli,Semua setuju,B
+SIRAH-14,SIRAH,sederhana,Mengapakah Nabi berhijrah ke Madinah?,Berniaga,Berdakwah dan menyelamatkan umat,Melawat,Berehat,B
+SIRAH-15,SIRAH,sederhana,Apakah maksud hijrah?,Berjalan,Berpindah kerana agama,Melancong,Berperang,B
+SIRAH-16,SIRAH,sederhana,Siapakah sahabat yang menemani Nabi ketika hijrah?,Umar,Abu Bakar,Ali,عثمان,B
+SIRAH-17,SIRAH,sederhana,Apakah nama gua tempat Nabi bersembunyi semasa hijrah?,Hira,Thur,Safa,Marwah,B
+SIRAH-18,SIRAH,sederhana,Apakah tindakan Nabi apabila tiba di Madinah?,Berehat,Membina masjid,Pulang semula,Berdagang,B
+SIRAH-19,SIRAH,sederhana,Apakah nama masjid pertama dibina Nabi?,Masjid Nabawi,Masjid Quba,Masjid Aqsa,Masjid Haram,B
+SIRAH-20,SIRAH,sederhana,Apakah tujuan Piagam Madinah?,Untuk berperang,Mengatur kehidupan masyarakat,Untuk berniaga,Untuk belajar,B
+SIRAH-21,SIRAH,sederhana,Apakah pengajaran daripada kesabaran Nabi di Mekah?,Mudah putus asa,Sabar dalam dakwah,Marah,Diam sahaja,B
+SIRAH-22,SIRAH,sederhana,Apakah sifat utama Nabi dalam berdakwah?,Kasar,Lemah lembut,Sombong,Diam,B
+SIRAH-23,SIRAH,sederhana,Apakah tujuan utama dakwah Nabi?,Kekayaan,Menyampaikan ajaran Islam,Kuasa,Populariti,B
+SIRAH-24,SIRAH,sederhana,Apakah maksud sahabat?,Orang Islam biasa,Orang yang bertemu Nabi dan beriman,Orang kaya,Orang Mekah sahaja,B
+SIRAH-25,SIRAH,sederhana,Mengapakah Nabi berjaya menyebarkan Islam?,Kekerasan,Akhlak dan kesabaran,Kekayaan,Kuasa,B
+SIRAH-26,SIRAH,tinggi,Mengapakah Nabi digelar Al-Amin?,Pandai bercakap,Jujur dan dipercayai,Berani,Kaya,B
+SIRAH-27,SIRAH,tinggi,"Jika masyarakat menolak kebenaran, apakah tindakan Nabi?",Berhenti,Terus berdakwah dengan sabar,Marah,Lari,B
+SIRAH-28,SIRAH,tinggi,Apakah hikmah peristiwa hijrah?,Lari,Strategi menyebarkan Islam,Berehat,Melawat,B
+SIRAH-29,SIRAH,tinggi,Mengapakah Nabi membina masjid dahulu di Madinah?,Tempat tinggal,Pusat ibadah dan masyarakat,Tempat berniaga,Tempat rehat,B
+SIRAH-30,SIRAH,tinggi,Apakah kesan Piagam Madinah?,Pergaduhan,Keharmonian masyarakat,Perpecahan,Peperangan,B
+SIRAH-31,SIRAH,tinggi,Mengapakah Nabi tidak membalas kejahatan dengan kejahatan?,Takut,Berakhlak mulia,Lemah,Tidak mampu,B
+SIRAH-32,SIRAH,tinggi,Apakah pengajaran daripada dakwah Nabi secara rahsia?,Takut,Strategi bijak,Lemah,Tidak yakin,B
+SIRAH-33,SIRAH,tinggi,Mengapakah dakwah Nabi mendapat tentangan?,Tidak benar,Mengganggu kepercayaan lama,Lemah,Tidak jelas,B
+SIRAH-34,SIRAH,tinggi,Apakah kesan akhlak Nabi terhadap masyarakat?,Membenci,Menarik minat kepada Islam,Menolak,Takut,B
+SIRAH-35,SIRAH,tinggi,"Jika kita mencontohi akhlak Nabi, apakah hasilnya?",Dibenci,Disayangi masyarakat,Dijauhi,Takut,B
+SIRAH-36,SIRAH,tinggi,Apakah sikap Nabi ketika menghadapi ujian?,Putus asa,Sabar dan tawakal,Marah,Diam,B
+SIRAH-37,SIRAH,tinggi,Mengapakah penting mencontohi sirah Nabi?,Untuk cerita,Panduan hidup,Untuk hafal,Untuk peperiksaan,B
+SIRAH-38,SIRAH,tinggi,Apakah kesan tidak mengambil pengajaran sirah?,Tiada kesan,Hilang panduan hidup,Menjadi kuat,Bijak,B
+SIRAH-39,SIRAH,tinggi,Bagaimanakah Nabi menyatukan masyarakat Madinah?,Kekerasan,Perjanjian dan keadilan,Paksaan,Ancaman,B
+SIRAH-40,SIRAH,tinggi,Apakah sikap Nabi terhadap musuh?,Kejam,Pemaaf,Kasar,Bengis,B
+SIRAH-41,SIRAH,tinggi,Mengapakah Nabi berjaya sebagai pemimpin?,Kaya,Adil dan amanah,Kuat,Ramai pengikut,B
+SIRAH-42,SIRAH,tinggi,Apakah pengajaran daripada kehidupan Nabi sebagai anak yatim?,Lemah,Berdikari dan sabar,Malas,Takut,B
+SIRAH-43,SIRAH,tinggi,Apakah kesan dakwah Nabi kepada dunia?,Tiada,Menyebarkan Islam,Pergaduhan,Kekacauan,B
+SIRAH-44,SIRAH,tinggi,Bagaimanakah cara Nabi berdakwah kepada kanak-kanak?,Kasar,Lemah lembut,Marah,Diam,B
+SIRAH-45,SIRAH,tinggi,Mengapakah penting mengetahui sejarah Nabi?,Untuk cerita,Untuk mencontohi kehidupan,Untuk hafal,Untuk peperiksaan,B
+SIRAH-46,SIRAH,tinggi,Apakah sikap terbaik ketika berdakwah?,Kasar,Hikmah dan sabar,Marah,Paksa,B
+SIRAH-47,SIRAH,tinggi,Apakah kesan mencontohi kepimpinan Nabi?,Lemah,Adil dan dihormati,Ditolak,Dibenci,B
+SIRAH-48,SIRAH,tinggi,Mengapakah Nabi tidak berputus asa dalam dakwah?,Degil,Tanggungjawab sebagai rasul,Suka mencuba,Terpaksa,B
+SIRAH-49,SIRAH,tinggi,Apakah hubungan sirah dengan kehidupan kita?,Tiada kaitan,Panduan kehidupan,Sekadar sejarah,Hiburan,B
+SIRAH-50,SIRAH,tinggi,Apakah kesimpulan utama daripada sirah Nabi?,Cerita lama,Contoh terbaik kehidupan,Kisah biasa,Tidak penting,B
+HADIS-01,HADIS,sederhana,Hadis “Sesungguhnya setiap amalan bergantung kepada niat” menunjukkan bahawa…,Niat hanya melengkapkan amalan,Niat menentukan penerimaan amalan,Amalan lebih utama daripada niat,Niat hanya diperlukan dalam ibadah khusus,B
+HADIS-02,HADIS,sederhana,Seseorang membantu rakan kerana ingin dipuji. Nilai amalan tersebut ialah…,Tetap tinggi kerana membantu,Kurang sempurna kerana bercampur niat,Tidak bernilai langsung,Sama seperti amalan ikhlas,B
+HADIS-03,HADIS,sederhana,Menjaga kebersihan dikaitkan dengan iman kerana…,Kebersihan melambangkan keperibadian Muslim,Kebersihan menunjukkan kekayaan,Kebersihan memudahkan ibadah sahaja,Kebersihan tuntutan masyarakat semata-mata,A
+HADIS-04,HADIS,sederhana,Larangan berkata kasar bertujuan…,Menjaga hubungan sesama manusia,Mengelakkan hukuman sahaja,Menunjukkan adab ketika bercakap,Mengelakkan pergaduhan sahaja,A
+HADIS-05,HADIS,sederhana,Maksud “senyuman itu sedekah” ialah…,Senyum sebagai tanda kesopanan,Senyum boleh menggembirakan orang lain,Senyum memberi ganjaran seperti sedekah,Senyum tanda keimanan,C
+HADIS-06,HADIS,sederhana,Mengapa kita disuruh berkata baik atau diam?,Untuk menjaga imej diri,Untuk mengelakkan dosa percakapan,Untuk menunjukkan kebijaksanaan,Untuk mengelakkan konflik semata-mata,B
+HADIS-07,HADIS,sederhana,Sifat jujur memberi kesan…,Mendapat kepercayaan orang lain,Disenangi dalam kebanyakan keadaan,Memudahkan urusan hidup,Mengelakkan kesalahan,A
+HADIS-08,HADIS,sederhana,Menuntut ilmu digalakkan supaya…,Menjadi insan berilmu dan beramal,Meningkatkan taraf hidup,Memperoleh kejayaan dunia,Mendapat pengiktirafan,A
+HADIS-09,HADIS,sederhana,Memberi salam penting kerana…,Menunjukkan adab sopan,Mengeratkan ukhuwah,Menjadi kebiasaan masyarakat,Menunjukkan identiti Muslim,B
+HADIS-10,HADIS,sederhana,Larangan mengumpat kerana…,Menjatuhkan maruah orang lain,Mengganggu hubungan,Menyebabkan dosa,Menimbulkan kebencian,C
+HADIS-11,HADIS,sederhana,Membantu tanpa disuruh menunjukkan…,Tanggungjawab,Keikhlasan,Keprihatinan,Kerajinan,B
+HADIS-12,HADIS,sederhana,Memulangkan barang yang dijumpai menunjukkan…,Kejujuran,Amanah,Disiplin,Keberanian,B
+HADIS-13,HADIS,sederhana,Menahan marah ketika dihina menunjukkan…,Kesabaran,Kekuatan dalaman,Pengamalan hadis,Kawalan emosi,C
+HADIS-14,HADIS,sederhana,Menyebarkan berita tidak sahih boleh menyebabkan…,Salah faham,Fitnah,Kekeliruan,Pergaduhan,B
+HADIS-15,HADIS,sederhana,Meleraikan pergaduhan rakan menunjukkan…,Keberanian,Kepimpinan,Mengamalkan nilai hadis,Tanggungjawab sosial,C
+HADIS-16,HADIS,sederhana,Sifat sombong dilarang kerana…,Menjatuhkan diri sendiri,Dibenci masyarakat,Merosakkan akhlak,Menjauhkan rahmat Allah,D
+HADIS-17,HADIS,sederhana,Belajar untuk menunjuk-nunjuk menyebabkan…,Amalan tidak ikhlas,Pahala berkurang,Niat rosak,Kurang keberkatan,C
+HADIS-18,HADIS,sederhana,Membantu secara ikhlas memberi kesan…,Mendapat pahala,Menenangkan hati,Disukai orang,Mendapat ganjaran,A
+HADIS-19,HADIS,sederhana,Menghormati jiran penting kerana…,Tuntutan agama,Menjaga keharmonian,Mengelakkan konflik,Menguatkan hubungan,A
+HADIS-20,HADIS,sederhana,Tidak menjaga lidah menyebabkan…,Dosa,Pergaduhan,Salah faham,Kebencian,A
+HADIS-21,HADIS,sederhana,Sanad merujuk kepada…,Rantaian penyampai hadis,Susunan perawi,Jalur periwayatan,Senarai perawi,A
+HADIS-22,HADIS,sederhana,Matan ialah…,Isi utama hadis,Kandungan maksud hadis,Teks hadis,Lafaz hadis,A
+HADIS-23,HADIS,sederhana,Hadis sahih bermaksud…,Hadis yang kuat,Hadis yang dipercayai,Hadis yang lengkap syarat,Hadis yang benar,C
+HADIS-24,HADIS,sederhana,Hadis dhaif ialah…,Hadis lemah,Hadis kurang kuat,Hadis tidak cukup syarat,Hadis diragui,C
+HADIS-25,HADIS,sederhana,Tokoh seperti Imam Bukhari terkenal kerana…,Mengumpul hadis sahih,Menyusun kitab hadis,Menapis hadis,Mengkaji sanad hadis,A
+HADIS-26,HADIS,tinggi,Kepentingan sanad ialah…,Menentukan sumber hadis,Menjamin kesahihan,Mengenal perawi,Menyusun hadis,B
+HADIS-27,HADIS,tinggi,Hadis palsu berbahaya kerana…,Mengelirukan umat,Menyimpang ajaran,Merosakkan akidah,Menjatuhkan agama,A
+HADIS-28,HADIS,tinggi,Perawi hadis mestilah…,Amanah,Jujur,Adil,Dipercayai,D
+HADIS-29,HADIS,tinggi,Ulama mengkaji hadis untuk…,Memelihara ajaran,Menentukan kesahihan,Menyaring hadis,Menyusun ilmu,A
+HADIS-30,HADIS,tinggi,Memahami hadis dengan betul akan…,Mengelakkan kesalahan,Membimbing amalan,Menepati ajaran,Menguatkan iman,B
+HADIS-31,HADIS,tinggi,Niat penting kerana…,Menentukan ganjaran,Menentukan nilai,Menentukan penerimaan,Menentukan tujuan,C
+HADIS-32,HADIS,tinggi,Hadis membantu konflik dengan…,Nasihat,Kesabaran,Pengawalan emosi,Sikap pemaaf,D
+HADIS-33,HADIS,tinggi,Tersilap bercakap kasar perlu…,Memohon maaf,Menyesal,Memperbaiki diri,Berdiam diri,A
+HADIS-34,HADIS,tinggi,Amanah penting kerana…,Membina kepercayaan,Menjaga hubungan,Menunjukkan tanggungjawab,Mengelakkan konflik,A
+HADIS-35,HADIS,tinggi,Hadis membentuk akhlak melalui…,Panduan hidup,Contoh Nabi,Nilai murni,Pendidikan rohani,B
+HADIS-36,HADIS,tinggi,Masyarakat berpegang hadis akan…,Sejahtera,Harmoni,Bersatu,Aman,B
+HADIS-37,HADIS,tinggi,Menilai hadis penting supaya…,Tepat beramal,Tidak tersilap,Mengelakkan kesalahan,Menjamin kebenaran,A
+HADIS-38,HADIS,tinggi,Hubungan iman dan akhlak ialah…,Berkait rapat,Saling mempengaruhi,Tidak terpisah,Saling melengkapi,C
+HADIS-39,HADIS,tinggi,Membantu tanpa mengira siapa menunjukkan…,Ihsan,Keikhlasan,Kasih sayang,Keimanan,A
+HADIS-40,HADIS,tinggi,Cara terbaik amalkan hadis ialah…,Faham dan amal,Hayati dan praktik,Pelajari dan amalkan,Tahu dan buat,A
+HADIS-41,HADIS,tinggi,Ikhlas penting kerana…,Menentukan ganjaran,Menentukan penerimaan,Menentukan nilai,Menentukan tujuan,B
+HADIS-42,HADIS,tinggi,"Tanpa nilai hadis, masyarakat akan…",Lemah,Berpecah,Kucar-kacir,Tidak harmoni,C
+HADIS-43,HADIS,tinggi,Hadis membentuk disiplin melalui…,Nilai akhlak,Panduan hidup,Contoh teladan,Latihan diri,A
+HADIS-44,HADIS,tinggi,Berkata benar penting kerana…,Mendapat kepercayaan,Menunjukkan kejujuran,Mengelakkan dosa,Menjaga maruah,A
+HADIS-45,HADIS,tinggi,Menepati janji menyebabkan…,Dipercayai,Dihormati,Disenangi,Diyakini,A
+HADIS-46,HADIS,tinggi,Menutup aib orang kerana…,Menjaga maruah,Mengelakkan fitnah,Menghormati orang,Mengelakkan dosa,A
+HADIS-47,HADIS,tinggi,Dengki membawa kepada…,Permusuhan,Kebencian,Perpecahan,Ketidakamanan,A
+HADIS-48,HADIS,tinggi,Menjaga hubungan sesama manusia penting kerana…,Tuntutan agama,Keharmonian,Keamanan,Kesejahteraan,A
+HADIS-49,HADIS,tinggi,Hadis membentuk masyarakat penyayang melalui…,Galakan kebaikan,Nilai kasih sayang,Amalan tolong-menolong,Sikap prihatin,A
+HADIS-50,HADIS,tinggi,Peranan utama hadis ialah…,Panduan hidup,Sumber hukum,Penjelas al-Quran,Rujukan umat,A
+IBADAH-01,IBADAH,sederhana,Ali sibuk bermain hingga hampir habis waktu solat. Apakah tindakan terbaik?,Selesaikan permainan dahulu supaya tidak terganggu,Berhenti apabila hampir tamat waktu,Segera berhenti dan menunaikan solat,Tunggu kawan selesai bermain,C
+IBADAH-02,IBADAH,sederhana,Mengapa solat penting walaupun sibuk belajar?,Untuk mengimbangi kehidupan harian,Supaya tidak ketinggalan rutin,Tanda ketaatan kepada Allah,Untuk mendisiplinkan masa belajar,C
+IBADAH-03,IBADAH,sederhana,Ahmad terlupa solat Zohor. Apa perlu dilakukan?,Solat pada waktu yang sama hari berikutnya,Qada sebaik sahaja teringat,Menunggu waktu Asar,Menggantikan dengan doa sahaja,B
+IBADAH-04,IBADAH,sederhana,Cara terbaik menunjukkan syukur ialah:,Mengingati nikmat sahaja,Menggunakan nikmat dengan betul,Berkongsi apabila perlu,Mengucap syukur tanpa tindakan,B
+IBADAH-05,IBADAH,sederhana,Puasa melatih kesabaran kerana:,Mengurangkan aktiviti fizikal,Menahan kehendak diri secara sedar,Mengubah rutin harian,Mengelakkan makanan,B
+IBADAH-06,IBADAH,sederhana,Cara paling berkesan ingat waktu solat:,Mengikut kebiasaan waktu harian,Menunggu orang lain mengingatkan,Menggunakan alarm atau jadual,Bergantung kepada azan sahaja,C
+IBADAH-07,IBADAH,sederhana,Mengapa perlu hormat guru?,Kerana mereka lebih berpengalaman,Kerana mereka mengajar ilmu,Kerana jasa mendidik dan membimbing,Kerana peraturan sekolah,C
+IBADAH-08,IBADAH,sederhana,Amalan yang paling memberi manfaat kepada orang lain ialah:,Solat sunat,Membaca buku agama,Sedekah,Berdoa,C
+IBADAH-09,IBADAH,sederhana,Cara paling sesuai membantu rakan lemah Al-Quran:,Membiarkan dia belajar sendiri,Memberi teguran setiap kesalahan,Membimbing secara berperingkat,Menyuruh guru sahaja,C
+IBADAH-10,IBADAH,sederhana,Hikmah membaca doa sebelum makan ialah:,Mengelakkan pembaziran,Menunjukkan adab makan,Mendapat keberkatan rezeki,Mengikut sunnah sahaja,C
+IBADAH-11,IBADAH,sederhana,Kesan menolong rakan:,Mengambil masa sendiri,Menguatkan hubungan persahabatan,Menambah tanggungjawab,Menjadikan rakan bergantung,B
+IBADAH-12,IBADAH,sederhana,Amanah di rumah bermaksud:,Menyelesaikan kerja apabila disuruh,Melakukan tugas tanpa perlu diingatkan,Memilih kerja yang mudah,Menunggu arahan,B
+IBADAH-13,IBADAH,sederhana,Puasa mendidik:,Disiplin diri,Mengawal nafsu,Kesabaran,Semua di atas,D
+IBADAH-14,IBADAH,sederhana,Rutin Ramadan terbaik ialah:,Fokus ibadah sahaja,"Seimbang ibadah, belajar dan rehat",Banyak tidur,Kurangkan aktiviti,B
+IBADAH-15,IBADAH,sederhana,Solat berjemaah memberi:,Kemudahan masa,Pahala berganda dan perpaduan,Susunan lebih teratur,Rasa bersama,B
+IBADAH-16,IBADAH,sederhana,Akhlak baik ketika bermain ialah:,Mengikut peraturan,Bertolak ansur,Menang dengan jujur,Semua di atas,D
+IBADAH-17,IBADAH,sederhana,Cara membantu orang miskin:,Memberi bantuan bila mampu,Mengajak orang lain membantu,Bersedekah secara berkala,Semua di atas,D
+IBADAH-18,IBADAH,sederhana,Ikhlas bermaksud:,Tidak mengharapkan pujian,Melakukan kerana Allah,Tidak menunjuk,Semua di atas,D
+IBADAH-19,IBADAH,sederhana,Cara menegur rakan:,Sindiran halus,Teguran lembut,Nasihat secara peribadi,Semua di atas (bergantung situasi),B
+IBADAH-20,IBADAH,sederhana,Kebersihan penting kerana:,Kesihatan,Imej diri,Tuntutan agama,Semua di atas,D
+IBADAH-21,IBADAH,sederhana,Zakat membantu:,Meringankan beban orang miskin,Mengagihkan harta,Mengurangkan jurang sosial,Semua di atas,D
+IBADAH-22,IBADAH,sederhana,Cara melatih sabar:,Menunggu giliran,Mengawal emosi,Tidak cepat marah,Semua di atas,D
+IBADAH-23,IBADAH,sederhana,Doa memberi:,Ketenangan,Keyakinan,Harapan,Semua di atas,D
+IBADAH-24,IBADAH,sederhana,Jika rakan menipu:,Menegur,Melapor dengan cara baik,Menasihati,Semua di atas,D
+IBADAH-25,IBADAH,sederhana,Harmoni tercapai apabila:,Hormat,Tolak ansur,Kerjasama,Semua di atas,D
+IBADAH-26,IBADAH,tinggi,Jadual harian baik:,Seimbang,Teratur,Berdisiplin,Semua di atas,D
+IBADAH-27,IBADAH,tinggi,Haji mengajar:,Sabar,Disiplin,Kerjasama,Semua di atas,D
+IBADAH-28,IBADAH,tinggi,Solat berjemaah digalakkan dengan:,Galakan,Ajak,Contoh,Semua di atas,D
+IBADAH-29,IBADAH,tinggi,Tinggalkan solat:,Dosa,Hilang disiplin,Lalai,Semua di atas,D
+IBADAH-30,IBADAH,tinggi,Sedekah terbaik:,Harta,Ilmu,Tenaga,Semua di atas,D
+IBADAH-31,IBADAH,tinggi,Rakan lupa doa:,Ingatkan,Bimbing,Tegur lembut,Semua di atas,D
+IBADAH-32,IBADAH,tinggi,Akhlak baik:,Jujur,Hormat,Bertanggungjawab,Semua di atas,D
+IBADAH-33,IBADAH,tinggi,Amanah:,Jaga barang,Selesaikan tugas,Jujur,Semua di atas,D
+IBADAH-34,IBADAH,tinggi,Hormat perbezaan:,Terima,Faham,Toleransi,Semua di atas,D
+IBADAH-35,IBADAH,tinggi,Galakkan Al-Quran:,Program,Aktiviti,Motivasi,Semua di atas,D
+IBADAH-36,IBADAH,tinggi,Bantu jiran:,Sedekah,Tenaga,Nasihat,Semua di atas,D
+IBADAH-37,IBADAH,tinggi,Puasa mengajar:,Empati,Sabar,Disiplin,Semua di atas,D
+IBADAH-38,IBADAH,tinggi,Menolong guru/rakan:,Sama penting,Bergantung situasi,Perlu ikhlas,Semua di atas,D
+IBADAH-39,IBADAH,tinggi,Hadapi kesusahan belajar:,Cuba,Sabar,Usaha,Semua di atas,D
+IBADAH-40,IBADAH,tinggi,Kebersihan kelas:,Tanggungjawab bersama,Disiplin,Kerjasama,Semua di atas,D
+IBADAH-41,IBADAH,tinggi,Hafal surah:,Ulang,Amalkan,Faham,Semua di atas,D
+IBADAH-42,IBADAH,tinggi,Syukur:,Ucapan,Tindakan,Hati,Semua di atas,D
+IBADAH-43,IBADAH,tinggi,Kejujuran penting:,Ujian,Kehidupan,Amanah,Semua di atas,D
+IBADAH-44,IBADAH,tinggi,Kasih sayang:,Tolong,Hormat,Prihatin,Semua di atas,D
+IBADAH-45,IBADAH,tinggi,Ajar Al-Quran:,Sabar,Kreatif,Mesra,Semua di atas,D
+IBADAH-46,IBADAH,tinggi,Rakan sombong:,Nasihat,Doa,Tegur,Semua di atas,D
+IBADAH-47,IBADAH,tinggi,Menepati masa:,Disiplin,Tanggungjawab,Hormat masa,Semua di atas,D
+IBADAH-48,IBADAH,tinggi,Urus masa:,Belajar,Ibadah,Rehat,Semua di atas,D
+IBADAH-49,IBADAH,tinggi,Disiplin diri:,Jadual,Matlamat,Kawalan diri,Semua di atas,D
+IBADAH-50,IBADAH,tinggi,Peranan murid:,Contoh,Pemimpin kecil,Berakhlak,Semua di atas,D
+ADAB-01,ADAB,sederhana,Ali lewat masuk kelas kerana bermain. Apakah adab yang sepatutnya dilakukan?,Masuk tanpa minta izin,Menunggu di luar kelas,Meminta maaf dan minta izin masuk,Duduk di belakang sahaja,C
+ADAB-02,ADAB,sederhana,Apakah adab ketika berjumpa guru?,Berjalan tanpa memberi salam,Menundukkan badan dan memberi salam,Menjerit memanggil guru,Mengelak bertemu guru,B
+ADAB-03,ADAB,sederhana,"Jika rakan sedang bercakap di hadapan kelas, kita perlu:",Bercakap sendiri,Mendengar dengan hormat,Ketawa,Ganggu percakapan,B
+ADAB-04,ADAB,sederhana,Apakah adab di dalam surau?,Bercakap kuat,Berlari,Berzikir dan menjaga ketenangan,Bermain,C
+ADAB-05,ADAB,sederhana,"Jika terlanggar rakan secara tidak sengaja, kita perlu:",Diam,Ketawa,Meminta maaf,Beredar,C
+ADAB-06,ADAB,sederhana,Apakah adab makan di kantin?,Berebut makanan,Beratur,Bercakap kuat,Membuang makanan,B
+ADAB-07,ADAB,sederhana,"Jika rakan meminjam barang kita, kita perlu:",Marah,Memberi dengan baik,Menolak terus,Mengabaikan,B
+ADAB-08,ADAB,sederhana,Apakah adab terhadap ibu bapa?,Menjawab kasar,Mendengar nasihat,Tidak peduli,Melawan,B
+ADAB-09,ADAB,sederhana,"Jika guru sedang mengajar, kita perlu:",Tidur,Berbual,Fokus dan mendengar,Keluar kelas,C
+ADAB-10,ADAB,sederhana,Apakah adab ketika di perpustakaan?,Bercakap kuat,Berlari,Senyap dan tertib,Makan,C
+ADAB-11,ADAB,sederhana,"Jika kita bersalah, kita perlu:",Menyembunyikan,Mengaku dan minta maaf,Menyalahkan orang lain,Diam,B
+ADAB-12,ADAB,sederhana,Apakah adab berkawan?,Menghina,Menolong dan menghormati,Mengambil barang tanpa izin,Bergaduh,B
+ADAB-13,ADAB,sederhana,"Jika melihat sampah di kelas, kita perlu:",Biarkan,Buang ke tong sampah,Suruh orang lain,Langkah sahaja,B
+ADAB-14,ADAB,sederhana,Apakah adab semasa beratur?,Menolak,Memotong barisan,Bersabar menunggu giliran,Berlari,C
+ADAB-15,ADAB,sederhana,"Jika guru memberi arahan, kita perlu:",Abaikan,Melaksanakan dengan segera,Bertanya orang lain,Menangguh,B
+ADAB-16,ADAB,sederhana,Apakah adab di asrama?,Bising waktu malam,Menjaga kebersihan dan ketenteraman,Bermain sepanjang masa,Mengganggu rakan,B
+ADAB-17,ADAB,sederhana,"Jika rakan sedih, kita perlu:",Ketawakan,Mengabaikan,Menenangkan dan membantu,Menjauhkan diri,C
+ADAB-18,ADAB,sederhana,Apakah adab menggunakan barang sekolah?,Rosakkan,Gunakan dengan baik,Ambil tanpa izin,Buang,B
+ADAB-19,ADAB,sederhana,"Jika tidak faham pelajaran, kita perlu:",Diam,Bertanya guru,Tinggalkan kelas,Bercakap dengan rakan,B
+ADAB-20,ADAB,sederhana,Apakah adab ketika bercakap dengan orang dewasa?,Berteriak,Beradab dan sopan,Menyampuk,Tidak peduli,B
+ADAB-21,ADAB,sederhana,"Jika menunggu bas sekolah, kita perlu:",Berlari di jalan,Beratur dan berhati-hati,Menjerit,Bermain,B
+ADAB-22,ADAB,sederhana,Apakah adab sebelum masuk kelas?,Ketuk pintu dan minta izin,Masuk terus,Menunggu di luar tanpa sebab,Berlari masuk,A
+ADAB-23,ADAB,sederhana,"Jika rakan membuat kesilapan, kita perlu:",Menghina,Menasihati dengan baik,Membiarkan,Mengadu tanpa sebab,B
+ADAB-24,ADAB,sederhana,Apakah adab ketika solat berjemaah?,Bercakap,Beratur lurus dan tenang,Bermain,Keluar masuk,B
+ADAB-25,ADAB,sederhana,"Jika guru memberi pujian, kita perlu:",Sombong,Bersyukur,Bermegah,Abaikan,B
+ADAB-26,ADAB,tinggi,Apakah adab di kantin sekolah?,Membuang makanan,Membeli dengan tertib,Berebut,Bising,B
+ADAB-27,ADAB,tinggi,"Jika melihat kemalangan kecil, kita perlu:",Ketawa,Membantu,Lari,Rakaman video sahaja,B
+ADAB-28,ADAB,tinggi,Apakah adab ketika menunggu giliran?,Memotong,Bersabar,Menolak,Mengelak,B
+ADAB-29,ADAB,tinggi,"Jika rakan minta bantuan, kita perlu:",Menolak terus,Membantu jika mampu,Marah,Abaikan,B
+ADAB-30,ADAB,tinggi,Apakah adab terhadap buku teks?,Merosakkan,Menjaga dengan baik,Mencoret tanpa sebab,Melipat,B
+ADAB-31,ADAB,tinggi,"Jika guru masuk kelas, kita perlu:",Berdiri memberi hormat,Duduk diam sahaja,Bercakap,Keluar,A
+ADAB-32,ADAB,tinggi,Apakah adab bercakap dalam kelas?,Menjerit,Bercakap bila perlu sahaja,Bercakap tanpa henti,Bising,B
+ADAB-33,ADAB,tinggi,"Jika terjumpa barang rakan, kita perlu:",Ambil,Pulangkan,Sembunyikan,Buang,B
+ADAB-34,ADAB,tinggi,Apakah adab terhadap rakan berlainan kaum?,Menghina,Menghormati,Mengasingkan diri,Bergaduh,B
+ADAB-35,ADAB,tinggi,"Jika guru memberi kerja rumah, kita perlu:",Abaikan,Siapkan,Salin sahaja,Tunggu kawan,B
+ADAB-36,ADAB,tinggi,Apakah adab di dalam kelas?,Tidur,Fokus pembelajaran,Bising,Bermain,B
+ADAB-37,ADAB,tinggi,"Jika rakan jatuh, kita perlu:",Ketawa,Membantu,Lari,Rekod,B
+ADAB-38,ADAB,tinggi,Apakah adab sebelum makan?,Berebut,Baca doa,Bercakap,Lari,B
+ADAB-39,ADAB,tinggi,"Jika tidak bersetuju dengan rakan, kita perlu:",Bergaduh,Berbincang dengan baik,Menjerit,Diam marah,B
+ADAB-40,ADAB,tinggi,Apakah adab menggunakan tandas sekolah?,Kotor,Bersih selepas guna,Bising,Lama bermain,B
+ADAB-41,ADAB,tinggi,"Jika lambat ke sekolah, kita perlu:",Masuk diam,Minta maaf,Lari masuk kelas,Abaikan,B
+ADAB-42,ADAB,tinggi,Apakah adab ketika menerima arahan?,Menjawab kasar,Mendengar dan patuh,Berdebat,Mengabaikan,B
+ADAB-43,ADAB,tinggi,"Jika guru bertanya, kita perlu:",Diam sahaja,Menjawab dengan sopan,Ketawa,Bercakap lain,B
+ADAB-44,ADAB,tinggi,Apakah adab di dalam bilik darjah?,Makan,Menjaga kebersihan dan ketenangan,Berlari,Tidur,B
+ADAB-45,ADAB,tinggi,"Jika rakan menangis, kita perlu:",Mengabaikan,Menenangkan,Ketawa,Menjauh,B
+ADAB-46,ADAB,tinggi,Apakah adab terhadap ilmu?,Tidak belajar,Menghormati dan mencari ilmu,Abaikan,Meniru sahaja,B
+ADAB-47,ADAB,tinggi,"Jika guru memberi teguran, kita perlu:",Marah,Terima dengan baik,Melawan,Diam kecewa,B
+ADAB-48,ADAB,tinggi,Apakah adab di luar kelas?,Berlari tanpa kawalan,Menjaga keselamatan,Menjerit,Bergaduh,B
+ADAB-49,ADAB,tinggi,"Jika rakan berjaya, kita perlu:",Iri hati,Mengucap tahniah,Marah,Abaikan,B
+ADAB-50,ADAB,tinggi,Apakah adab sebagai murid?,Malas belajar,Berdisiplin dan berakhlak baik,Suka bergaduh,Abaikan peraturan,B
