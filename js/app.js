@@ -57,6 +57,16 @@
     setView("thanks");
   }
 
+  function goBackToLogin() {
+    sessionStorage.clear();
+    state = { ic: "", nama: "", attemptId: "", soalan: [] };
+    const formLogin = $("#form-login");
+    if (formLogin) formLogin.reset();
+    showError(loginError, "");
+    showError(examError, "");
+    setView("login");
+  }
+
   async function apiCall(action, payload, retriesLeft) {
     const url = getApiUrl();
     if (!url) {
@@ -266,6 +276,11 @@
       }
       handleSubmit();
     });
+
+    const btnBack = $("#btn-back-login");
+    if (btnBack) {
+      btnBack.addEventListener("click", goBackToLogin);
+    }
 
     setView("login");
     tryResumeThanks();

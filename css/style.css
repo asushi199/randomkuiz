@@ -219,6 +219,10 @@ input[type="text"] {
   text-align: center;
 }
 
+.thanks-card .btn-secondary {
+  margin-top: 1.25rem;
+}
+
 .thanks-text {
   font-size: 1.1rem;
   line-height: 1.6;
