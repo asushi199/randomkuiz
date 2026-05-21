@@ -2,7 +2,33 @@
   "use strict";
 
   const API_RETRIES = 2;
+  const TOPIK_NAMA = {
+    AKIDAH: "Aqidah",
+    ALQURAN: "Al-Quran",
+    JAWI: "Jawi",
+    SIRAH: "Sirah",
+    HADIS: "Hadis",
+    IBADAH: "Ibadah",
+    ADAB: "Adab",
+  };
+
   const $ = (sel) => document.querySelector(sel);
+
+  function labelTopik(kod) {
+    return TOPIK_NAMA[kod] || kod || "-";
+  }
+
+  function labelAras(aras) {
+    if (!aras) return "-";
+    return aras.charAt(0).toUpperCase() + aras.slice(1);
+  }
+
+  function formatRujukanBank(item) {
+    const id = item.id || "-";
+    const topik = labelTopik(item.topik);
+    const aras = labelAras(item.aras);
+    return "Rujukan bank: " + id + " (" + topik + ", " + aras + ")";
+  }
 
   function getApiUrl() {
     const cfg = window.EXAM_CONFIG || {};
@@ -116,20 +142,21 @@
       tag.className = "tag " + (item.betul ? "tag-betul" : "tag-salah");
       tag.textContent = item.betul ? "Betul" : "Salah";
       li.appendChild(tag);
-      const topikLabel = item.topik ? " [" + item.topik + "]" : "";
+      const ref = document.createElement("span");
+      ref.className = "soalan-rujukan";
+      ref.textContent = formatRujukanBank(item);
+      li.appendChild(ref);
       li.appendChild(
         document.createTextNode(
-          " Soalan " +
+          " — Paparan " +
             item.nombor +
-            topikLabel +
             ": " +
-            (item.soalan || "").slice(0, 100) +
-            (item.soalan && item.soalan.length > 100 ? "…" : "") +
-            " — Jawapan: " +
+            (item.soalan || "").slice(0, 120) +
+            (item.soalan && item.soalan.length > 120 ? "…" : "") +
+            " — Jawapan peserta: " +
             item.jawapan_pelajar +
-            " (Betul: " +
-            item.jawapan_betul +
-            ")"
+            " | Jawapan betul: " +
+            item.jawapan_betul
         )
       );
       ul.appendChild(li);
