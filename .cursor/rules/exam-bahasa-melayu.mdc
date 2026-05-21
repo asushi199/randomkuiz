@@ -22,7 +22,7 @@ alwaysApply: true
 ## Pelajar vs pentadbir
 
 - **Pelajar** (`index.html`): selepas hantar hanya **Terima kasih** — tiada markah, tiada semak jawapan.
-- **Pentadbir** (`pentadbir.html`): semak IC dengan **PIN** (`ADMIN_PIN` dalam Script properties); papar markah dan `butiran`.
+- **Pentadbir** (`pentadbir.html`): **PIN** sahaja → ranking (skor ↓, masa hantar awal menang seri); **PIN + IC** → markah dan `butiran`.
 
 ## Seni bina
 

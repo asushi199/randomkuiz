@@ -12,9 +12,13 @@
       <p class="subtitle">Untuk pengguna pentadbir dan juri sahaja</p>
     </header>
 
-    <main class="container">
+    <main class="container container-wide">
       <section class="card">
-        <h2>Carian Peserta</h2>
+        <h2>Carian</h2>
+        <p class="hint">
+          Kosongkan No. KP untuk papar kedudukan keseluruhan. Isi No. KP untuk
+          semak jawapan seorang peserta.
+        </p>
         <form id="form-admin" novalidate>
           <label for="pin">PIN Pentadbir</label>
           <input
@@ -25,22 +29,45 @@
             required
           />
 
-          <label for="ic-admin">No. Kad Pengenalan Peserta</label>
+          <label for="ic-admin">No. Kad Pengenalan Peserta (pilihan)</label>
           <input
             type="text"
             id="ic-admin"
             name="ic"
             inputmode="numeric"
             autocomplete="off"
-            required
+            placeholder="Biarkan kosong untuk kedudukan"
           />
 
           <p id="admin-error" class="error" hidden></p>
           <p id="admin-wait" class="wait-msg" hidden>Sila tunggu…</p>
           <button type="submit" class="btn btn-primary" id="btn-admin">
-            Semak Jawapan
+            Papar
           </button>
         </form>
+      </section>
+
+      <section id="view-admin-ranking" class="card" hidden>
+        <h2>Kedudukan Keseluruhan</h2>
+        <p class="ranking-meta">
+          <span id="ranking-count"></span> — susunan: markah tertinggi, sama
+          markah ikut masa hantar terawal.
+        </p>
+        <div class="table-wrap">
+          <table class="ranking-table">
+            <thead>
+              <tr>
+                <th>Ked.</th>
+                <th>Nama</th>
+                <th>No. KP</th>
+                <th>Betul</th>
+                <th>Markah</th>
+                <th>Masa Hantar</th>
+              </tr>
+            </thead>
+            <tbody id="ranking-body"></tbody>
+          </table>
+        </div>
       </section>
 
       <section id="view-admin-result" class="card" hidden>
@@ -48,6 +75,7 @@
         <div class="score-box">
           <p><strong>Nama:</strong> <span id="admin-nama"></span></p>
           <p><strong>No. KP:</strong> <span id="admin-ic"></span></p>
+          <p><strong>Masa hantar:</strong> <span id="admin-masa"></span></p>
           <p class="score-main">
             Markah: <span id="admin-skor"></span>%
           </p>
@@ -65,7 +93,7 @@
       </p>
     </main>
 
-    <script src="js/config.example.js?v=2"></script>
-    <script src="js/pentadbir.js?v=2"></script>
+    <script src="js/config.example.js?v=4"></script>
+    <script src="js/pentadbir.js?v=4"></script>
   </body>
 </html>

@@ -558,6 +558,7 @@ function findKeputusanByIc_(icNorm) {
   const cBetul = header.indexOf('betul');
   const cJumlah = header.indexOf('jumlah');
   const cSkor = header.indexOf('skor');
+  const cMasa = header.indexOf('masa_hantar');
   const cJawapan = header.indexOf('jawapan_json');
   const cButiran = header.indexOf('butiran_json');
 
@@ -565,6 +566,7 @@ function findKeputusanByIc_(icNorm) {
     if (normalizeIc_(data[r][cIc]) === icNorm) {
       return {
         attempt_id: String(data[r][cAttempt]),
+        masa_hantar: cMasa >= 0 ? data[r][cMasa] : '',
         nama: String(data[r][cNama]),
         betul: Number(data[r][cBetul]),
         jumlah: Number(data[r][cJumlah]),
@@ -578,7 +580,7 @@ function findKeputusanByIc_(icNorm) {
   return null;
 }
 
-function adminReview(pin, ic) {
+function verifyAdminPin_(pin) {
   const expectedPin = getAdminPin_();
   if (!expectedPin) {
     return { ok: false, ralat: 'PIN pentadbir belum dikonfigurasi.' };
@@ -586,10 +588,120 @@ function adminReview(pin, ic) {
   if (String(pin || '').trim() !== expectedPin) {
     return { ok: false, ralat: 'PIN tidak sah.' };
   }
+  return { ok: true };
+}
+
+function toTimeMs_(value) {
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? Number.MAX_SAFE_INTEGER : d.getTime();
+}
+
+function formatMasaHantar_(value) {
+  if (value instanceof Date) {
+    return Utilities.formatDate(
+      value,
+      Session.getScriptTimeZone(),
+      'dd/MM/yyyy HH:mm:ss'
+    );
+  }
+  return String(value || '');
+}
+
+function isBetterKeputusan_(a, b) {
+  if (a.skor > b.skor) return true;
+  if (a.skor < b.skor) return false;
+  return toTimeMs_(a.masa_hantar) < toTimeMs_(b.masa_hantar);
+}
+
+function loadAllKeputusanRows_() {
+  const sh = getSheet_(SHEET_KEPUTUSAN);
+  const data = sh.getDataRange().getValues();
+  if (data.length < 2) return [];
+
+  const header = data[0].map(function (h) {
+    return String(h).toLowerCase().trim();
+  });
+  const cAttempt = header.indexOf('attempt_id');
+  const cMasa = header.indexOf('masa_hantar');
+  const cIc = header.indexOf('ic');
+  const cNama = header.indexOf('nama');
+  const cBetul = header.indexOf('betul');
+  const cJumlah = header.indexOf('jumlah');
+  const cSkor = header.indexOf('skor');
+
+  const rows = [];
+  for (let r = 1; r < data.length; r++) {
+    const ic = normalizeIc_(data[r][cIc]);
+    if (!ic) continue;
+    rows.push({
+      attempt_id: String(data[r][cAttempt]),
+      masa_hantar: data[r][cMasa],
+      ic: ic,
+      nama: String(data[r][cNama]),
+      betul: Number(data[r][cBetul]),
+      jumlah: Number(data[r][cJumlah]),
+      skor: Number(data[r][cSkor]),
+    });
+  }
+  return rows;
+}
+
+function buildRanking_() {
+  const rows = loadAllKeputusanRows_();
+  const byIc = {};
+  rows.forEach(function (row) {
+    const existing = byIc[row.ic];
+    if (!existing || isBetterKeputusan_(row, existing)) {
+      byIc[row.ic] = row;
+    }
+  });
+
+  const list = Object.keys(byIc).map(function (ic) {
+    return byIc[ic];
+  });
+
+  list.sort(function (a, b) {
+    if (b.skor !== a.skor) return b.skor - a.skor;
+    return toTimeMs_(a.masa_hantar) - toTimeMs_(b.masa_hantar);
+  });
+
+  return list.map(function (row, index) {
+    return {
+      kedudukan: index + 1,
+      ic: row.ic,
+      nama: row.nama,
+      betul: row.betul,
+      jumlah: row.jumlah,
+      skor: row.skor,
+      masa_hantar: formatMasaHantar_(row.masa_hantar),
+      masa_hantar_ms: toTimeMs_(row.masa_hantar),
+    };
+  });
+}
+
+function adminRanking(pin) {
+  const pinCheck = verifyAdminPin_(pin);
+  if (!pinCheck.ok) return pinCheck;
+
+  const ranking = buildRanking_();
+  return {
+    ok: true,
+    mod: 'ranking',
+    ranking: ranking,
+    jumlah_peserta: ranking.length,
+  };
+}
+
+function adminReview(pin, ic) {
+  const pinCheck = verifyAdminPin_(pin);
+  if (!pinCheck.ok) return pinCheck;
 
   const icNorm = normalizeIc_(ic);
   if (!icNorm) {
-    return { ok: false, ralat: 'No. Kad Pengenalan diperlukan.' };
+    return adminRanking(pin);
   }
 
   const row = findKeputusanByIc_(icNorm);
@@ -626,6 +738,7 @@ function adminReview(pin, ic) {
 
   return {
     ok: true,
+    mod: 'individu',
     ic: icNorm,
     nama: row.nama,
     attempt_id: row.attempt_id,
@@ -633,6 +746,7 @@ function adminReview(pin, ic) {
     jumlah: row.jumlah,
     salah: row.jumlah - row.betul,
     skor: row.skor,
+    masa_hantar: formatMasaHantar_(row.masa_hantar),
     topik_lapan: topik_lapan,
     butiran: butiran,
   };

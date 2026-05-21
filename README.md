@@ -86,8 +86,9 @@ Pentadbir → GitHub Pages (pentadbir.html) + PIN → adminReview
 ## Aliran pentadbir
 
 1. Buka `pentadbir.html`
-2. Masukkan **PIN** + **IC peserta**
-3. Lihat markah dan senarai betul/salah setiap soalan
+2. Masukkan **PIN** sahaja → **kedudukan keseluruhan** (ranking)
+3. Atau masukkan **PIN** + **IC peserta** → semak jawapan individu
+4. Susunan ranking: markah tertinggi dahulu; **markah sama** → siapa **hantar lebih awal** kedudukan lebih tinggi
 
 ## API (ringkas)
 
@@ -96,7 +97,7 @@ Pentadbir → GitHub Pages (pentadbir.html) + PIN → adminReview
 | `startExam` | Pelajar | Pulangkan soalan tanpa jawapan |
 | `submitExam` | Pelajar | Simpan keputusan; respons terima kasih sahaja |
 | `getResult` | Pelajar | `sudah_hantar` + mesej terima kasih |
-| `adminReview` | Pentadbir | `pin` + `ic` → markah + `butiran` |
+| `adminReview` | Pentadbir | `pin` sahaja → `ranking[]`; `pin` + `ic` → markah + `butiran` |
 
 ## Pertandingan ~36 peserta serentak
 

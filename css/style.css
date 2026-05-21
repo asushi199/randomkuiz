@@ -237,3 +237,51 @@ input[type="text"] {
 .header-admin {
   background: #37474f;
 }
+
+.container-wide {
+  max-width: 960px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+
+.ranking-meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0 0 1rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.ranking-table th,
+.ranking-table td {
+  border: 1px solid var(--border);
+  padding: 0.55rem 0.65rem;
+  text-align: left;
+}
+
+.ranking-table th {
+  background: #eceff1;
+  font-weight: 600;
+}
+
+.ranking-table tbody tr:nth-child(even) {
+  background: #fafbfc;
+}
+
+.ranking-table tr.rank-top td:first-child {
+  font-weight: 700;
+  color: var(--primary);
+}

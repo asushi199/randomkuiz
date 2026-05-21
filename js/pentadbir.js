@@ -11,8 +11,16 @@
 
   function showError(message) {
     const el = $("#admin-error");
+    if (!el) return;
     el.textContent = message;
     el.hidden = !message;
+  }
+
+  function hideViews() {
+    const ranking = $("#view-admin-ranking");
+    const result = $("#view-admin-result");
+    if (ranking) ranking.hidden = true;
+    if (result) result.hidden = true;
   }
 
   async function apiCall(action, payload, retriesLeft) {
@@ -43,9 +51,57 @@
     }
   }
 
+  function renderRanking(data) {
+    const tbody = $("#ranking-body");
+    const countEl = $("#ranking-count");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+    const list = data.ranking || [];
+
+    if (countEl) {
+      countEl.textContent =
+        list.length + " peserta telah menghantar jawapan";
+    }
+
+    if (!list.length) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 6;
+      td.textContent = "Tiada rekod keputusan lagi.";
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    } else {
+      list.forEach((row) => {
+        const tr = document.createElement("tr");
+        if (row.kedudukan <= 3) {
+          tr.className = "rank-top";
+        }
+        const cells = [
+          row.kedudukan,
+          row.nama || "-",
+          row.ic || "-",
+          row.betul + " / " + row.jumlah,
+          row.skor + "%",
+          row.masa_hantar || "-",
+        ];
+        cells.forEach((text) => {
+          const td = document.createElement("td");
+          td.textContent = text;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
+    $("#view-admin-ranking").hidden = false;
+  }
+
   function renderAdminResult(data) {
     $("#admin-nama").textContent = data.nama || "-";
     $("#admin-ic").textContent = data.ic || "-";
+    const masaEl = $("#admin-masa");
+    if (masaEl) masaEl.textContent = data.masa_hantar || "-";
     $("#admin-skor").textContent = data.skor;
     $("#admin-betul").textContent = data.betul;
     $("#admin-jumlah").textContent = data.jumlah;
@@ -88,18 +144,25 @@
     btn.disabled = true;
     wait.hidden = false;
     showError("");
+    hideViews();
 
     try {
-      const data = await apiCall("adminReview", { pin: pin, ic: ic });
+      const payload = { pin: pin };
+      if (ic) {
+        payload.ic = ic;
+      }
+      const data = await apiCall("adminReview", payload);
       if (!data.ok) {
         showError(data.ralat || "Gagal mendapatkan rekod.");
-        $("#view-admin-result").hidden = true;
         return;
       }
-      renderAdminResult(data);
+      if (data.mod === "ranking" || !ic) {
+        renderRanking(data);
+      } else {
+        renderAdminResult(data);
+      }
     } catch (err) {
       showError(err.message || "Ralat rangkaian.");
-      $("#view-admin-result").hidden = true;
     } finally {
       btn.disabled = false;
       wait.hidden = true;
@@ -115,8 +178,8 @@
       e.preventDefault();
       const pin = $("#pin").value.trim();
       const ic = $("#ic-admin").value.trim();
-      if (!pin || !ic) {
-        showError("Sila isi PIN dan nombor kad pengenalan.");
+      if (!pin) {
+        showError("Sila masukkan PIN pentadbir.");
         return;
       }
       handleAdminSearch(pin, ic);
