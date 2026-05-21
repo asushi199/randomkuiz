@@ -151,6 +151,22 @@ input[type="text"] {
   margin: 0.25rem 0;
 }
 
+#view-exam .exam-meta {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  margin-left: -0.25rem;
+  margin-right: -0.25rem;
+  border-radius: 6px 6px 0 0;
+  border-bottom: 2px solid #90caf9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+#view-exam .exam-meta .countdown {
+  font-size: 1.05rem;
+  margin-top: 0.5rem;
+}
+
 .error {
   color: var(--danger);
   font-weight: 500;
