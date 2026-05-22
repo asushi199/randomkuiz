@@ -49,6 +49,114 @@
     if (result) result.hidden = true;
   }
 
+  function formatTarikhCetak() {
+    const d = new Date();
+    const pad = (n) => (n < 10 ? "0" + n : String(n));
+    return (
+      "Dicetak: " +
+      pad(d.getDate()) +
+      "/" +
+      pad(d.getMonth() + 1) +
+      "/" +
+      d.getFullYear() +
+      " " +
+      pad(d.getHours()) +
+      ":" +
+      pad(d.getMinutes())
+    );
+  }
+
+  function setPrintDate(sectionEl) {
+    if (!sectionEl) return;
+    const dateEl = sectionEl.querySelector(".print-date");
+    if (dateEl) dateEl.textContent = formatTarikhCetak();
+  }
+
+  function getVisiblePrintArea() {
+    const ranking = $("#view-admin-ranking");
+    const result = $("#view-admin-result");
+    if (ranking && !ranking.hidden) {
+      return $("#print-area-ranking");
+    }
+    if (result && !result.hidden) {
+      return $("#print-area-result");
+    }
+    return null;
+  }
+
+  function getExportFilename(ext) {
+    const area = getVisiblePrintArea();
+    const isRanking = area && area.id === "print-area-ranking";
+    const ic = ($("#admin-ic") && $("#admin-ic").textContent) || "";
+    const base = isRanking ? "kedudukan-kuiz" : "semakan-" + (ic || "peserta");
+    const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-");
+    return base + "-" + stamp + "." + ext;
+  }
+
+  function printReport() {
+    const area = getVisiblePrintArea();
+    if (!area) {
+      showError("Tiada laporan untuk dicetak. Papar kedudukan atau semakan dahulu.");
+      return;
+    }
+    setPrintDate(area.closest(".admin-report"));
+    window.print();
+  }
+
+  async function downloadImage(format) {
+    const area = getVisiblePrintArea();
+    if (!area) {
+      showError("Tiada laporan untuk dimuat turun. Papar kedudukan atau semakan dahulu.");
+      return;
+    }
+    if (typeof html2canvas !== "function") {
+      showError("Perpustakaan imej tidak dimuatkan. Sila muat semula halaman.");
+      return;
+    }
+
+    setPrintDate(area.closest(".admin-report"));
+    showError("Sedang menjana imej…");
+
+    try {
+      const canvas = await html2canvas(area, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+        windowWidth: area.scrollWidth,
+        windowHeight: area.scrollHeight,
+      });
+
+      const isJpg = format === "jpg" || format === "jpeg";
+      const mime = isJpg ? "image/jpeg" : "image/png";
+      const ext = isJpg ? "jpg" : "png";
+      const dataUrl = canvas.toDataURL(mime, isJpg ? 0.92 : undefined);
+
+      const link = document.createElement("a");
+      link.download = getExportFilename(ext);
+      link.href = dataUrl;
+      link.click();
+      showError("");
+    } catch (err) {
+      showError("Gagal menjana imej. Sila cuba cetak/PDF.");
+    }
+  }
+
+  function bindExportButtons() {
+    document.querySelectorAll(".btn-export").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const action = btn.getAttribute("data-action");
+        if (action === "print") {
+          printReport();
+        } else if (action === "png") {
+          downloadImage("png");
+        } else if (action === "jpg") {
+          downloadImage("jpg");
+        }
+      });
+    });
+  }
+
   async function apiCall(action, payload, retriesLeft) {
     const url = getApiUrl();
     if (!url) {
@@ -120,6 +228,7 @@
       });
     }
 
+    setPrintDate($("#view-admin-ranking"));
     $("#view-admin-ranking").hidden = false;
   }
 
@@ -155,8 +264,7 @@
           " — Paparan " +
             item.nombor +
             ": " +
-            (item.soalan || "").slice(0, 120) +
-            (item.soalan && item.soalan.length > 120 ? "…" : "") +
+            (item.soalan || "") +
             " — Jawapan peserta: " +
             item.jawapan_pelajar +
             " | Jawapan betul: " +
@@ -166,6 +274,7 @@
       ul.appendChild(li);
     });
 
+    setPrintDate($("#view-admin-result"));
     $("#view-admin-result").hidden = false;
   }
 
@@ -215,6 +324,8 @@
       }
       handleAdminSearch(pin, ic);
     });
+
+    bindExportButtons();
   }
 
   if (document.readyState === "loading") {

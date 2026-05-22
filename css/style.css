@@ -347,3 +347,97 @@ input[type="text"] {
 .error .pengawas-note {
   font-weight: normal;
 }
+
+.export-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.export-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.btn-export {
+  font-size: 0.88rem;
+  padding: 0.5rem 0.85rem;
+}
+
+.print-letterhead {
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.print-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.print-sub {
+  margin: 0.25rem 0 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.print-date {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.print-area .result-list li {
+  page-break-inside: avoid;
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .no-print,
+  .header,
+  main > .card:not(.admin-report),
+  #config-warning {
+    display: none !important;
+  }
+
+  main.container-wide {
+    max-width: none;
+    padding: 0;
+  }
+
+  .admin-report {
+    display: block !important;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .admin-report[hidden] {
+    display: none !important;
+  }
+
+  .print-area {
+    width: 100%;
+  }
+
+  .ranking-table th,
+  .ranking-table td {
+    border: 1px solid #333;
+    color: #000;
+  }
+
+  .tag-betul,
+  .tag-salah {
+    border: 1px solid #333;
+  }
+}

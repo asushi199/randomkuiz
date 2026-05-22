@@ -48,48 +48,86 @@
         </form>
       </section>
 
-      <section id="view-admin-ranking" class="card" hidden>
-        <h2>Kedudukan Keseluruhan</h2>
-        <p class="ranking-meta">
-          <span id="ranking-count"></span> — susunan: markah tertinggi; sama
-          markah ikut <strong>tempoh jawapan</strong> (siapa siap lebih cepat
-          kedudukan lebih tinggi).
-        </p>
-        <div class="table-wrap">
-          <table class="ranking-table">
-            <thead>
-              <tr>
-                <th>Ked.</th>
-                <th>Nama</th>
-                <th>No. KP</th>
-                <th>Betul</th>
-                <th>Markah</th>
-                <th>Tempoh Jawapan</th>
-              </tr>
-            </thead>
-            <tbody id="ranking-body"></tbody>
-          </table>
+      <section id="view-admin-ranking" class="card admin-report" hidden>
+        <div class="export-bar no-print">
+          <span class="export-label">Eksport:</span>
+          <button type="button" class="btn btn-secondary btn-export" data-action="print">
+            Cetak / PDF
+          </button>
+          <button type="button" class="btn btn-secondary btn-export" data-action="png">
+            Muat turun PNG
+          </button>
+          <button type="button" class="btn btn-secondary btn-export" data-action="jpg">
+            Muat turun JPG
+          </button>
+        </div>
+        <div id="print-area-ranking" class="print-area">
+          <div class="print-letterhead">
+            <p class="print-title">Kuiz Ilmuan Cilik — FiESH</p>
+            <p class="print-sub">Peringkat Daerah Manjung — Kedudukan Keseluruhan</p>
+            <p class="print-date"></p>
+          </div>
+          <h2>Kedudukan Keseluruhan</h2>
+          <p class="ranking-meta">
+            <span id="ranking-count"></span> — susunan: markah tertinggi; sama
+            markah ikut tempoh jawapan (siapa siap lebih cepat kedudukan lebih
+            tinggi).
+          </p>
+          <div class="table-wrap">
+            <table class="ranking-table">
+              <thead>
+                <tr>
+                  <th>Ked.</th>
+                  <th>Nama</th>
+                  <th>No. KP</th>
+                  <th>Betul</th>
+                  <th>Markah</th>
+                  <th>Tempoh Jawapan</th>
+                </tr>
+              </thead>
+              <tbody id="ranking-body"></tbody>
+            </table>
+          </div>
         </div>
       </section>
 
-      <section id="view-admin-result" class="card" hidden>
-        <h2>Keputusan Peserta</h2>
-        <div class="score-box">
-          <p><strong>Nama:</strong> <span id="admin-nama"></span></p>
-          <p><strong>No. KP:</strong> <span id="admin-ic"></span></p>
-          <p><strong>Mula kuiz:</strong> <span id="admin-mula"></span></p>
-          <p><strong>Hantar:</strong> <span id="admin-masa"></span></p>
-          <p><strong>Tempoh jawapan:</strong> <span id="admin-tempoh"></span></p>
-          <p class="score-main">
-            Markah: <span id="admin-skor"></span>%
-          </p>
-          <p>
-            Betul: <span id="admin-betul"></span> /
-            <span id="admin-jumlah"></span>
-            (Salah: <span id="admin-salah"></span>)
-          </p>
+      <section id="view-admin-result" class="card admin-report" hidden>
+        <div class="export-bar no-print">
+          <span class="export-label">Eksport:</span>
+          <button type="button" class="btn btn-secondary btn-export" data-action="print">
+            Cetak / PDF
+          </button>
+          <button type="button" class="btn btn-secondary btn-export" data-action="png">
+            Muat turun PNG
+          </button>
+          <button type="button" class="btn btn-secondary btn-export" data-action="jpg">
+            Muat turun JPG
+          </button>
         </div>
-        <ul id="admin-details" class="result-list"></ul>
+        <div id="print-area-result" class="print-area">
+          <div class="print-letterhead">
+            <p class="print-title">Kuiz Ilmuan Cilik — FiESH</p>
+            <p class="print-sub">Peringkat Daerah Manjung — Semakan Jawapan Peserta</p>
+            <p class="print-date"></p>
+          </div>
+          <h2>Keputusan Peserta</h2>
+          <div class="score-box">
+            <p><strong>Nama:</strong> <span id="admin-nama"></span></p>
+            <p><strong>No. KP:</strong> <span id="admin-ic"></span></p>
+            <p><strong>Mula kuiz:</strong> <span id="admin-mula"></span></p>
+            <p><strong>Hantar:</strong> <span id="admin-masa"></span></p>
+            <p><strong>Tempoh jawapan:</strong> <span id="admin-tempoh"></span></p>
+            <p class="score-main">
+              Markah: <span id="admin-skor"></span>%
+            </p>
+            <p>
+              Betul: <span id="admin-betul"></span> /
+              <span id="admin-jumlah"></span>
+              (Salah: <span id="admin-salah"></span>)
+            </p>
+          </div>
+          <ul id="admin-details" class="result-list"></ul>
+        </div>
       </section>
 
       <p id="config-warning" class="warning" hidden>
@@ -97,7 +135,8 @@
       </p>
     </main>
 
-    <script src="js/config.example.js?v=6"></script>
-    <script src="js/pentadbir.js?v=6"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
+    <script src="js/config.example.js?v=8"></script>
+    <script src="js/pentadbir.js?v=8"></script>
   </body>
 </html>
