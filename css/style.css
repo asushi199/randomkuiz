@@ -298,6 +298,39 @@ input[type="text"] {
   font-size: 1.05rem;
 }
 
+.negeri-collapse {
+  border: none;
+}
+
+.negeri-collapse > summary {
+  cursor: pointer;
+  font-size: 1.25rem;
+  font-weight: 600;
+  list-style: none;
+  padding: 0.15rem 0;
+  user-select: none;
+}
+
+.negeri-collapse > summary::-webkit-details-marker {
+  display: none;
+}
+
+.negeri-collapse > summary::before {
+  content: "▸ ";
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.negeri-collapse[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.negeri-collapse-body {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e0e0e0;
+}
+
 .ranking-meta {
   color: var(--muted);
   font-size: 0.9rem;

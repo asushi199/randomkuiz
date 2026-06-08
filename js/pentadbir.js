@@ -61,9 +61,11 @@
     const ranking = $("#view-admin-ranking");
     const result = $("#view-admin-result");
     const negeri = $("#view-negeri-tools");
+    const collapse = $("#negeri-collapse");
     if (ranking) ranking.hidden = true;
     if (result) result.hidden = true;
     if (negeri) negeri.hidden = true;
+    if (collapse) collapse.open = false;
   }
 
   function formatTarikhCetak() {
