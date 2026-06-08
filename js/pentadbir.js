@@ -359,21 +359,15 @@
     $("#view-admin-result").hidden = false;
   }
 
-  async function loadDaerahForPinForm() {
+  function populateDaerahForPinForm() {
     const sel = $("#pin-daerah-kod");
     if (!sel || sel.options.length > 1) return;
-    try {
-      const data = await apiCall("getDaerahList", {});
-      if (!data.ok) return;
-      (data.daerah || []).forEach(function (d) {
-        const opt = document.createElement("option");
-        opt.value = d.kod;
-        opt.textContent = d.nama;
-        sel.appendChild(opt);
-      });
-    } catch {
-      /* abaikan */
-    }
+    (window.DAERAH_LIST || []).forEach(function (d) {
+      const opt = document.createElement("option");
+      opt.value = d.kod;
+      opt.textContent = d.nama;
+      sel.appendChild(opt);
+    });
   }
 
   async function handleAdminSearch(pin, ic) {
@@ -409,7 +403,7 @@
       }
 
       if (adminContext.peranan === PERANAN_NEGERI) {
-        loadDaerahForPinForm();
+        populateDaerahForPinForm();
       }
     } catch (err) {
       showError(err.message || "Ralat rangkaian.");

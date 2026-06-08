@@ -78,8 +78,14 @@
     sessionStorage.clear();
     state = { ic: "", nama: "", daerah: "", attemptId: "", soalan: [], batasMs: 0 };
     const formLogin = $("#form-login");
+    const selDaerah = $("#daerah");
     if (formLogin) formLogin.reset();
-    applyDaerahFromUrl();
+    populateDaerahOptions();
+    if (selDaerah && getUrlDaerah()) {
+      applyDaerahFromUrl();
+    } else if (selDaerah) {
+      selDaerah.disabled = false;
+    }
     showError(loginError, "");
     showError(examError, "");
     setView("login");
@@ -266,33 +272,36 @@
     return (params.get("daerah") || "").trim().toUpperCase();
   }
 
+  function populateDaerahOptions() {
+    const sel = $("#daerah");
+    if (!sel || sel.options.length > 1) return;
+
+    (window.DAERAH_LIST || []).forEach(function (d) {
+      const opt = document.createElement("option");
+      opt.value = d.kod;
+      opt.textContent = d.nama;
+      sel.appendChild(opt);
+    });
+
+    applyDaerahFromUrl();
+  }
+
   function applyDaerahFromUrl() {
     const kod = getUrlDaerah();
     const sel = $("#daerah");
     if (!sel || !kod) return;
+
+    let found = false;
     for (let i = 0; i < sel.options.length; i++) {
       if (sel.options[i].value === kod) {
         sel.value = kod;
+        found = true;
         break;
       }
     }
-  }
 
-  async function loadDaerahOptions() {
-    const sel = $("#daerah");
-    if (!sel) return;
-    try {
-      const data = await apiCall("getDaerahList", {});
-      if (!data.ok) return;
-      (data.daerah || []).forEach(function (d) {
-        const opt = document.createElement("option");
-        opt.value = d.kod;
-        opt.textContent = d.nama;
-        sel.appendChild(opt);
-      });
-      applyDaerahFromUrl();
-    } catch {
-      /* senyap — pengguna masih boleh cuba log masuk */
+    if (found) {
+      sel.disabled = true;
     }
   }
 
@@ -428,7 +437,7 @@
       configWarning.hidden = false;
     }
 
-    loadDaerahOptions();
+    populateDaerahOptions();
 
     $("#form-login").addEventListener("submit", (e) => {
       e.preventDefault();
