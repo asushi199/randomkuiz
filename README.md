@@ -57,9 +57,13 @@ Contoh:
 | kod | nama |
 |-----|------|
 | MANJUNG | Daerah Manjung |
-| LARUT | Daerah Larut, Matang dan Selama |
+| KERIAN | Daerah Kerian |
+| PERAK_TENGAH | Daerah Perak Tengah |
+| … | *(12 daerah — lihat `data/daerah-perak.csv`)* |
+| KINTA_UTARA | Daerah Kinta Utara |
+| KINTA_SELATAN | Daerah Kinta Selatan |
 
-> `kod` huruf besar, tanpa ruang (gunakan `_` jika perlu). Senarai penuh 12 daerah diisi oleh jawatankuasa negeri.
+> `kod` huruf besar, tanpa ruang (gunakan `_` jika perlu). Import [`data/daerah-perak.csv`](data/daerah-perak.csv) ke helaian `Daerah`; kemas kini [`js/daerah-perak.js`](js/daerah-perak.js) jika senarai berubah.
 
 ### Pentadbir (PIN — jangan kongsi helaian ini)
 
