@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kuiz Ilmuan Cilik — FiESH Manjung</title>
+    <title>Kuiz Ilmuan Cilik — FiESH</title>
     <link rel="stylesheet" href="css/style.css?v=2" />
   </head>
   <body>
     <header class="header">
       <h1>Kuiz Ilmuan Cilik</h1>
       <p class="subtitle">Festival Insaniah Asrama Sekolah Harian (FiESH)</p>
-      <p class="subtitle subtitle-sm">Peringkat Daerah Manjung</p>
+      <p class="subtitle subtitle-sm">Peringkat Daerah</p>
       <p class="subtitle subtitle-sm">
         50 soalan merentas semua topik<br />
         (Al-Quran, Hadis, Aqidah, Ibadah, Sirah, Adab, Jawi)
@@ -21,6 +21,11 @@
       <section id="view-login" class="card">
         <h2>Log Masuk Kuiz</h2>
         <form id="form-login" novalidate>
+          <label for="daerah">Pilih Daerah</label>
+          <select id="daerah" name="daerah" required>
+            <option value="">— Sila pilih —</option>
+          </select>
+
           <label for="ic">No. Kad Pengenalan</label>
           <input
             type="text"
@@ -89,7 +94,7 @@
       </p>
     </main>
 
-    <script src="js/config.example.js?v=7"></script>
-    <script src="js/app.js?v=7"></script>
+    <script src="js/config.example.js?v=8"></script>
+    <script src="js/app.js?v=8"></script>
   </body>
 </html>

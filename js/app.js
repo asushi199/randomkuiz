@@ -3,6 +3,7 @@
 
   const STORAGE_IC = "exam_ic";
   const STORAGE_NAMA = "exam_nama";
+  const STORAGE_DAERAH = "exam_daerah";
   const STORAGE_ATTEMPT = "exam_attempt_id";
   const STORAGE_BATAS_MS = "exam_batas_ms";
   const API_MAX_RETRIES = 6;
@@ -29,6 +30,7 @@
   let state = {
     ic: "",
     nama: "",
+    daerah: "",
     attemptId: "",
     soalan: [],
     batasMs: 0,
@@ -74,9 +76,10 @@
 
   function goBackToLogin() {
     sessionStorage.clear();
-    state = { ic: "", nama: "", attemptId: "", soalan: [], batasMs: 0 };
+    state = { ic: "", nama: "", daerah: "", attemptId: "", soalan: [], batasMs: 0 };
     const formLogin = $("#form-login");
     if (formLogin) formLogin.reset();
+    applyDaerahFromUrl();
     showError(loginError, "");
     showError(examError, "");
     setView("login");
@@ -242,6 +245,7 @@
   function saveSession() {
     sessionStorage.setItem(STORAGE_IC, state.ic);
     sessionStorage.setItem(STORAGE_NAMA, state.nama);
+    sessionStorage.setItem(STORAGE_DAERAH, state.daerah);
     sessionStorage.setItem(STORAGE_ATTEMPT, state.attemptId);
     if (state.batasMs) {
       sessionStorage.setItem(STORAGE_BATAS_MS, String(state.batasMs));
@@ -251,12 +255,48 @@
   function loadSession() {
     state.ic = sessionStorage.getItem(STORAGE_IC) || "";
     state.nama = sessionStorage.getItem(STORAGE_NAMA) || "";
+    state.daerah = sessionStorage.getItem(STORAGE_DAERAH) || "";
     state.attemptId = sessionStorage.getItem(STORAGE_ATTEMPT) || "";
     const batas = sessionStorage.getItem(STORAGE_BATAS_MS);
     state.batasMs = batas ? parseInt(batas, 10) : 0;
   }
 
-  async function handleStart(ic, nama) {
+  function getUrlDaerah() {
+    const params = new URLSearchParams(window.location.search);
+    return (params.get("daerah") || "").trim().toUpperCase();
+  }
+
+  function applyDaerahFromUrl() {
+    const kod = getUrlDaerah();
+    const sel = $("#daerah");
+    if (!sel || !kod) return;
+    for (let i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === kod) {
+        sel.value = kod;
+        break;
+      }
+    }
+  }
+
+  async function loadDaerahOptions() {
+    const sel = $("#daerah");
+    if (!sel) return;
+    try {
+      const data = await apiCall("getDaerahList", {});
+      if (!data.ok) return;
+      (data.daerah || []).forEach(function (d) {
+        const opt = document.createElement("option");
+        opt.value = d.kod;
+        opt.textContent = d.nama;
+        sel.appendChild(opt);
+      });
+      applyDaerahFromUrl();
+    } catch {
+      /* senyap — pengguna masih boleh cuba log masuk */
+    }
+  }
+
+  async function handleStart(ic, nama, daerah) {
     const btn = $("#btn-start");
     btn.disabled = true;
     showError(loginError, "");
@@ -265,7 +305,7 @@
     try {
       const data = await apiCall(
         "startExam",
-        { ic: ic, nama: nama },
+        { ic: ic, nama: nama, daerah: daerah },
         undefined,
         function () {
           showWait(loginWait, true, MSJ_TUNGGU_SOALAN);
@@ -275,6 +315,7 @@
         if (data.sudah_hantar) {
           state.ic = ic;
           state.nama = nama;
+          state.daerah = daerah;
           showThanks(data.mesej_terima_kasih);
           return;
         }
@@ -284,6 +325,7 @@
 
       state.ic = ic;
       state.nama = data.nama || nama;
+      state.daerah = data.daerah || daerah;
       state.attemptId = data.attempt_id;
       state.soalan = data.soalan || [];
       saveSession();
@@ -348,7 +390,10 @@
     if (!state.ic || !getApiUrl()) return;
 
     try {
-      const result = await apiCall("getResult", { ic: state.ic });
+      const result = await apiCall("getResult", {
+        ic: state.ic,
+        daerah: state.daerah,
+      });
       if (result.ok && result.sudah_hantar) {
         showThanks(result.mesej_terima_kasih);
         return;
@@ -363,6 +408,7 @@
       const data = await apiCall("startExam", {
         ic: state.ic,
         nama: state.nama || "Peserta",
+        daerah: state.daerah,
       });
       if (data.ok && data.soalan && data.soalan.length) {
         state.soalan = data.soalan;
@@ -382,15 +428,22 @@
       configWarning.hidden = false;
     }
 
+    loadDaerahOptions();
+
     $("#form-login").addEventListener("submit", (e) => {
       e.preventDefault();
+      const daerah = ($("#daerah") && $("#daerah").value) || "";
       const ic = $("#ic").value.trim();
       const nama = $("#nama").value.trim();
+      if (!daerah) {
+        showError(loginError, "Sila pilih daerah.");
+        return;
+      }
       if (!ic || !nama) {
         showError(loginError, "Sila isi IC dan nama penuh.");
         return;
       }
-      handleStart(ic, nama);
+      handleStart(ic, nama, daerah);
     });
 
     $("#form-exam").addEventListener("submit", (e) => {

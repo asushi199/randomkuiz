@@ -9,7 +9,7 @@
   <body>
     <header class="header header-admin">
       <h1>Semakan Jawapan</h1>
-      <p class="subtitle">Kuiz Ilmuan Cilik — FiESH, Peringkat Daerah Manjung</p>
+      <p class="subtitle">Kuiz Ilmuan Cilik — FiESH, Peringkat Daerah</p>
       <p class="subtitle subtitle-sm">Untuk pentadbir dan juri sahaja</p>
     </header>
 
@@ -48,6 +48,50 @@
         </form>
       </section>
 
+      <section id="view-negeri-tools" class="card" hidden>
+        <h2>Pengurusan Peringkat Negeri</h2>
+        <p class="hint">
+          Tindakan ini hanya tersedia dengan PIN peringkat negeri.
+        </p>
+
+        <div class="negeri-block">
+          <h3>Reset Data Peperiksaan</h3>
+          <p class="hint">
+            Kosongkan rekod Percubaan dan Keputusan sebelum perlawanan rasmi.
+            Bank soalan, senarai daerah dan PIN tidak diubah.
+          </p>
+          <button type="button" class="btn btn-secondary" id="btn-reset-exam">
+            Reset Data Peperiksaan
+          </button>
+          <p id="reset-msg" class="success" hidden></p>
+        </div>
+
+        <div class="negeri-block">
+          <h3>Tukar PIN Daerah</h3>
+          <form id="form-set-pin" novalidate>
+            <label for="pin-daerah-kod">Daerah</label>
+            <select id="pin-daerah-kod" name="kod_daerah" required>
+              <option value="">— Sila pilih —</option>
+            </select>
+
+            <label for="pin-baru">PIN Baharu (6–12 digit)</label>
+            <input
+              type="password"
+              id="pin-baru"
+              name="pin_baru"
+              inputmode="numeric"
+              autocomplete="off"
+              required
+            />
+
+            <p id="setpin-msg" class="success" hidden></p>
+            <button type="submit" class="btn btn-secondary" id="btn-set-pin">
+              Kemas Kini PIN
+            </button>
+          </form>
+        </div>
+      </section>
+
       <section id="view-admin-ranking" class="card admin-report" hidden>
         <div class="export-bar no-print">
           <span class="export-label">Eksport:</span>
@@ -64,10 +108,10 @@
         <div id="print-area-ranking" class="print-area">
           <div class="print-letterhead">
             <p class="print-title">Kuiz Ilmuan Cilik — FiESH</p>
-            <p class="print-sub">Peringkat Daerah Manjung — Kedudukan Keseluruhan</p>
+            <p class="print-sub" id="print-sub-ranking">Peringkat Daerah — Kedudukan</p>
             <p class="print-date"></p>
           </div>
-          <h2>Kedudukan Keseluruhan</h2>
+          <h2 id="ranking-title">Kedudukan</h2>
           <p class="ranking-meta">
             <span id="ranking-count"></span> — susunan: markah tertinggi; sama
             markah ikut tempoh jawapan (siapa siap lebih cepat kedudukan lebih
@@ -76,10 +120,11 @@
           <div class="table-wrap">
             <table class="ranking-table">
               <thead>
-                <tr>
+                <tr id="ranking-head-row">
                   <th>Ked.</th>
                   <th>Nama</th>
                   <th>No. KP</th>
+                  <th class="col-daerah" hidden>Daerah</th>
                   <th>Betul</th>
                   <th>Markah</th>
                   <th>Tempoh Jawapan</th>
@@ -107,7 +152,7 @@
         <div id="print-area-result" class="print-area">
           <div class="print-letterhead">
             <p class="print-title">Kuiz Ilmuan Cilik — FiESH</p>
-            <p class="print-sub">Peringkat Daerah Manjung — Semakan Jawapan Peserta</p>
+            <p class="print-sub">Peringkat Daerah — Semakan Jawapan Peserta</p>
             <p class="print-date"></p>
           </div>
           <h2>Keputusan Peserta</h2>
@@ -136,7 +181,7 @@
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
-    <script src="js/config.example.js?v=8"></script>
-    <script src="js/pentadbir.js?v=8"></script>
+    <script src="js/config.example.js?v=9"></script>
+    <script src="js/pentadbir.js?v=9"></script>
   </body>
 </html>

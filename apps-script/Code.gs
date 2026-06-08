@@ -1,14 +1,19 @@
 /**
  * Peperiksaan dalam talian — Google Apps Script backend
- * Script properties: SPREADSHEET_ID, ADMIN_PIN
+ * Script properties: SPREADSHEET_ID, ADMIN_PIN (fallback jika helaian Pentadbir kosong)
  */
 
 const JUMLAH_SOALAN = 50;
 const SHEET_SOALAN = 'Soalan';
 const SHEET_PERCUBAAN = 'Percubaan';
 const SHEET_KEPUTUSAN = 'Keputusan';
+const SHEET_DAERAH = 'Daerah';
+const SHEET_PENTADBIR = 'Pentadbir';
 const STATUS_SEDANG = 'sedang';
 const STATUS_SELESAI = 'selesai';
+const PERANAN_DAERAH = 'daerah';
+const PERANAN_NEGERI = 'negeri';
+const KOD_NEGERI = 'NEGERI';
 const TOPIK_LIST = [
   'AKIDAH',
   'ALQURAN',
@@ -46,16 +51,26 @@ function handleRequest(e) {
     delete payload.action;
 
     switch (action) {
+      case 'getDaerahList':
+        return jsonResponse(getDaerahList());
       case 'startExam':
-        return jsonResponse(startExam(payload.ic, payload.nama));
+        return jsonResponse(
+          startExam(payload.ic, payload.nama, payload.daerah)
+        );
       case 'submitExam':
         return jsonResponse(
           submitExam(payload.ic, payload.attempt_id, payload.jawapan)
         );
       case 'getResult':
-        return jsonResponse(getResult(payload.ic));
+        return jsonResponse(getResult(payload.ic, payload.daerah));
       case 'adminReview':
         return jsonResponse(adminReview(payload.pin, payload.ic));
+      case 'adminReset':
+        return jsonResponse(adminReset(payload.pin));
+      case 'adminSetPin':
+        return jsonResponse(
+          adminSetPin(payload.pin, payload.kod_daerah, payload.pin_baru)
+        );
       default:
         return jsonResponse({ ok: false, ralat: 'Tindakan tidak dikenali.' });
     }
@@ -85,7 +100,7 @@ function getSpreadsheetId_() {
   return id;
 }
 
-function getAdminPin_() {
+function getLegacyAdminPin_() {
   return (
     PropertiesService.getScriptProperties().getProperty('ADMIN_PIN') || ''
   ).trim();
@@ -119,12 +134,17 @@ function initSheetHeaders_(sh, name) {
       'D',
       'jawapan',
     ]);
+  } else if (name === SHEET_DAERAH) {
+    sh.appendRow(['kod', 'nama']);
+  } else if (name === SHEET_PENTADBIR) {
+    sh.appendRow(['kod_daerah', 'nama_daerah', 'pin', 'peranan']);
   } else if (name === SHEET_PERCUBAAN) {
     sh.appendRow([
       'attempt_id',
       'masa_mula',
       'ic',
       'nama',
+      'daerah',
       'soalan_ids',
       'status',
       'topik_lapan',
@@ -135,6 +155,7 @@ function initSheetHeaders_(sh, name) {
       'masa_hantar',
       'ic',
       'nama',
+      'daerah',
       'betul',
       'jumlah',
       'skor',
@@ -155,12 +176,221 @@ function normalizeNama_(nama) {
   return String(nama || '').trim();
 }
 
+function normalizeDaerah_(daerah) {
+  return String(daerah || '')
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, '_');
+}
+
+function normalizePin_(pin) {
+  return String(pin || '').trim();
+}
+
 function headerIndex_(header, names) {
   const out = {};
   names.forEach(function (n) {
     out[n] = header.indexOf(n);
   });
   return out;
+}
+
+function getDaerahList() {
+  const sh = getSheet_(SHEET_DAERAH);
+  const data = sh.getDataRange().getValues();
+  if (data.length < 2) {
+    return { ok: true, daerah: [] };
+  }
+  const header = data[0].map(function (h) {
+    return String(h).toLowerCase().trim();
+  });
+  const cKod = header.indexOf('kod');
+  const cNama = header.indexOf('nama');
+  const list = [];
+  for (let r = 1; r < data.length; r++) {
+    const kod = normalizeDaerah_(data[r][cKod]);
+    if (!kod) continue;
+    list.push({
+      kod: kod,
+      nama: String(data[r][cNama] || kod).trim(),
+    });
+  }
+  return { ok: true, daerah: list };
+}
+
+function loadDaerahNamaMap_() {
+  const result = getDaerahList();
+  const map = {};
+  (result.daerah || []).forEach(function (d) {
+    map[d.kod] = d.nama;
+  });
+  return map;
+}
+
+function isValidDaerahKod_(kod) {
+  const norm = normalizeDaerah_(kod);
+  if (!norm) return false;
+  const list = getDaerahList().daerah || [];
+  if (!list.length) return true;
+  return list.some(function (d) {
+    return d.kod === norm;
+  });
+}
+
+function loadPentadbirRows_() {
+  const sh = getSheet_(SHEET_PENTADBIR);
+  const data = sh.getDataRange().getValues();
+  if (data.length < 2) return [];
+  const header = data[0].map(function (h) {
+    return String(h).toLowerCase().trim();
+  });
+  const cKod = header.indexOf('kod_daerah');
+  const cNama = header.indexOf('nama_daerah');
+  const cPin = header.indexOf('pin');
+  const cPeranan = header.indexOf('peranan');
+  const rows = [];
+  for (let r = 1; r < data.length; r++) {
+    const pin = normalizePin_(data[r][cPin]);
+    if (!pin) continue;
+    rows.push({
+      kod_daerah: normalizeDaerah_(data[r][cKod]),
+      nama_daerah: String(data[r][cNama] || '').trim(),
+      pin: pin,
+      peranan: String(data[r][cPeranan] || PERANAN_DAERAH)
+        .trim()
+        .toLowerCase(),
+      row: r + 1,
+    });
+  }
+  return rows;
+}
+
+function verifyAdminPin_(pin) {
+  const input = normalizePin_(pin);
+  if (!input) {
+    return { ok: false, ralat: 'PIN diperlukan.' };
+  }
+
+  const rows = loadPentadbirRows_();
+  if (rows.length) {
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i].pin === input) {
+        return {
+          ok: true,
+          peranan: rows[i].peranan === PERANAN_NEGERI ? PERANAN_NEGERI : PERANAN_DAERAH,
+          kod_daerah: rows[i].kod_daerah,
+          nama_daerah: rows[i].nama_daerah || rows[i].kod_daerah,
+        };
+      }
+    }
+    return { ok: false, ralat: 'PIN tidak sah.' };
+  }
+
+  const legacy = getLegacyAdminPin_();
+  if (!legacy) {
+    return { ok: false, ralat: 'PIN pentadbir belum dikonfigurasi.' };
+  }
+  if (input !== legacy) {
+    return { ok: false, ralat: 'PIN tidak sah.' };
+  }
+  return {
+    ok: true,
+    peranan: PERANAN_NEGERI,
+    kod_daerah: KOD_NEGERI,
+    nama_daerah: 'Peringkat Negeri',
+  };
+}
+
+function requireNegeriPin_(pin) {
+  const check = verifyAdminPin_(pin);
+  if (!check.ok) return check;
+  if (check.peranan !== PERANAN_NEGERI) {
+    return {
+      ok: false,
+      ralat: 'Hanya PIN peringkat negeri dibenarkan untuk tindakan ini.',
+    };
+  }
+  return check;
+}
+
+function isWeakPin_(pin) {
+  const p = normalizePin_(pin);
+  if (!/^\d{6,12}$/.test(p)) {
+    return 'PIN mesti 6–12 digit nombor.';
+  }
+  if (/^(\d)\1+$/.test(p)) {
+    return 'PIN terlalu mudah (semua digit sama).';
+  }
+  const asc = '012345678901234567890123456789012345678901234567890';
+  const desc = '987654321098765432109876543210987654321098765432109876';
+  if (asc.indexOf(p) >= 0 || desc.indexOf(p) >= 0) {
+    return 'PIN terlalu mudah (urutan nombor).';
+  }
+  if (p === '123456' || p === '654321' || p === '111111' || p === '000000') {
+    return 'PIN terlalu mudah.';
+  }
+  return '';
+}
+
+function clearSheetDataRows_(sheetName) {
+  const sh = getSheet_(sheetName);
+  const last = sh.getLastRow();
+  if (last > 1) {
+    sh.deleteRows(2, last - 1);
+  }
+}
+
+function adminReset(pin) {
+  const check = requireNegeriPin_(pin);
+  if (!check.ok) return check;
+
+  clearSheetDataRows_(SHEET_PERCUBAAN);
+  clearSheetDataRows_(SHEET_KEPUTUSAN);
+
+  return {
+    ok: true,
+    mesej:
+      'Data Percubaan dan Keputusan telah dikosongkan. Bank soalan, daerah dan PIN tidak diubah.',
+  };
+}
+
+function adminSetPin(pin, kodDaerah, pinBaru) {
+  const check = requireNegeriPin_(pin);
+  if (!check.ok) return check;
+
+  const kod = normalizeDaerah_(kodDaerah);
+  if (!kod || kod === KOD_NEGERI) {
+    return { ok: false, ralat: 'Kod daerah tidak sah.' };
+  }
+
+  const weak = isWeakPin_(pinBaru);
+  if (weak) {
+    return { ok: false, ralat: weak };
+  }
+
+  const sh = getSheet_(SHEET_PENTADBIR);
+  const data = sh.getDataRange().getValues();
+  if (data.length < 2) {
+    return { ok: false, ralat: 'Helaian Pentadbir kosong.' };
+  }
+
+  const header = data[0].map(function (h) {
+    return String(h).toLowerCase().trim();
+  });
+  const cKod = header.indexOf('kod_daerah');
+  const cPin = header.indexOf('pin');
+
+  for (let r = 1; r < data.length; r++) {
+    if (normalizeDaerah_(data[r][cKod]) === kod) {
+      sh.getRange(r + 1, cPin + 1).setValue(normalizePin_(pinBaru));
+      return {
+        ok: true,
+        mesej: 'PIN daerah ' + kod + ' telah dikemas kini.',
+      };
+    }
+  }
+
+  return { ok: false, ralat: 'Kod daerah tidak dijumpai dalam Pentadbir.' };
 }
 
 function loadQuestionBank_() {
@@ -268,7 +498,15 @@ function getPercubaanHeaders_() {
   });
 }
 
-function findActiveAttempt_(ic) {
+function rowMatchesDaerah_(rowDaerah, daerahNorm) {
+  const rowNorm = normalizeDaerah_(rowDaerah);
+  if (!daerahNorm) return true;
+  if (!rowNorm) return true;
+  return rowNorm === daerahNorm;
+}
+
+function findActiveAttempt_(ic, daerah) {
+  const daerahNorm = normalizeDaerah_(daerah);
   const sh = getSheet_(SHEET_PERCUBAAN);
   const data = sh.getDataRange().getValues();
   const header = data[0].map(function (h) {
@@ -277,6 +515,7 @@ function findActiveAttempt_(ic) {
   const cAttempt = header.indexOf('attempt_id');
   const cIc = header.indexOf('ic');
   const cNama = header.indexOf('nama');
+  const cDaerah = header.indexOf('daerah');
   const cIds = header.indexOf('soalan_ids');
   const cStatus = header.indexOf('status');
   const cMula = header.indexOf('masa_mula');
@@ -284,7 +523,8 @@ function findActiveAttempt_(ic) {
   for (let r = data.length - 1; r >= 1; r--) {
     if (
       normalizeIc_(data[r][cIc]) === ic &&
-      data[r][cStatus] === STATUS_SEDANG
+      data[r][cStatus] === STATUS_SEDANG &&
+      rowMatchesDaerah_(cDaerah >= 0 ? data[r][cDaerah] : '', daerahNorm)
     ) {
       return {
         row: r + 1,
@@ -297,13 +537,15 @@ function findActiveAttempt_(ic) {
           })
           .filter(Boolean),
         nama: String(data[r][cNama]),
+        daerah: cDaerah >= 0 ? normalizeDaerah_(data[r][cDaerah]) : daerahNorm,
       };
     }
   }
   return null;
 }
 
-function findFinishedAttempt_(ic) {
+function findFinishedAttempt_(ic, daerah) {
+  const daerahNorm = normalizeDaerah_(daerah);
   const sh = getSheet_(SHEET_PERCUBAAN);
   const data = sh.getDataRange().getValues();
   const header = data[0].map(function (h) {
@@ -311,12 +553,14 @@ function findFinishedAttempt_(ic) {
   });
   const cAttempt = header.indexOf('attempt_id');
   const cIc = header.indexOf('ic');
+  const cDaerah = header.indexOf('daerah');
   const cStatus = header.indexOf('status');
 
   for (let r = data.length - 1; r >= 1; r--) {
     if (
       normalizeIc_(data[r][cIc]) === ic &&
-      data[r][cStatus] === STATUS_SELESAI
+      data[r][cStatus] === STATUS_SELESAI &&
+      rowMatchesDaerah_(cDaerah >= 0 ? data[r][cDaerah] : '', daerahNorm)
     ) {
       return { attempt_id: String(data[r][cAttempt]) };
     }
@@ -380,18 +624,53 @@ function newAttemptId_() {
   );
 }
 
-function startExam(ic, nama) {
+function appendPercubaanRow_(values) {
+  const sh = getSheet_(SHEET_PERCUBAAN);
+  const header = getPercubaanHeaders_();
+  const cDaerah = header.indexOf('daerah');
+  if (cDaerah >= 0) {
+    sh.appendRow([
+      values.attemptId,
+      values.masaMula,
+      values.ic,
+      values.nama,
+      values.daerah,
+      values.soalanIds,
+      values.status,
+      values.topikLapan,
+    ]);
+  } else {
+    sh.appendRow([
+      values.attemptId,
+      values.masaMula,
+      values.ic,
+      values.nama,
+      values.soalanIds,
+      values.status,
+      values.topikLapan,
+    ]);
+  }
+}
+
+function startExam(ic, nama, daerah) {
   const icNorm = normalizeIc_(ic);
   const namaNorm = normalizeNama_(nama);
+  const daerahNorm = normalizeDaerah_(daerah);
   if (!icNorm || icNorm.length < 6) {
     return { ok: false, ralat: 'No. Kad Pengenalan tidak sah.' };
   }
   if (!namaNorm) {
     return { ok: false, ralat: 'Nama penuh diperlukan.' };
   }
+  if (!daerahNorm) {
+    return { ok: false, ralat: 'Sila pilih daerah.' };
+  }
+  if (!isValidDaerahKod_(daerahNorm)) {
+    return { ok: false, ralat: 'Daerah tidak sah. Sila pilih semula.' };
+  }
 
   const bank = loadQuestionBank_();
-  const finished = findFinishedAttempt_(icNorm);
+  const finished = findFinishedAttempt_(icNorm, daerahNorm);
   if (finished) {
     return {
       ok: false,
@@ -401,7 +680,7 @@ function startExam(ic, nama) {
     };
   }
 
-  let active = findActiveAttempt_(icNorm);
+  let active = findActiveAttempt_(icNorm, daerahNorm);
   if (active) {
     const questions = buildQuestionsFromIds_(bank, active.soalan_ids);
     const timing = buildTimingInfo_(active.masa_mula);
@@ -418,6 +697,7 @@ function startExam(ic, nama) {
         ok: true,
         attempt_id: active.attempt_id,
         nama: active.nama || namaNorm,
+        daerah: active.daerah || daerahNorm,
         soalan: stripAnswers_(questions),
         jumlah: questions.length,
         sambungan: true,
@@ -428,16 +708,16 @@ function startExam(ic, nama) {
 
   const paper = buildExamPaper_(bank);
   const attemptId = newAttemptId_();
-  const sh = getSheet_(SHEET_PERCUBAAN);
-  sh.appendRow([
-    attemptId,
-    new Date(),
-    icNorm,
-    namaNorm,
-    paper.ids.join(','),
-    STATUS_SEDANG,
-    paper.topik_lapan,
-  ]);
+  appendPercubaanRow_({
+    attemptId: attemptId,
+    masaMula: new Date(),
+    ic: icNorm,
+    nama: namaNorm,
+    daerah: daerahNorm,
+    soalanIds: paper.ids.join(','),
+    status: STATUS_SEDANG,
+    topikLapan: paper.topik_lapan,
+  });
 
   const questions = buildQuestionsFromIds_(bank, paper.ids);
   const timing = buildTimingInfo_(new Date());
@@ -446,6 +726,7 @@ function startExam(ic, nama) {
       ok: true,
       attempt_id: attemptId,
       nama: namaNorm,
+      daerah: daerahNorm,
       soalan: stripAnswers_(questions),
       jumlah: questions.length,
       sambungan: false,
@@ -463,6 +744,7 @@ function getAttemptRow_(attemptId, ic) {
   const cAttempt = header.indexOf('attempt_id');
   const cIc = header.indexOf('ic');
   const cNama = header.indexOf('nama');
+  const cDaerah = header.indexOf('daerah');
   const cIds = header.indexOf('soalan_ids');
   const cStatus = header.indexOf('status');
   const cMula = header.indexOf('masa_mula');
@@ -478,6 +760,7 @@ function getAttemptRow_(attemptId, ic) {
         attempt_id: String(data[r][cAttempt]),
         ic: normalizeIc_(data[r][cIc]),
         nama: String(data[r][cNama]),
+        daerah: cDaerah >= 0 ? normalizeDaerah_(data[r][cDaerah]) : '',
         masa_mula: cMula >= 0 ? data[r][cMula] : '',
         soalan_ids: String(data[r][cIds])
           .split(',')
@@ -492,6 +775,43 @@ function getAttemptRow_(attemptId, ic) {
     }
   }
   return null;
+}
+
+function appendKeputusanRow_(values) {
+  const sh = getSheet_(SHEET_KEPUTUSAN);
+  const header = sh
+    .getRange(1, 1, 1, sh.getLastColumn())
+    .getValues()[0]
+    .map(function (h) {
+      return String(h).toLowerCase().trim();
+    });
+  const cDaerah = header.indexOf('daerah');
+  if (cDaerah >= 0) {
+    sh.appendRow([
+      values.attemptId,
+      values.masaHantar,
+      values.ic,
+      values.nama,
+      values.daerah,
+      values.betul,
+      values.jumlah,
+      values.skor,
+      values.jawapanJson,
+      values.butiranJson,
+    ]);
+  } else {
+    sh.appendRow([
+      values.attemptId,
+      values.masaHantar,
+      values.ic,
+      values.nama,
+      values.betul,
+      values.jumlah,
+      values.skor,
+      values.jawapanJson,
+      values.butiranJson,
+    ]);
+  }
 }
 
 function submitExam(ic, attemptId, jawapan) {
@@ -537,18 +857,18 @@ function submitExam(ic, attemptId, jawapan) {
   const cStatus = header.indexOf('status');
   shPercubaan.getRange(attempt.row, cStatus + 1).setValue(STATUS_SELESAI);
 
-  const shKeputusan = getSheet_(SHEET_KEPUTUSAN);
-  shKeputusan.appendRow([
-    attempt.attempt_id,
-    new Date(),
-    icNorm,
-    attempt.nama,
-    graded.betul,
-    graded.jumlah,
-    graded.skor,
-    JSON.stringify(jawapanMap),
-    JSON.stringify(graded.butiran),
-  ]);
+  appendKeputusanRow_({
+    attemptId: attempt.attempt_id,
+    masaHantar: new Date(),
+    ic: icNorm,
+    nama: attempt.nama,
+    daerah: attempt.daerah,
+    betul: graded.betul,
+    jumlah: graded.jumlah,
+    skor: graded.skor,
+    jawapanJson: JSON.stringify(jawapanMap),
+    butiranJson: JSON.stringify(graded.butiran),
+  });
 
   return {
     ok: true,
@@ -556,13 +876,14 @@ function submitExam(ic, attemptId, jawapan) {
   };
 }
 
-function getResult(ic) {
+function getResult(ic, daerah) {
   const icNorm = normalizeIc_(ic);
+  const daerahNorm = normalizeDaerah_(daerah);
   if (!icNorm) {
     return { ok: false, ralat: 'IC diperlukan.' };
   }
 
-  if (findFinishedAttempt_(icNorm)) {
+  if (findFinishedAttempt_(icNorm, daerahNorm)) {
     return {
       ok: true,
       sudah_hantar: true,
@@ -573,7 +894,7 @@ function getResult(ic) {
   return { ok: false, ralat: 'Tiada rekod peperiksaan.' };
 }
 
-function findKeputusanByIc_(icNorm) {
+function findKeputusanByIc_(icNorm, daerahFilter) {
   const sh = getSheet_(SHEET_KEPUTUSAN);
   const data = sh.getDataRange().getValues();
   if (data.length < 2) return null;
@@ -584,40 +905,33 @@ function findKeputusanByIc_(icNorm) {
   const cAttempt = header.indexOf('attempt_id');
   const cIc = header.indexOf('ic');
   const cNama = header.indexOf('nama');
+  const cDaerah = header.indexOf('daerah');
   const cBetul = header.indexOf('betul');
   const cJumlah = header.indexOf('jumlah');
   const cSkor = header.indexOf('skor');
   const cMasa = header.indexOf('masa_hantar');
   const cJawapan = header.indexOf('jawapan_json');
   const cButiran = header.indexOf('butiran_json');
+  const filterNorm = normalizeDaerah_(daerahFilter);
 
   for (let r = data.length - 1; r >= 1; r--) {
-    if (normalizeIc_(data[r][cIc]) === icNorm) {
-      return {
-        attempt_id: String(data[r][cAttempt]),
-        masa_hantar: cMasa >= 0 ? data[r][cMasa] : '',
-        nama: String(data[r][cNama]),
-        betul: Number(data[r][cBetul]),
-        jumlah: Number(data[r][cJumlah]),
-        skor: Number(data[r][cSkor]),
-        jawapan_json: data[r][cJawapan],
-        butiran_json: cButiran >= 0 ? data[r][cButiran] : '',
-        row: r,
-      };
-    }
+    if (normalizeIc_(data[r][cIc]) !== icNorm) continue;
+    const rowDaerah = cDaerah >= 0 ? normalizeDaerah_(data[r][cDaerah]) : '';
+    if (filterNorm && rowDaerah && rowDaerah !== filterNorm) continue;
+    return {
+      attempt_id: String(data[r][cAttempt]),
+      masa_hantar: cMasa >= 0 ? data[r][cMasa] : '',
+      nama: String(data[r][cNama]),
+      daerah: rowDaerah,
+      betul: Number(data[r][cBetul]),
+      jumlah: Number(data[r][cJumlah]),
+      skor: Number(data[r][cSkor]),
+      jawapan_json: data[r][cJawapan],
+      butiran_json: cButiran >= 0 ? data[r][cButiran] : '',
+      row: r,
+    };
   }
   return null;
-}
-
-function verifyAdminPin_(pin) {
-  const expectedPin = getAdminPin_();
-  if (!expectedPin) {
-    return { ok: false, ralat: 'PIN pentadbir belum dikonfigurasi.' };
-  }
-  if (String(pin || '').trim() !== expectedPin) {
-    return { ok: false, ralat: 'PIN tidak sah.' };
-  }
-  return { ok: true };
 }
 
 function toTimeMs_(value) {
@@ -717,7 +1031,7 @@ function isBetterKeputusan_(a, b) {
   return a.tempoh_ms < b.tempoh_ms;
 }
 
-function loadAllKeputusanRows_() {
+function loadAllKeputusanRows_(daerahFilter) {
   const sh = getSheet_(SHEET_KEPUTUSAN);
   const data = sh.getDataRange().getValues();
   if (data.length < 2) return [];
@@ -729,19 +1043,25 @@ function loadAllKeputusanRows_() {
   const cMasa = header.indexOf('masa_hantar');
   const cIc = header.indexOf('ic');
   const cNama = header.indexOf('nama');
+  const cDaerah = header.indexOf('daerah');
   const cBetul = header.indexOf('betul');
   const cJumlah = header.indexOf('jumlah');
   const cSkor = header.indexOf('skor');
+  const filterNorm = normalizeDaerah_(daerahFilter);
 
   const rows = [];
   for (let r = 1; r < data.length; r++) {
     const ic = normalizeIc_(data[r][cIc]);
     if (!ic) continue;
+    const rowDaerah = cDaerah >= 0 ? normalizeDaerah_(data[r][cDaerah]) : '';
+    if (filterNorm && rowDaerah && rowDaerah !== filterNorm) continue;
+    if (filterNorm && !rowDaerah) continue;
     rows.push({
       attempt_id: String(data[r][cAttempt]),
       masa_hantar: data[r][cMasa],
       ic: ic,
       nama: String(data[r][cNama]),
+      daerah: rowDaerah,
       betul: Number(data[r][cBetul]),
       jumlah: Number(data[r][cJumlah]),
       skor: Number(data[r][cSkor]),
@@ -750,24 +1070,26 @@ function loadAllKeputusanRows_() {
   return rows;
 }
 
-function buildRanking_() {
-  const rows = loadAllKeputusanRows_();
+function buildRanking_(daerahFilter, includeDaerah) {
+  const rows = loadAllKeputusanRows_(daerahFilter);
   const masaMulaMap = getAttemptMasaMulaMap_();
-  const byIc = {};
+  const daerahNamaMap = loadDaerahNamaMap_();
+  const byKey = {};
 
   rows.forEach(function (row) {
     const enriched = Object.assign(
       row,
       enrichRowWithTempoh_(row, masaMulaMap)
     );
-    const existing = byIc[row.ic];
+    const key = row.ic + '|' + (row.daerah || '');
+    const existing = byKey[key];
     if (!existing || isBetterKeputusan_(enriched, existing)) {
-      byIc[row.ic] = enriched;
+      byKey[key] = enriched;
     }
   });
 
-  const list = Object.keys(byIc).map(function (ic) {
-    return byIc[ic];
+  const list = Object.keys(byKey).map(function (key) {
+    return byKey[key];
   });
 
   list.sort(function (a, b) {
@@ -776,7 +1098,7 @@ function buildRanking_() {
   });
 
   return list.map(function (row, index) {
-    return {
+    const out = {
       kedudukan: index + 1,
       ic: row.ic,
       nama: row.nama,
@@ -787,6 +1109,11 @@ function buildRanking_() {
       tempoh_ms: row.tempoh_ms,
       masa_mula_label: row.masa_mula_label,
     };
+    if (includeDaerah) {
+      out.daerah = row.daerah || '';
+      out.nama_daerah = daerahNamaMap[row.daerah] || row.daerah || '-';
+    }
+    return out;
   });
 }
 
@@ -794,12 +1121,19 @@ function adminRanking(pin) {
   const pinCheck = verifyAdminPin_(pin);
   if (!pinCheck.ok) return pinCheck;
 
-  const ranking = buildRanking_();
+  const isNegeri = pinCheck.peranan === PERANAN_NEGERI;
+  const filterDaerah = isNegeri ? null : pinCheck.kod_daerah;
+  const ranking = buildRanking_(filterDaerah, isNegeri);
+
   return {
     ok: true,
     mod: 'ranking',
+    peranan: pinCheck.peranan,
+    kod_daerah: pinCheck.kod_daerah,
+    nama_daerah: pinCheck.nama_daerah,
     ranking: ranking,
     jumlah_peserta: ranking.length,
+    papar_daerah: isNegeri,
   };
 }
 
@@ -812,7 +1146,9 @@ function adminReview(pin, ic) {
     return adminRanking(pin);
   }
 
-  const row = findKeputusanByIc_(icNorm);
+  const daerahFilter =
+    pinCheck.peranan === PERANAN_NEGERI ? null : pinCheck.kod_daerah;
+  const row = findKeputusanByIc_(icNorm, daerahFilter);
   if (!row) {
     return { ok: false, ralat: 'Tiada rekod peperiksaan untuk IC ini.' };
   }
@@ -855,8 +1191,10 @@ function adminReview(pin, ic) {
   return {
     ok: true,
     mod: 'individu',
+    peranan: pinCheck.peranan,
     ic: icNorm,
     nama: row.nama,
+    daerah: row.daerah,
     attempt_id: row.attempt_id,
     betul: row.betul,
     jumlah: row.jumlah,

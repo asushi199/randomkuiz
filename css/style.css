@@ -275,6 +275,29 @@ input[type="text"] {
   line-height: 1.5;
 }
 
+.success {
+  color: #0a6640;
+  font-size: 0.92rem;
+  margin: 0.75rem 0 0;
+}
+
+.negeri-block {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.negeri-block:first-of-type {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.negeri-block h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+
 .ranking-meta {
   color: var(--muted);
   font-size: 0.9rem;
