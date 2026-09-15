@@ -40,6 +40,12 @@ input[type="password"] { width: 100%; }
 .tab-btn:hover { color: var(--text); background: #f0f2f5; }
 .tab-btn.tab-active { color: var(--primary); border-bottom-color: var(--primary); }
 
+.peringkat-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-top: 0.9rem; }
+.peringkat-now { display: flex; flex-direction: column; gap: 3px; }
+.peringkat-now-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+.peringkat-ubah { display: flex; align-items: center; gap: 0.5rem; margin-left: auto; flex-wrap: wrap; }
+#peringkat-select { min-width: 210px; }
+
 .peringkat-pill {
   display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px;
   background: #e3f2fd; color: var(--primary-hover); font-weight: 700;

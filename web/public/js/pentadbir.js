@@ -74,17 +74,10 @@
   function logout() { clearPin(); pin = ""; location.reload(); }
 
   function renderPanel(state) {
-    // Peringkat semasa + butang
+    // Peringkat: dropdown ringkas
+    const psel = $("#peringkat-select");
+    if (psel && !psel.options.length) STAGES.forEach((s) => opt(psel, s, PERINGKAT_LABEL[s]));
     setPeringkatSemasa(state.peringkat_aktif);
-    const wrap = $("#peringkat-buttons"); wrap.innerHTML = "";
-    STAGES.forEach((s) => {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "btn btn-sm stage-btn" + (s === state.peringkat_aktif ? " stage-active" : "");
-      b.textContent = PERINGKAT_LABEL[s];
-      b.addEventListener("click", () => setPeringkat(s));
-      wrap.appendChild(b);
-    });
 
     // Dropdowns
     const rankSel = $("#rank-peringkat"), revSel = $("#review-peringkat");
@@ -99,15 +92,13 @@
     const el = $("#peringkat-semasa");
     el.textContent = PERINGKAT_LABEL[p] || p;
     el.dataset.p = p;
+    const sel = $("#peringkat-select"); if (sel) sel.value = p;
   }
 
   async function setPeringkat(s) {
     const data = await apiCall("adminSetPeringkat", { pin, peringkat: s });
     if (!data.ok) { showOk($("#peringkat-msg"), data.ralat || "Gagal."); return; }
     setPeringkatSemasa(s);
-    document.querySelectorAll(".stage-btn").forEach((b) => {
-      b.classList.toggle("stage-active", b.textContent === PERINGKAT_LABEL[s]);
-    });
     showOk($("#peringkat-msg"), data.mesej || ("Peringkat: " + PERINGKAT_LABEL[s]));
   }
 
@@ -331,6 +322,8 @@
     if (!getApiUrl()) { $("#config-warning").hidden = false; return; }
     $("#form-pin").addEventListener("submit", (e) => { e.preventDefault(); const v = $("#pin").value.trim(); if (v) login(v); });
     const btnLogout = $("#btn-logout"); if (btnLogout) btnLogout.addEventListener("click", logout);
+    const btnSetP = $("#btn-set-peringkat");
+    if (btnSetP) btnSetP.addEventListener("click", () => { const v = $("#peringkat-select").value; if (v) setPeringkat(v); });
     document.querySelectorAll(".tab-btn").forEach((b) => b.addEventListener("click", () => activateTab(b.dataset.tab)));
     $("#btn-rank").addEventListener("click", loadRanking);
     $("#btn-auto-advance").addEventListener("click", autoAdvance);
