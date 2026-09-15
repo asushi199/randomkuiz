@@ -5,82 +5,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Skrin Rebutan — Kuiz Ilmuan Cilik</title>
     <style>
+      :root {
+        --cream: #f7f3e8; --white: #ffffff; --ink: #123a2e;
+        --green: #0e6b4f; --green-d: #0a5540; --green-l: #e6f1ea;
+        --gold: #c79a3b; --gold-d: #a67d24; --line: #e6dfcc; --muted: #5f7168;
+      }
       * { box-sizing: border-box; }
       body {
-        margin: 0; min-height: 100vh; background: #0b1f33; color: #fff;
+        margin: 0; min-height: 100vh; background: var(--cream); color: var(--ink);
         font-family: "Segoe UI", system-ui, sans-serif; display: flex; flex-direction: column;
       }
-      .gate {
-        margin: auto; text-align: center; padding: 2rem;
-      }
-      .gate input {
-        padding: 0.7rem 1rem; font-size: 1.1rem; border-radius: 8px; border: none; width: 260px;
-      }
-      .gate button {
-        margin-top: 1rem; padding: 0.7rem 1.6rem; font-size: 1.1rem; border: none;
-        border-radius: 8px; background: #1e88e5; color: #fff; cursor: pointer;
-      }
-      .gate .err { color: #ff8a80; margin-top: 0.75rem; min-height: 1.2em; }
+      /* Gate */
+      .gate { margin: auto; text-align: center; padding: 2rem; }
+      .gate h2 { color: var(--green); font-size: 2rem; margin: 0 0 .5rem; }
+      .gate input { padding: .75rem 1rem; font-size: 1.1rem; border-radius: 10px; border: 2px solid var(--line); width: 280px; }
+      .gate button { margin-top: 1rem; padding: .75rem 1.8rem; font-size: 1.1rem; border: none; border-radius: 10px; background: var(--green); color: #fff; cursor: pointer; font-weight: 600; }
+      .gate .err { color: #b3402f; margin-top: .75rem; min-height: 1.2em; }
 
+      /* Top bar */
       .topbar {
         display: flex; align-items: center; justify-content: space-between;
-        padding: 1rem 1.5rem; background: rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.12);
+        padding: 1rem 1.6rem; background: linear-gradient(100deg, var(--green), var(--green-d)); color: #fff;
       }
-      .topbar .tajuk { font-size: 1.15rem; font-weight: 700; letter-spacing: 0.02em; }
-      .topbar .prog { font-size: 1.15rem; font-weight: 700; color: #90caf9; }
+      .topbar .tajuk { font-size: 1.2rem; font-weight: 700; letter-spacing: .01em; }
+      .topbar .prog { font-size: 1.2rem; font-weight: 800; color: #ffe6a6; }
 
-      .stage {
-        flex: 1; display: flex; flex-direction: column; justify-content: center;
-        padding: 3vh 5vw; gap: 3vh;
-      }
+      /* Stage */
+      .stage { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 3vh 5vw; gap: 2.6vh; }
       .topik-badge {
-        align-self: flex-start; padding: 0.3rem 1rem; border-radius: 999px;
-        background: rgba(144,202,249,0.2); border: 1px solid rgba(144,202,249,0.5);
-        font-size: 1.3rem; font-weight: 600;
+        align-self: flex-start; padding: .35rem 1.1rem; border-radius: 999px;
+        background: var(--green-l); border: 1px solid var(--green); color: var(--green-d);
+        font-size: 1.25rem; font-weight: 700; letter-spacing: .03em;
       }
-      .soalan { font-size: clamp(1.8rem, 4vw, 3.2rem); font-weight: 700; line-height: 1.35; }
-      .opsyen { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5vh 2vw; }
+      .soalan { font-size: clamp(1.9rem, 4vw, 3.3rem); font-weight: 800; line-height: 1.32; color: var(--ink); }
+      .opsyen { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6vh 2vw; }
       .opt {
-        display: flex; align-items: center; gap: 1rem; padding: 1.4vh 1.5vw;
-        background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.15);
-        border-radius: 14px; font-size: clamp(1.3rem, 2.4vw, 2rem);
+        display: flex; align-items: center; gap: 1rem; padding: 1.5vh 1.5vw;
+        background: var(--white); border: 2px solid var(--line); border-radius: 16px;
+        font-size: clamp(1.3rem, 2.4vw, 2rem); box-shadow: 0 2px 8px rgba(18,58,46,.06);
       }
       .opt .huruf {
         display: inline-flex; align-items: center; justify-content: center;
-        width: 2.4rem; height: 2.4rem; border-radius: 8px; background: #1e88e5;
+        width: 2.5rem; height: 2.5rem; border-radius: 10px; background: var(--green); color: #fff;
         font-weight: 800; flex-shrink: 0;
       }
-      .opt.betul { background: rgba(67,160,71,0.35); border-color: #66bb6a; }
-      .opt.betul .huruf { background: #43a047; }
+      .opt.betul { background: var(--green-l); border-color: var(--green); }
+      .opt.betul .huruf { background: var(--gold); color: #3a2c05; }
 
+      /* Papan skor */
+      .skor-strip {
+        display: flex; gap: 1rem; padding: .9rem 1.6rem; background: #efe8d5;
+        border-top: 1px solid var(--line); overflow-x: auto;
+      }
+      .skor-card {
+        flex: 1 1 0; min-width: 150px; background: var(--white); border: 2px solid var(--line);
+        border-radius: 14px; padding: .6rem 1rem; text-align: center;
+      }
+      .skor-card.lead { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(199,154,59,.25); }
+      .skor-nama { font-size: .95rem; font-weight: 700; color: var(--green-d); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .skor-mata { font-size: 2.1rem; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1.1; }
+      .skor-mata small { font-size: .9rem; color: var(--muted); font-weight: 600; }
+
+      /* Kawalan */
       .kawalan {
-        display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
-        padding: 0.85rem 1.5rem; background: rgba(0,0,0,0.35); border-top: 1px solid rgba(255,255,255,0.12);
+        display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
+        padding: .85rem 1.6rem; background: var(--white); border-top: 1px solid var(--line);
       }
-      .kawalan button {
-        padding: 0.6rem 1.1rem; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer;
-        background: #37474f; color: #fff;
-      }
-      .kawalan button.primary { background: #1e88e5; }
-      .kawalan button.reveal { background: #43a047; }
+      .kawalan button { padding: .6rem 1.1rem; font-size: 1rem; border: none; border-radius: 9px; cursor: pointer; background: #e7ecea; color: var(--ink); font-weight: 600; }
+      .kawalan button.primary { background: var(--green); color: #fff; }
+      .kawalan button.reveal { background: var(--gold); color: #3a2c05; }
       .kawalan .sep { flex: 1; }
-      .kawalan .mata-input { width: 64px; padding: 0.5rem; border-radius: 6px; border: none; font-size: 1rem; }
-      .team-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-      .team-btns button { background: #5e35b1; }
-      .team-btns button:hover { background: #4527a0; }
+      .kawalan .mata-input { width: 64px; padding: .5rem; border-radius: 8px; border: 2px solid var(--line); font-size: 1rem; }
+      .team-btns { display: flex; gap: .5rem; flex-wrap: wrap; }
+      .team-btns button { background: var(--green); color: #fff; font-weight: 700; }
+      .team-btns button:hover { background: var(--green-d); }
+      .team-note { color: #9a5b12; font-size: .95rem; }
+
       .toast {
-        position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-        background: rgba(0,0,0,0.85); padding: 0.6rem 1.2rem; border-radius: 8px;
-        font-size: 1rem; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+        position: fixed; bottom: 130px; left: 50%; transform: translateX(-50%);
+        background: var(--green-d); color: #fff; padding: .7rem 1.4rem; border-radius: 10px;
+        font-size: 1.05rem; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none;
       }
       .toast.show { opacity: 1; }
       @media (max-width: 700px) { .opsyen { grid-template-columns: 1fr; } }
     </style>
   </head>
   <body>
-    <!-- Gate PIN -->
     <div id="gate" class="gate">
-      <h2>Skrin Rebutan (S3P2)</h2>
+      <h2>Skrin Rebutan</h2>
       <p>Masukkan PIN pentadbir untuk memuatkan soalan.</p>
       <input type="password" id="pin" placeholder="PIN pentadbir" />
       <br />
@@ -88,7 +100,6 @@
       <div class="err" id="err"></div>
     </div>
 
-    <!-- Skrin utama -->
     <div id="main" style="display:none; flex:1; flex-direction:column;">
       <div class="topbar">
         <span class="tajuk">Saringan 3 — Pusingan 2 · Rebutan</span>
@@ -99,6 +110,7 @@
         <div class="soalan" id="soalan"></div>
         <div class="opsyen" id="opsyen"></div>
       </div>
+      <div class="skor-strip" id="skor-strip"></div>
       <div class="kawalan">
         <button id="btn-prev">◀ Sebelum</button>
         <button id="btn-reveal" class="reveal">Papar Jawapan</button>
@@ -123,12 +135,17 @@
 
         async function api(action, payload) {
           var body = JSON.stringify(Object.assign({ action: action }, payload || {}));
-          var res = await fetch(API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: body });
+          var res = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: body });
           return JSON.parse(await res.text());
         }
         function toast(msg) {
           var t = $("toast"); t.textContent = msg; t.classList.add("show");
           setTimeout(function () { t.classList.remove("show"); }, 1600);
+        }
+        function esc(s) {
+          return String(s).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+          });
         }
 
         async function masuk() {
@@ -148,6 +165,8 @@
             $("main").style.display = "flex";
             renderTeams();
             idx = 0; render();
+            loadScores();
+            setInterval(loadScores, 5000); // segar papan skor
           } catch (e) { $("err").textContent = "Ralat sambungan."; }
         }
 
@@ -155,8 +174,7 @@
           var wrap = $("team-btns"); wrap.innerHTML = "";
           if (!teams.length) {
             var note = document.createElement("span");
-            note.style.color = "#ffcc80";
-            note.style.fontSize = "0.95rem";
+            note.className = "team-note";
             note.textContent = "Belum ada pasukan layak S3P1. Sila 'Auto-kunci' di panel pentadbir dahulu.";
             wrap.appendChild(note);
             return;
@@ -168,6 +186,24 @@
             b.addEventListener("click", function () { score(kod); });
             wrap.appendChild(b);
           });
+        }
+
+        async function loadScores() {
+          try {
+            var d = await api("adminRebutanState", { pin: pin });
+            if (d && d.ok) renderScores(d.pasukan || []);
+          } catch (e) { /* biar */ }
+        }
+        function renderScores(list) {
+          var strip = $("skor-strip");
+          if (!list.length) { strip.style.display = "none"; return; }
+          strip.style.display = "flex";
+          var max = Math.max.apply(null, list.map(function (p) { return p.mata; }).concat([0]));
+          strip.innerHTML = list.map(function (p) {
+            var lead = p.mata > 0 && p.mata === max ? " lead" : "";
+            return '<div class="skor-card' + lead + '"><div class="skor-nama">' + esc(p.nama_daerah) +
+              '</div><div class="skor-mata">' + p.mata + ' <small>mata</small></div></div>';
+          }).join("");
         }
 
         function render() {
@@ -198,12 +234,8 @@
           try {
             await api("adminRebutanScore", { pin: pin, no_soalan: q.no, daerah: kod, betul: true, mata: mata });
             toast((daerahNama[kod] || kod) + " +" + mata + " mata");
+            loadScores();
           } catch (e) { toast("Gagal merekod"); }
-        }
-        function esc(s) {
-          return String(s).replace(/[&<>"']/g, function (c) {
-            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-          });
         }
 
         $("btn-masuk").addEventListener("click", masuk);

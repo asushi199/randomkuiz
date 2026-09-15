@@ -456,6 +456,19 @@ export async function adminRebutanScore(pin: unknown, noSoalan: unknown, daerahR
   return { ok: true, mesej: "Direkod: " + daerah + " " + (m >= 0 ? "+" : "") + m + " mata." };
 }
 
+// Markah rebutan semasa setiap pasukan finalis (untuk papan skor di skrin).
+export async function adminRebutanState(pin: unknown) {
+  const chk = requirePin(pin); if (!chk.ok) return chk;
+  const finalists = Object.keys(await getKelayakan("S3P1"));
+  const namaMap = await daerahNamaMap();
+  const { data } = await db.from("rebutan_log").select("daerah,mata");
+  const tot: Record<string, number> = {};
+  (data || []).forEach((r) => { const d = normDaerah(r.daerah); tot[d] = (tot[d] || 0) + Number(r.mata || 0); });
+  const pasukan = finalists.map((d) => ({ daerah: d, nama_daerah: namaMap[d] || d, mata: tot[d] || 0 }))
+    .sort((a, b) => b.mata - a.mata);
+  return { ok: true, pasukan };
+}
+
 // ---- Markah manual S3P3 (3 soalan, dijumlah) ----
 export async function adminSetManual(pin: unknown, peringkat: unknown, daerahRaw: unknown, mata1: unknown, mata2: unknown, mata3: unknown, catatan: unknown) {
   const chk = requirePin(pin); if (!chk.ok) return chk;

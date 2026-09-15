@@ -91,9 +91,8 @@
     if (!rankSel.options.length) RANK_STAGES.forEach((s) => opt(rankSel, s, PERINGKAT_LABEL[s]));
     if (!revSel.options.length) RANK_STAGES.forEach((s) => opt(revSel, s, PERINGKAT_LABEL[s]));
 
-    // Markah manual rows (guna finalis S3P1 jika ada, jika tidak semua daerah)
-    renderManualRows(state.kelayakan && state.kelayakan.S3P1 && state.kelayakan.S3P1.length
-      ? state.kelayakan.S3P1 : daerahList.map((d) => d.kod));
+    // Markah manual: hanya pasukan layak S3P1 (finalis)
+    renderManualTeams(state.kelayakan && state.kelayakan.S3P1);
   }
 
   function setPeringkatSemasa(p) {
@@ -128,6 +127,7 @@
       const ic = $("#review-ic"); if (ic) ic.value = "";
       loadRanking();
     }
+    if (tab === "s3") refreshManualTeams();
   }
 
   // ---------- Kedudukan ----------
@@ -259,21 +259,34 @@
   }
 
   // ---------- Markah manual S3P3 ----------
-  function renderManualRows(kods) {
+  // Papar hanya pasukan LAYAK S3P1 (finalis). Muat semula kelayakan terkini.
+  async function refreshManualTeams() {
+    try {
+      const d = await apiCall("adminState", { pin });
+      if (d && d.ok) renderManualTeams(d.kelayakan && d.kelayakan.S3P1);
+    } catch (e) { /* biar kekal */ }
+  }
+
+  function renderManualTeams(list) {
+    const kods = list || [];
     const wrap = $("#manual-rows"); wrap.innerHTML = "";
+    const note = $("#manual-note");
+    if (!kods.length) { if (note) note.hidden = false; return; }
+    if (note) note.hidden = true;
     const val = (kod, c) => Number((wrap.querySelector("." + c + '[data-daerah="' + kod + '"]') || {}).value || 0);
     const refreshTotal = (kod) => {
       const el = wrap.querySelector('.manual-total[data-daerah="' + kod + '"]');
       if (el) el.textContent = "Jumlah: " + (val(kod, "m1") + val(kod, "m2") + val(kod, "m3"));
     };
+    const field = (kod, c, n) =>
+      '<label class="ml-field"><span class="ml-lbl">Soalan ' + n + '</span>' +
+      '<input type="number" class="manual-input ' + c + '" data-daerah="' + kod + '" placeholder="markah" min="0" step="1"></label>';
     kods.forEach((kod) => {
       const row = document.createElement("div");
       row.className = "manual-row";
       row.innerHTML =
         '<span class="manual-daerah">' + daerahNama(kod) + "</span>" +
-        '<input type="number" class="manual-input m1" data-daerah="' + kod + '" placeholder="Soalan 1" min="0" step="1">' +
-        '<input type="number" class="manual-input m2" data-daerah="' + kod + '" placeholder="Soalan 2" min="0" step="1">' +
-        '<input type="number" class="manual-input m3" data-daerah="' + kod + '" placeholder="Soalan 3" min="0" step="1">' +
+        '<div class="ml-fields">' + field(kod, "m1", 1) + field(kod, "m2", 2) + field(kod, "m3", 3) + "</div>" +
         '<span class="manual-total" data-daerah="' + kod + '">Jumlah: 0</span>' +
         '<button type="button" class="btn btn-secondary btn-sm manual-save" data-daerah="' + kod + '">Simpan</button>';
       wrap.appendChild(row);
