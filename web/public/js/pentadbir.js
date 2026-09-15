@@ -44,22 +44,34 @@
   }
 
   // ---------- Login ----------
-  async function login(inputPin) {
+  function savePin(p) { try { localStorage.setItem("admin_pin", p); } catch (e) {} }
+  function clearPin() { try { localStorage.removeItem("admin_pin"); } catch (e) {} }
+  function loadPin() { try { return localStorage.getItem("admin_pin") || ""; } catch (e) { return ""; } }
+
+  async function login(inputPin, isAuto) {
     showErr($("#pin-error"), "");
-    const btn = $("#btn-pin"); btn.disabled = true;
+    const btn = $("#btn-pin"); if (btn) btn.disabled = true;
     try {
       const data = await apiCall("adminState", { pin: inputPin });
-      if (!data.ok) { showErr($("#pin-error"), data.ralat || "PIN tidak sah."); return; }
+      if (!data.ok) {
+        if (isAuto) { clearPin(); $("#view-pin").hidden = false; }
+        else showErr($("#pin-error"), data.ralat || "PIN tidak sah.");
+        return;
+      }
       pin = inputPin;
+      savePin(inputPin); // ingat log masuk supaya muat semula / buka semula tidak perlu log masuk lagi
       daerahList = data.daerah || [];
       renderPanel(data);
       $("#view-pin").hidden = true;
       $("#view-panel").hidden = false;
       activateTab("s1");
     } catch (e) {
-      showErr($("#pin-error"), e.message || "Ralat sambungan.");
-    } finally { btn.disabled = false; }
+      if (isAuto) $("#view-pin").hidden = false;
+      else showErr($("#pin-error"), e.message || "Ralat sambungan.");
+    } finally { if (btn) btn.disabled = false; }
   }
+
+  function logout() { clearPin(); pin = ""; location.reload(); }
 
   function renderPanel(state) {
     // Peringkat semasa + butang
@@ -304,8 +316,8 @@
   // ---------- Init ----------
   function init() {
     if (!getApiUrl()) { $("#config-warning").hidden = false; return; }
-    $("#view-pin").hidden = false;
     $("#form-pin").addEventListener("submit", (e) => { e.preventDefault(); const v = $("#pin").value.trim(); if (v) login(v); });
+    const btnLogout = $("#btn-logout"); if (btnLogout) btnLogout.addEventListener("click", logout);
     document.querySelectorAll(".tab-btn").forEach((b) => b.addEventListener("click", () => activateTab(b.dataset.tab)));
     $("#btn-rank").addEventListener("click", loadRanking);
     $("#btn-auto-advance").addEventListener("click", autoAdvance);
@@ -319,6 +331,11 @@
     $("#btn-final").addEventListener("click", final);
     $("#btn-reset").addEventListener("click", reset);
     $("#btn-open-skrin").addEventListener("click", () => window.open("skrin.html", "_blank"));
+
+    // Auto log masuk jika PIN diingati (elak log masuk semula selepas muat semula / buka semula)
+    const saved = loadPin();
+    if (saved) login(saved, true);
+    else $("#view-pin").hidden = false;
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pentadbir — Kuiz Ilmuan Cilik</title>
     <link rel="stylesheet" href="css/style.css?v=4" />
-    <link rel="stylesheet" href="css/admin.css?v=3" />
+    <link rel="stylesheet" href="css/admin.css?v=4" />
   </head>
   <body>
     <header class="header header-admin">
@@ -29,6 +29,10 @@
 
       <!-- Papan pemuka -->
       <div id="view-panel" hidden>
+        <div class="panel-top">
+          <span class="panel-top-note">Log masuk diingati — muat semula tidak akan log keluar.</span>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-logout">Log Keluar</button>
+        </div>
         <!-- Kawalan peringkat -->
         <section class="card">
           <h2>Peringkat Aktif</h2>
@@ -161,6 +165,6 @@
 
     <script src="js/config.js?v=1" onerror="this.remove()"></script>
     <script src="js/config.example.js?v=10"></script>
-    <script src="js/pentadbir.js?v=11"></script>
+    <script src="js/pentadbir.js?v=12"></script>
   </body>
 </html>
