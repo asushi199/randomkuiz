@@ -77,12 +77,14 @@ label {
   font-weight: 600;
 }
 
-input[type="text"] {
+input[type="text"],
+#daerah {
   width: 100%;
   padding: 0.65rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 1rem;
+  background: #fff;
 }
 
 .btn {
