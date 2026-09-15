@@ -146,6 +146,10 @@
       opt(sel, lockTarget, PERINGKAT_LABEL[lockTarget]);
       $("#btn-lock-auto").textContent = "Tanda " + lockN + " teratas";
       $("#btn-lock-auto").dataset.n = String(lockN);
+      const auto = $("#btn-auto-advance");
+      auto.textContent = "Auto-kunci " + lockN + " teratas → " + PERINGKAT_LABEL[lockTarget];
+      auto.dataset.target = lockTarget;
+      auto.dataset.n = String(lockN);
     }
     $("#rank-pasukan-wrap").hidden = false;
   }
@@ -161,6 +165,17 @@
       tb.appendChild(tr);
     });
     $("#rank-individu-wrap").hidden = false;
+  }
+
+  async function autoAdvance() {
+    const btn = $("#btn-auto-advance");
+    const target = btn.dataset.target;
+    if (!target) return;
+    const data = await apiCall("adminAutoLock", { pin, peringkat: target });
+    if (!data.ok) { showOk($("#lock-msg"), data.ralat || "Gagal."); return; }
+    showOk($("#lock-msg"), (data.mesej || "Dikunci.") + " — " + (data.nama_daerah || []).join(", "));
+    const n = Number(btn.dataset.n || 0);
+    document.querySelectorAll(".lock-cb").forEach((c, i) => { c.checked = i < n; });
   }
 
   async function lockKelayakan() {
@@ -260,6 +275,7 @@
     $("#view-pin").hidden = false;
     $("#form-pin").addEventListener("submit", (e) => { e.preventDefault(); const v = $("#pin").value.trim(); if (v) login(v); });
     $("#btn-rank").addEventListener("click", loadRanking);
+    $("#btn-auto-advance").addEventListener("click", autoAdvance);
     $("#btn-lock").addEventListener("click", lockKelayakan);
     $("#btn-lock-auto").addEventListener("click", () => {
       const n = Number($("#btn-lock-auto").dataset.n || 0);

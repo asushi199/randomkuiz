@@ -35,6 +35,7 @@ input[type="password"] { width: 100%; }
   box-shadow: 0 2px 6px rgba(21, 101, 192, 0.35);
 }
 
+.lock-or { color: var(--muted); font-size: 0.85rem; }
 .col-lock { width: 34px; text-align: center; }
 .lock-controls {
   display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;

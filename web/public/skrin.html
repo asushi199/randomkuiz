@@ -142,7 +142,7 @@
             if (!data.ok) { $("err").textContent = data.ralat || "PIN tidak sah."; return; }
             pin = v;
             soalan = data.soalan || [];
-            teams = (data.daerah_layak && data.daerah_layak.length) ? data.daerah_layak : Object.keys(daerahNama);
+            teams = (data.daerah_layak && data.daerah_layak.length) ? data.daerah_layak : [];
             if (!soalan.length) { $("err").textContent = "Tiada soalan rebutan."; return; }
             $("gate").style.display = "none";
             $("main").style.display = "flex";
@@ -153,6 +153,14 @@
 
         function renderTeams() {
           var wrap = $("team-btns"); wrap.innerHTML = "";
+          if (!teams.length) {
+            var note = document.createElement("span");
+            note.style.color = "#ffcc80";
+            note.style.fontSize = "0.95rem";
+            note.textContent = "Belum ada pasukan layak S3P1. Sila 'Auto-kunci' di panel pentadbir dahulu.";
+            wrap.appendChild(note);
+            return;
+          }
           teams.forEach(function (kod) {
             var b = document.createElement("button");
             b.textContent = (daerahNama[kod] || kod) + " ✔";

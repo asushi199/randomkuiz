@@ -71,10 +71,11 @@
               </table>
             </div>
             <div id="lock-controls" class="lock-controls" hidden>
-              <span>Kunci pasukan bertanda ke:</span>
-              <select id="lock-target"></select>
-              <button type="button" class="btn btn-primary btn-sm" id="btn-lock">Kunci kelayakan</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-lock-auto">Tanda 6 teratas</button>
+              <button type="button" class="btn btn-primary btn-sm" id="btn-auto-advance">Auto-kunci teratas</button>
+              <span class="lock-or">atau pilih manual:</span>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-lock-auto">Tanda teratas</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-lock">Kunci pilihan bertanda</button>
+              <select id="lock-target" hidden></select>
               <span id="lock-msg" class="success" hidden></span>
             </div>
           </div>

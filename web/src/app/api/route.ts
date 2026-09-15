@@ -18,6 +18,7 @@ async function dispatch(action: string, p: Payload) {
     case "adminRanking": return K.adminRanking(p.pin, p.peringkat);
     case "adminReview": return K.adminReview(p.pin, p.peringkat, p.ic);
     case "adminLock": return K.adminLock(p.pin, p.peringkat, p.daerah_list);
+    case "adminAutoLock": return K.adminAutoLock(p.pin, p.peringkat);
     case "adminRebutanSoalan": return K.adminRebutanSoalan(p.pin, p.pilih_semula);
     case "adminRebutanScore": return K.adminRebutanScore(p.pin, p.no_soalan, p.daerah, p.betul, p.mata);
     case "adminSetManual": return K.adminSetManual(p.pin, p.peringkat, p.daerah, p.mata1, p.mata2, p.mata3, p.catatan);

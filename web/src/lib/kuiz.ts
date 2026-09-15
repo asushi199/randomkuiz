@@ -389,6 +389,26 @@ export async function adminReview(pin: unknown, peringkat: unknown, icRaw: unkno
            masa_hantar: fmtMasa(row.masa_hantar), tempoh_label: row.tempoh_label, butiran: row.butiran || [] };
 }
 
+// Auto-kunci N pasukan teratas berdasarkan ranking peringkat sebelumnya.
+const ADVANCE: Record<string, { source: string; n: number }> = {
+  S2: { source: "S1", n: 6 },
+  S3P1: { source: "S2", n: 4 },
+};
+export async function adminAutoLock(pin: unknown, peringkat: unknown) {
+  const chk = requirePin(pin); if (!chk.ok) return chk;
+  const target = String(peringkat || "").toUpperCase();
+  const cfg = ADVANCE[target];
+  if (!cfg) return { ok: false, ralat: "Hanya S2 atau S3P1 boleh dikunci." };
+  const rk = await buildRanking(cfg.source);
+  if (!rk.pasukan.length) return { ok: false, ralat: "Tiada keputusan " + cfg.source + " untuk menentukan kelayakan." };
+  const list = rk.pasukan.slice(0, cfg.n).map((p) => p.daerah);
+  await db.from("kelayakan").delete().eq("peringkat", target);
+  await db.from("kelayakan").insert(list.map((d) => ({ peringkat: target, daerah: d })));
+  const namaMap = await daerahNamaMap();
+  return { ok: true, peringkat: target, daerah: list, nama_daerah: list.map((d) => namaMap[d] || d),
+           mesej: list.length + " pasukan teratas " + cfg.source + " dikunci ke " + target + "." };
+}
+
 export async function adminLock(pin: unknown, peringkat: unknown, daerahList: unknown) {
   const chk = requirePin(pin); if (!chk.ok) return chk;
   const p = String(peringkat || "").toUpperCase();
