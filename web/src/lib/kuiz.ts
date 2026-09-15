@@ -12,7 +12,7 @@ const REBUTAN_PILIH = 8;
 const PERINGKAT_PELAJAR = ["S1", "S2", "S3P1"];
 export const PERINGKAT_LABEL: Record<string, string> = {
   S1: "Saringan 1", S2: "Saringan 2", S3P1: "Saringan 3 — Pusingan 1",
-  S3P2: "Saringan 3 — Pusingan 2 (Rebutan)", S3P3: "Saringan 3 — Pusingan 3 (Tulisan)",
+  S3P2: "Saringan 3 — Pusingan 2 (Rebutan)", S3P3: "Saringan 3 — Pusingan 3",
   TUTUP: "Ditutup",
 };
 const MSJ_TERIMA_KASIH =
@@ -428,28 +428,32 @@ export async function adminRebutanScore(pin: unknown, noSoalan: unknown, daerahR
   return { ok: true, mesej: "Direkod: " + daerah + " " + (m >= 0 ? "+" : "") + m + " mata." };
 }
 
-// ---- Markah manual S3P3 ----
-export async function adminSetManual(pin: unknown, peringkat: unknown, daerahRaw: unknown, mata: unknown, catatan: unknown) {
+// ---- Markah manual S3P3 (3 soalan, dijumlah) ----
+export async function adminSetManual(pin: unknown, peringkat: unknown, daerahRaw: unknown, mata1: unknown, mata2: unknown, mata3: unknown, catatan: unknown) {
   const chk = requirePin(pin); if (!chk.ok) return chk;
   const p = String(peringkat || "S3P3").toUpperCase();
   const daerah = normDaerah(daerahRaw);
   if (!daerah) return { ok: false, ralat: "Daerah diperlukan." };
-  const m = Number(mata || 0);
-  await db.from("markah_manual").upsert({ peringkat: p, daerah, mata: m, catatan: String(catatan || ""), masa: new Date().toISOString() }, { onConflict: "peringkat,daerah" });
-  return { ok: true, mesej: "Markah " + p + " " + daerah + " disimpan: " + m };
+  const m1 = Number(mata1 || 0), m2 = Number(mata2 || 0), m3 = Number(mata3 || 0);
+  const total = m1 + m2 + m3;
+  await db.from("markah_manual").upsert(
+    { peringkat: p, daerah, mata: total, mata1: m1, mata2: m2, mata3: m3, catatan: String(catatan || ""), masa: new Date().toISOString() },
+    { onConflict: "peringkat,daerah" }
+  );
+  return { ok: true, mesej: "Markah " + p + " " + daerah + " disimpan: " + m1 + "+" + m2 + "+" + m3 + " = " + total };
 }
 
 // ---- Kedudukan akhir ----
 export async function adminFinal(pin: unknown) {
   const chk = requirePin(pin); if (!chk.ok) return chk;
   const namaMap = await daerahNamaMap();
-  const agg: Record<string, { daerah: string; nama_daerah: string; s3p1: number; s3p2: number; s3p3: number; jumlah: number; kedudukan: number }> = {};
-  const ensure = (d: string) => (agg[d] = agg[d] || { daerah: d, nama_daerah: namaMap[d] || d, s3p1: 0, s3p2: 0, s3p3: 0, jumlah: 0, kedudukan: 0 });
+  const agg: Record<string, { daerah: string; nama_daerah: string; s3p1: number; s3p2: number; s3p3: number; s3p3_1: number; s3p3_2: number; s3p3_3: number; jumlah: number; kedudukan: number }> = {};
+  const ensure = (d: string) => (agg[d] = agg[d] || { daerah: d, nama_daerah: namaMap[d] || d, s3p1: 0, s3p2: 0, s3p3: 0, s3p3_1: 0, s3p3_2: 0, s3p3_3: 0, jumlah: 0, kedudukan: 0 });
   (await loadKeputusan("S3P1")).forEach((r) => { ensure(r.daerah).s3p1 += r.mata; });
   const { data: reb } = await db.from("rebutan_log").select("daerah,mata");
   (reb || []).forEach((r) => { if (r.daerah) ensure(normDaerah(r.daerah)).s3p2 += Number(r.mata || 0); });
-  const { data: man } = await db.from("markah_manual").select("daerah,mata,peringkat").eq("peringkat", "S3P3");
-  (man || []).forEach((r) => { ensure(normDaerah(r.daerah)).s3p3 += Number(r.mata || 0); });
+  const { data: man } = await db.from("markah_manual").select("daerah,mata,mata1,mata2,mata3").eq("peringkat", "S3P3");
+  (man || []).forEach((r) => { const a = ensure(normDaerah(r.daerah)); a.s3p3 += Number(r.mata || 0); a.s3p3_1 = Number(r.mata1 || 0); a.s3p3_2 = Number(r.mata2 || 0); a.s3p3_3 = Number(r.mata3 || 0); });
   const list = Object.values(agg).map((a) => { a.jumlah = a.s3p1 + a.s3p2 + a.s3p3; return a; });
   list.sort((a, b) => b.jumlah - a.jumlah);
   list.forEach((a, i) => { a.kedudukan = i + 1; });

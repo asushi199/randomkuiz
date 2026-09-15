@@ -5,7 +5,7 @@
   const $ = (s) => document.querySelector(s);
   const PERINGKAT_LABEL = {
     S1: "Saringan 1", S2: "Saringan 2", S3P1: "Saringan 3 — Pusingan 1",
-    S3P2: "Saringan 3 — Pusingan 2 (Rebutan)", S3P3: "Saringan 3 — Pusingan 3 (Tulisan)",
+    S3P2: "Saringan 3 — Pusingan 2 (Rebutan)", S3P3: "Saringan 3 — Pusingan 3",
     TUTUP: "Ditutup",
   };
   const STAGES = ["S1", "S2", "S3P1", "S3P2", "S3P3", "TUTUP"];
@@ -202,21 +202,33 @@
   // ---------- Markah manual S3P3 ----------
   function renderManualRows(kods) {
     const wrap = $("#manual-rows"); wrap.innerHTML = "";
+    const val = (kod, c) => Number((wrap.querySelector("." + c + '[data-daerah="' + kod + '"]') || {}).value || 0);
+    const refreshTotal = (kod) => {
+      const el = wrap.querySelector('.manual-total[data-daerah="' + kod + '"]');
+      if (el) el.textContent = "Jumlah: " + (val(kod, "m1") + val(kod, "m2") + val(kod, "m3"));
+    };
     kods.forEach((kod) => {
       const row = document.createElement("div");
       row.className = "manual-row";
       row.innerHTML =
         '<span class="manual-daerah">' + daerahNama(kod) + "</span>" +
-        '<input type="number" class="manual-input" data-daerah="' + kod + '" placeholder="Markah S3P3" min="0" step="1">' +
+        '<input type="number" class="manual-input m1" data-daerah="' + kod + '" placeholder="Soalan 1" min="0" step="1">' +
+        '<input type="number" class="manual-input m2" data-daerah="' + kod + '" placeholder="Soalan 2" min="0" step="1">' +
+        '<input type="number" class="manual-input m3" data-daerah="' + kod + '" placeholder="Soalan 3" min="0" step="1">' +
+        '<span class="manual-total" data-daerah="' + kod + '">Jumlah: 0</span>' +
         '<button type="button" class="btn btn-secondary btn-sm manual-save" data-daerah="' + kod + '">Simpan</button>';
       wrap.appendChild(row);
+    });
+    wrap.querySelectorAll(".manual-input").forEach((inp) => {
+      inp.addEventListener("input", () => refreshTotal(inp.dataset.daerah));
     });
     wrap.querySelectorAll(".manual-save").forEach((b) => {
       b.addEventListener("click", async () => {
         const kod = b.dataset.daerah;
-        const input = wrap.querySelector('.manual-input[data-daerah="' + kod + '"]');
-        const mata = Number(input.value || 0);
-        const data = await apiCall("adminSetManual", { pin, peringkat: "S3P3", daerah: kod, mata });
+        const data = await apiCall("adminSetManual", {
+          pin, peringkat: "S3P3", daerah: kod,
+          mata1: val(kod, "m1"), mata2: val(kod, "m2"), mata3: val(kod, "m3"),
+        });
         showOk($("#manual-msg"), data.ok ? data.mesej : (data.ralat || "Gagal."));
       });
     });

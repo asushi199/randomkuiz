@@ -100,11 +100,14 @@ create table if not exists rebutan_log (
   masa       timestamptz not null default now()
 );
 
--- --- Markah manual (S3 Pusingan 3 tulisan + pelarasan) ---
+-- --- Markah manual (S3 Pusingan 3 tulisan: 3 soalan, dijumlah) ---
 create table if not exists markah_manual (
   peringkat text not null,              -- 'S3P3'
   daerah    text not null,
-  mata      int  not null default 0,
+  mata      int  not null default 0,    -- jumlah = mata1 + mata2 + mata3
+  mata1     int  not null default 0,    -- Soalan 1
+  mata2     int  not null default 0,    -- Soalan 2
+  mata3     int  not null default 0,    -- Soalan 3
   catatan   text,
   masa      timestamptz not null default now(),
   primary key (peringkat, daerah)
