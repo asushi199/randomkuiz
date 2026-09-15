@@ -384,9 +384,17 @@ export async function adminReview(pin: unknown, peringkat: unknown, icRaw: unkno
   if (!rows.length) return { ok: false, ralat: "Tiada rekod untuk IC ini pada peringkat " + p + "." };
   const row = rows[0];
   const namaMap = await daerahNamaMap();
+  // Perkayakan butiran dengan teks pilihan A-D (untuk paparan soalan penuh)
+  const bank = p === "S3P1"
+    ? (await loadBankS3P1()) as Record<string, Soalan>
+    : await loadBankSoalan();
+  const butiran = ((row.butiran as Array<Record<string, unknown>>) || []).map((b) => {
+    const q = bank[String(b.id)];
+    return q ? { ...b, A: q.A, B: q.B, C: q.C, D: q.D } : b;
+  });
   return { ok: true, peringkat: p, ic, nama: row.nama, daerah: row.daerah, nama_daerah: namaMap[row.daerah] || row.daerah,
            betul: row.betul, jumlah: row.jumlah, salah: row.jumlah - row.betul, skor: row.skor, mata: row.mata,
-           masa_hantar: fmtMasa(row.masa_hantar), tempoh_label: row.tempoh_label, butiran: row.butiran || [] };
+           masa_hantar: fmtMasa(row.masa_hantar), tempoh_label: row.tempoh_label, butiran };
 }
 
 // Auto-kunci N pasukan teratas berdasarkan ranking peringkat sebelumnya.

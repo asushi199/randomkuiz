@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pentadbir — Kuiz Ilmuan Cilik</title>
     <link rel="stylesheet" href="css/style.css?v=4" />
-    <link rel="stylesheet" href="css/admin.css?v=2" />
+    <link rel="stylesheet" href="css/admin.css?v=3" />
   </head>
   <body>
     <header class="header header-admin">
@@ -34,18 +34,26 @@
           <h2>Peringkat Aktif</h2>
           <p class="hint">
             Tetapkan peringkat yang <strong>dibuka</strong> untuk pelajar. Hanya S1, S2, S3P1
-            memerlukan jawapan dalam talian. S3P2 (rebutan) &amp; S3P3 (tulisan) dikendalikan di pentas.
+            memerlukan jawapan dalam talian. S3P2 (rebutan) &amp; S3P3 dikendalikan di pentas.
           </p>
           <p>Semasa: <strong id="peringkat-semasa" class="peringkat-pill">—</strong></p>
           <div id="peringkat-buttons" class="stage-buttons"></div>
           <p id="peringkat-msg" class="success" hidden></p>
         </section>
 
+        <!-- Tab setiap saringan -->
+        <nav class="tabs" id="admin-tabs">
+          <button type="button" class="tab-btn tab-active" data-tab="s1">Saringan 1</button>
+          <button type="button" class="tab-btn" data-tab="s2">Saringan 2</button>
+          <button type="button" class="tab-btn" data-tab="s3">Saringan 3</button>
+          <button type="button" class="tab-btn" data-tab="set">Tetapan</button>
+        </nav>
+
         <!-- Kedudukan -->
-        <section class="card">
+        <section class="card tab-sec" id="sec-kedudukan" data-show="s1 s2 s3">
           <div class="row-between">
-            <h2>Kedudukan</h2>
-            <div class="inline-controls">
+            <h2 id="rank-title">Kedudukan</h2>
+            <div class="inline-controls" hidden>
               <label for="rank-peringkat" class="sr-inline">Peringkat</label>
               <select id="rank-peringkat"></select>
               <button type="button" class="btn btn-secondary btn-sm" id="btn-rank">Papar</button>
@@ -95,12 +103,12 @@
         </section>
 
         <!-- Semakan individu -->
-        <section class="card">
+        <section class="card tab-sec" id="sec-semakan" data-show="s1 s2 s3">
           <h2>Semakan Jawapan Individu</h2>
-          <p class="hint">Untuk aduan/pertikaian: masukkan No. KP dan pilih peringkat untuk lihat jawapan penuh peserta.</p>
+          <p class="hint">Untuk aduan/pertikaian: masukkan No. KP peserta untuk lihat soalan penuh, pilihan, jawapan peserta dan jawapan betul.</p>
           <div class="inline-controls">
             <input type="text" id="review-ic" placeholder="No. KP peserta" inputmode="numeric" />
-            <select id="review-peringkat"></select>
+            <select id="review-peringkat" hidden></select>
             <button type="button" class="btn btn-secondary btn-sm" id="btn-review">Semak</button>
           </div>
           <p id="review-error" class="error" hidden></p>
@@ -111,7 +119,7 @@
         </section>
 
         <!-- Markah manual S3P3 + Kedudukan akhir -->
-        <section class="card">
+        <section class="card tab-sec" id="sec-s3extra" data-show="s3">
           <h2>Saringan 3 — Markah &amp; Kedudukan Akhir</h2>
           <p class="hint">
             Rebutan (S3P2) direkod di skrin rebutan. Di sini masukkan <strong>markah Pusingan 3 (S3P3)</strong>
@@ -129,7 +137,7 @@
             <div class="table-wrap">
               <table class="ranking-table" id="table-final">
                 <thead>
-                  <tr><th>#</th><th>Daerah</th><th>S3P1</th><th>S3P2 Rebutan</th><th>S3P3 Tulisan</th><th>Jumlah</th></tr>
+                  <tr><th>#</th><th>Daerah</th><th>S3P1</th><th>S3P2 Rebutan</th><th>S3P3</th><th>Jumlah</th></tr>
                 </thead>
                 <tbody></tbody>
               </table>
@@ -138,7 +146,7 @@
         </section>
 
         <!-- Zon bahaya -->
-        <section class="card danger-zone">
+        <section class="card danger-zone tab-sec" id="sec-reset" data-show="set">
           <h2>Reset Data</h2>
           <p class="hint">Kosongkan rekod peperiksaan sebelum perlawanan rasmi (selepas ujian). Bank soalan &amp; daerah tidak diubah.</p>
           <button type="button" class="btn btn-danger btn-sm" id="btn-reset">Reset semua rekod</button>
@@ -153,6 +161,6 @@
 
     <script src="js/config.js?v=1" onerror="this.remove()"></script>
     <script src="js/config.example.js?v=10"></script>
-    <script src="js/pentadbir.js?v=10"></script>
+    <script src="js/pentadbir.js?v=11"></script>
   </body>
 </html>

@@ -22,6 +22,18 @@ input[type="password"] { width: 100%; }
 .inline-controls input[type="text"] { width: auto; min-width: 180px; }
 .sr-inline { margin: 0; font-weight: 600; }
 
+.tabs {
+  display: flex; gap: 0.3rem; flex-wrap: wrap;
+  margin: 0 0 1rem; border-bottom: 2px solid var(--border);
+}
+.tab-btn {
+  border: none; background: transparent; padding: 0.6rem 1.05rem;
+  font-size: 0.98rem; font-weight: 600; color: var(--muted); cursor: pointer;
+  border-bottom: 3px solid transparent; margin-bottom: -2px; border-radius: 6px 6px 0 0;
+}
+.tab-btn:hover { color: var(--text); background: #f0f2f5; }
+.tab-btn.tab-active { color: var(--primary); border-bottom-color: var(--primary); }
+
 .peringkat-pill {
   display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px;
   background: #e3f2fd; color: var(--primary-hover); font-weight: 700;
@@ -58,3 +70,23 @@ input[type="password"] { width: 100%; }
 }
 
 h3 { font-size: 1.05rem; margin: 1.1rem 0 0.6rem; }
+
+/* Semak — soalan penuh + pilihan */
+#review-details { list-style: none; padding: 0; margin: 0; }
+.review-q {
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 0.75rem 0.85rem; margin-bottom: 0.75rem; background: #fff;
+}
+.rq-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+.rq-ref { margin-left: auto; color: var(--muted); font-size: 0.82rem; text-transform: capitalize; }
+.rq-stem { font-weight: 600; margin-bottom: 0.55rem; line-height: 1.45; }
+.rq-opts { display: grid; gap: 0.35rem; }
+.rq-opt {
+  padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 7px;
+  background: #fafbfc; font-size: 0.93rem;
+}
+.rq-opt.rq-correct { background: #e8f5e9; border-color: #a5d6a7; }
+.rq-opt.rq-wrong { background: #ffebee; border-color: #ef9a9a; }
+.rq-mark { font-size: 0.8rem; font-weight: 700; margin-left: 0.35rem; }
+.rq-mark.ok { color: var(--success); }
+.rq-mark.no { color: var(--danger); }

@@ -16,6 +16,7 @@
   let curRankPeringkat = "";
 
   function getApiUrl() { return ((window.EXAM_CONFIG || {}).API_URL || "").trim(); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 
   async function apiCall(action, payload, left) {
     const url = getApiUrl();
@@ -54,6 +55,7 @@
       renderPanel(data);
       $("#view-pin").hidden = true;
       $("#view-panel").hidden = false;
+      activateTab("s1");
     } catch (e) {
       showErr($("#pin-error"), e.message || "Ralat sambungan.");
     } finally { btn.disabled = false; }
@@ -96,6 +98,24 @@
       b.classList.toggle("stage-active", b.textContent === PERINGKAT_LABEL[s]);
     });
     showOk($("#peringkat-msg"), data.mesej || ("Peringkat: " + PERINGKAT_LABEL[s]));
+  }
+
+  // ---------- Tab setiap saringan ----------
+  const TAB_PERINGKAT = { s1: "S1", s2: "S2", s3: "S3P1" };
+  function activateTab(tab) {
+    document.querySelectorAll(".tab-btn").forEach((b) => b.classList.toggle("tab-active", b.dataset.tab === tab));
+    document.querySelectorAll(".tab-sec").forEach((s) => {
+      s.hidden = (s.dataset.show || "").split(" ").indexOf(tab) < 0;
+    });
+    const p = TAB_PERINGKAT[tab];
+    if (p) {
+      const rankSel = $("#rank-peringkat"); if (rankSel) rankSel.value = p;
+      const revSel = $("#review-peringkat"); if (revSel) revSel.value = p;
+      const title = $("#rank-title"); if (title) title.textContent = "Kedudukan — " + (PERINGKAT_LABEL[p] || p);
+      $("#review-result").hidden = true; showErr($("#review-error"), "");
+      const ic = $("#review-ic"); if (ic) ic.value = "";
+      loadRanking();
+    }
   }
 
   // ---------- Kedudukan ----------
@@ -202,13 +222,25 @@
     const ul = $("#review-details"); ul.innerHTML = "";
     (data.butiran || []).forEach((it) => {
       const li = document.createElement("li");
-      const tag = document.createElement("span");
-      tag.className = "tag " + (it.betul ? "tag-betul" : "tag-salah");
-      tag.textContent = it.betul ? "Betul" : "Salah";
-      li.appendChild(tag);
-      li.appendChild(document.createTextNode(
-        " Soalan " + it.nombor + ": " + (it.soalan || "") +
-        " — Jawapan peserta: " + it.jawapan_pelajar + " | Betul: " + it.jawapan_betul));
+      li.className = "review-q";
+      let opts = "";
+      ["A", "B", "C", "D"].forEach((L) => {
+        const isBetul = it.jawapan_betul === L;
+        const isPilih = it.jawapan_pelajar === L;
+        let cls = "rq-opt";
+        if (isBetul) cls += " rq-correct";
+        if (isPilih && !isBetul) cls += " rq-wrong";
+        let mark = "";
+        if (isBetul) mark = ' <span class="rq-mark ok">✓ betul</span>';
+        else if (isPilih) mark = ' <span class="rq-mark no">✗ pilihan peserta</span>';
+        opts += '<div class="' + cls + '"><b>' + L + ".</b> " + esc(it[L] || "") + mark + "</div>";
+      });
+      li.innerHTML =
+        '<div class="rq-head"><span class="tag ' + (it.betul ? "tag-betul" : "tag-salah") + '">' +
+        (it.betul ? "Betul" : "Salah") + "</span> <strong>Soalan " + it.nombor + "</strong>" +
+        '<span class="rq-ref">' + esc(it.topik || "") + (it.aras ? " · " + esc(it.aras) : "") + "</span></div>" +
+        '<div class="rq-stem">' + esc(it.soalan || "") + "</div>" +
+        '<div class="rq-opts">' + opts + "</div>";
       ul.appendChild(li);
     });
     $("#review-result").hidden = false;
@@ -274,6 +306,7 @@
     if (!getApiUrl()) { $("#config-warning").hidden = false; return; }
     $("#view-pin").hidden = false;
     $("#form-pin").addEventListener("submit", (e) => { e.preventDefault(); const v = $("#pin").value.trim(); if (v) login(v); });
+    document.querySelectorAll(".tab-btn").forEach((b) => b.addEventListener("click", () => activateTab(b.dataset.tab)));
     $("#btn-rank").addEventListener("click", loadRanking);
     $("#btn-auto-advance").addEventListener("click", autoAdvance);
     $("#btn-lock").addEventListener("click", lockKelayakan);
