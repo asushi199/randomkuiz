@@ -1,0 +1,472 @@
+import { db, getAdminPin } from "./supabase";
+
+// ================= Pemalar =================
+export const JUMLAH_SOALAN = 50;
+const TOPIK_LIST = ["AKIDAH", "ALQURAN", "JAWI", "SIRAH", "HADIS", "IBADAH", "ADAB"];
+const TEMPOH_KUIZ_MS = 60 * 60 * 1000;
+const S3P1_SET_COUNT = 4;
+const S3P1_SOALAN = 10;
+const S3P1_SAAT = 20;
+const S3P1_MATA = 2;
+const REBUTAN_PILIH = 8;
+const PERINGKAT_PELAJAR = ["S1", "S2", "S3P1"];
+export const PERINGKAT_LABEL: Record<string, string> = {
+  S1: "Saringan 1", S2: "Saringan 2", S3P1: "Saringan 3 — Pusingan 1",
+  S3P2: "Saringan 3 — Pusingan 2 (Rebutan)", S3P3: "Saringan 3 — Pusingan 3 (Tulisan)",
+  TUTUP: "Ditutup",
+};
+const MSJ_TERIMA_KASIH =
+  "Terima kasih. Jawapan anda telah direkodkan. Keputusan akan diumumkan oleh pihak pengurusan.";
+
+type Json = Record<string, unknown>;
+
+// ================= Normalisasi =================
+const normIc = (v: unknown) => String(v ?? "").replace(/[\s-]/g, "").trim();
+const normNama = (v: unknown) => String(v ?? "").trim();
+const normDaerah = (v: unknown) => String(v ?? "").trim().toUpperCase().replace(/\s+/g, "_");
+const normPin = (v: unknown) => String(v ?? "").trim();
+const normHuruf = (v: unknown) => String(v ?? "").trim().toUpperCase();
+
+// ================= Tetapan =================
+async function getTetapan(kunci: string, fallback = ""): Promise<string> {
+  const { data } = await db.from("tetapan").select("nilai").eq("kunci", kunci).maybeSingle();
+  return data?.nilai != null ? String(data.nilai) : fallback;
+}
+async function setTetapan(kunci: string, nilai: string) {
+  await db.from("tetapan").upsert({ kunci, nilai }, { onConflict: "kunci" });
+}
+async function getPeringkatAktif(): Promise<string> {
+  return (await getTetapan("peringkat_aktif", "TUTUP")).toUpperCase();
+}
+
+// ================= Daerah / Kelayakan =================
+type Daerah = { kod: string; nama: string };
+async function getDaerahList(): Promise<Daerah[]> {
+  const { data } = await db.from("daerah").select("kod,nama,urutan").order("urutan");
+  return (data || []).map((d) => ({ kod: normDaerah(d.kod), nama: String(d.nama || d.kod) }));
+}
+async function daerahNamaMap(): Promise<Record<string, string>> {
+  const map: Record<string, string> = {};
+  (await getDaerahList()).forEach((d) => { map[d.kod] = d.nama; });
+  return map;
+}
+async function isValidDaerah(kod: string): Promise<boolean> {
+  const list = await getDaerahList();
+  return !list.length || list.some((d) => d.kod === kod);
+}
+async function getKelayakan(peringkat: string): Promise<Record<string, boolean>> {
+  const { data } = await db.from("kelayakan").select("daerah").eq("peringkat", peringkat);
+  const set: Record<string, boolean> = {};
+  (data || []).forEach((r) => { set[normDaerah(r.daerah)] = true; });
+  return set;
+}
+async function isLayak(peringkat: string, daerah: string): Promise<boolean> {
+  if (peringkat === "S1") return true;
+  const set = await getKelayakan(peringkat);
+  return Object.keys(set).length ? !!set[daerah] : false;
+}
+
+// ================= Bank soalan (cache dalam-instance) =================
+type Soalan = { id: string; topik: string; aras: string; soalan: string; A: string; B: string; C: string; D: string; jawapan: string };
+let bankCache: { at: number; bank: Record<string, Soalan> } | null = null;
+async function loadBankSoalan(): Promise<Record<string, Soalan>> {
+  if (bankCache && Date.now() - bankCache.at < 300000) return bankCache.bank;
+  const { data, error } = await db.from("soalan").select("*");
+  if (error) throw new Error(error.message);
+  if (!data || !data.length) throw new Error("Bank soalan kosong.");
+  const bank: Record<string, Soalan> = {};
+  data.forEach((r) => {
+    const id = String(r.id).trim();
+    bank[id] = {
+      id, topik: String(r.topik || "").toUpperCase().trim(), aras: String(r.aras || "").toLowerCase().trim(),
+      soalan: String(r.soalan || ""), A: String(r.a || ""), B: String(r.b || ""),
+      C: String(r.c || ""), D: String(r.d || ""), jawapan: normHuruf(r.jawapan),
+    };
+  });
+  bankCache = { at: Date.now(), bank };
+  return bank;
+}
+async function loadBankS3P1(): Promise<Record<string, Soalan & { set: number }>> {
+  const { data, error } = await db.from("soalan_s3p1").select("*");
+  if (error) throw new Error(error.message);
+  if (!data || !data.length) throw new Error("SoalanS3P1 kosong.");
+  const bank: Record<string, Soalan & { set: number }> = {};
+  data.forEach((r) => {
+    const id = String(r.no).trim();
+    bank[id] = {
+      id, set: Number(r.set_no), topik: "", aras: String(r.aras || "").toLowerCase(),
+      soalan: String(r.soalan || ""), A: String(r.a || ""), B: String(r.b || ""),
+      C: String(r.c || ""), D: String(r.d || ""), jawapan: normHuruf(r.jawapan),
+    };
+  });
+  return bank;
+}
+
+// ================= Cabutan (port dari simulate_draw yang disahkan) =================
+function shuffle<T>(arr: T[]): T[] {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function sample(pool: string[], n: number, label: string): string[] {
+  if (pool.length < n) throw new Error("Soalan tidak cukup untuk " + label);
+  return shuffle(pool).slice(0, n);
+}
+function buildKertas(bank: Record<string, Soalan>, exclude: Record<string, boolean> = {}) {
+  const topikLapan = shuffle(TOPIK_LIST)[0];
+  let ids: string[] = [];
+  for (const topik of TOPIK_LIST) {
+    const nTing = topik === topikLapan ? 4 : 3;
+    const sed: string[] = [], ting: string[] = [];
+    for (const id of Object.keys(bank)) {
+      if (exclude[id]) continue;
+      const q = bank[id];
+      if (q.topik !== topik) continue;
+      if (q.aras === "sederhana") sed.push(id);
+      else if (q.aras === "tinggi") ting.push(id);
+    }
+    ids = ids.concat(sample(sed, 4, topik + " sederhana"), sample(ting, nTing, topik + " tinggi"));
+  }
+  if (ids.length !== JUMLAH_SOALAN) throw new Error("Cabutan gagal: " + ids.length);
+  return { ids: shuffle(ids), topik_lapan: topikLapan };
+}
+function stripJawapan(qs: Soalan[]) {
+  return qs.map((q) => ({ id: q.id, soalan: q.soalan, A: q.A, B: q.B, C: q.C, D: q.D }));
+}
+function qsFromIds(bank: Record<string, Soalan>, ids: string[]): Soalan[] {
+  return ids.map((id) => { if (!bank[id]) throw new Error("Soalan id " + id + " tiada."); return bank[id]; });
+}
+function gred(qs: Soalan[], jawapanMap: Json) {
+  let betul = 0;
+  const butiran = qs.map((q, i) => {
+    const pel = normHuruf(jawapanMap[q.id]);
+    const ok = pel === q.jawapan;
+    if (ok) betul++;
+    return { id: q.id, topik: q.topik || "", aras: q.aras || "", nombor: i + 1, soalan: q.soalan,
+             jawapan_pelajar: pel || "-", jawapan_betul: q.jawapan, betul: ok };
+  });
+  const jumlah = qs.length;
+  return { betul, jumlah, skor: jumlah ? Math.round((betul / jumlah) * 100) : 0, butiran };
+}
+
+// ================= Masa =================
+const toMs = (v: unknown) => { if (!v) return Number.MAX_SAFE_INTEGER; const d = new Date(v as string); return isNaN(d.getTime()) ? Number.MAX_SAFE_INTEGER : d.getTime(); };
+function fmtMasa(v: unknown): string {
+  if (!v) return "-";
+  const d = new Date(v as string);
+  return isNaN(d.getTime()) ? String(v) : d.toLocaleString("ms-MY", { hour12: false });
+}
+function fmtTempoh(ms: number): string {
+  const s = Math.max(0, Math.floor(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  const p = (n: number) => (n < 10 ? "0" + n : "" + n);
+  if (h > 0) return `${p(h)} jam ${p(m)} min ${p(sec)} saat`;
+  if (m > 0) return `${m} min ${p(sec)} saat`;
+  return `${sec} saat`;
+}
+function timingS1S2(masaMula: unknown) {
+  const start = toMs(masaMula), end = start + TEMPOH_KUIZ_MS;
+  return { masa_mula_ms: start, batas_masa_ms: end, masa_mula_label: fmtMasa(masaMula),
+           batas_masa_label: fmtMasa(new Date(end).toISOString()), tempoh_kuiz_minit: 60 };
+}
+
+// ================= Percubaan helpers =================
+async function servedIdsForIc(ic: string): Promise<Record<string, boolean>> {
+  const { data } = await db.from("percubaan").select("soalan_ids").eq("ic", ic);
+  const served: Record<string, boolean> = {};
+  (data || []).forEach((r) => (r.soalan_ids || []).forEach((id: string) => { served[String(id).trim()] = true; }));
+  return served;
+}
+
+// ================= PELAJAR: getInit =================
+export async function getInit() {
+  const peringkat = await getPeringkatAktif();
+  return {
+    ok: true, peringkat_aktif: peringkat, peringkat_label: PERINGKAT_LABEL[peringkat] || peringkat,
+    dibuka: PERINGKAT_PELAJAR.includes(peringkat), daerah: await getDaerahList(),
+  };
+}
+
+// ================= PELAJAR: startExam =================
+export async function startExam(icRaw: unknown, namaRaw: unknown, daerahRaw: unknown) {
+  const ic = normIc(icRaw), nama = normNama(namaRaw), daerah = normDaerah(daerahRaw);
+  const peringkat = await getPeringkatAktif();
+  if (!PERINGKAT_PELAJAR.includes(peringkat)) return { ok: false, ralat: "Peperiksaan belum dibuka. Sila tunggu arahan pengawas." };
+  if (!ic || ic.length < 6) return { ok: false, ralat: "No. Kad Pengenalan tidak sah." };
+  if (!nama) return { ok: false, ralat: "Nama penuh diperlukan." };
+  if (!daerah) return { ok: false, ralat: "Sila pilih daerah." };
+  if (!(await isValidDaerah(daerah))) return { ok: false, ralat: "Daerah tidak sah." };
+  if (!(await isLayak(peringkat, daerah))) return { ok: false, ralat: "Daerah anda tidak layak untuk peringkat ini." };
+  return peringkat === "S3P1" ? startS3P1(ic, nama, daerah) : startS1S2(peringkat, ic, nama, daerah);
+}
+
+async function startS1S2(peringkat: string, ic: string, nama: string, daerah: string) {
+  const bank = await loadBankSoalan();
+  const { data: existing } = await db.from("percubaan").select("*").eq("peringkat", peringkat).eq("ic", ic).order("masa_mula", { ascending: false });
+  const done = (existing || []).find((r) => r.status === "selesai");
+  if (done) return { ok: false, sudah_hantar: true, ralat: "Anda telah menghantar peperiksaan ini.", mesej_terima_kasih: MSJ_TERIMA_KASIH };
+  const active = (existing || []).find((r) => r.status === "sedang");
+  if (active) {
+    const t = timingS1S2(active.masa_mula);
+    if (Date.now() > t.batas_masa_ms) return { ok: false, ralat: "Masa kuiz 1 jam telah tamat. Sila hubungi pengawas." };
+    return { ok: true, peringkat, attempt_id: active.id, nama: active.nama || nama, daerah: active.daerah || daerah,
+             soalan: stripJawapan(qsFromIds(bank, active.soalan_ids)), jumlah: active.soalan_ids.length, sambungan: true, ...t };
+  }
+  const exclude = peringkat === "S2" ? await servedIdsForIc(ic) : {};
+  const kertas = buildKertas(bank, exclude);
+  const masaMula = new Date().toISOString();
+  const { data: ins, error } = await db.from("percubaan").insert({
+    peringkat, ic, nama, daerah, soalan_ids: kertas.ids, topik_lapan: kertas.topik_lapan, status: "sedang", masa_mula: masaMula,
+  }).select().single();
+  if (error) {
+    // Perlumbaan: kemungkinan sudah wujud — ambil semula
+    const { data: again } = await db.from("percubaan").select("*").eq("peringkat", peringkat).eq("ic", ic).order("masa_mula", { ascending: false });
+    const a = (again || [])[0];
+    if (a) {
+      if (a.status === "selesai") return { ok: false, sudah_hantar: true, mesej_terima_kasih: MSJ_TERIMA_KASIH };
+      return { ok: true, peringkat, attempt_id: a.id, nama: a.nama, daerah: a.daerah,
+               soalan: stripJawapan(qsFromIds(bank, a.soalan_ids)), jumlah: a.soalan_ids.length, sambungan: true, ...timingS1S2(a.masa_mula) };
+    }
+    throw new Error(error.message);
+  }
+  return { ok: true, peringkat, attempt_id: ins.id, nama, daerah,
+           soalan: stripJawapan(qsFromIds(bank, kertas.ids)), jumlah: kertas.ids.length, sambungan: false, ...timingS1S2(masaMula) };
+}
+
+async function startS3P1(ic: string, nama: string, daerah: string) {
+  const bank = await loadBankS3P1();
+  const { data: team } = await db.from("percubaan").select("*").eq("peringkat", "S3P1").eq("daerah", daerah).maybeSingle();
+  if (team) {
+    if (team.status === "selesai") return { ok: false, sudah_hantar: true, mesej_terima_kasih: MSJ_TERIMA_KASIH, ralat: "Pasukan anda telah menghantar." };
+    return { ok: true, peringkat: "S3P1", attempt_id: team.id, nama: team.nama, daerah, set: team.set_no,
+             soalan: stripJawapan(qsFromIds(bank as Record<string, Soalan>, team.soalan_ids)), jumlah: team.soalan_ids.length,
+             saat_sesoalan: S3P1_SAAT, mata_sesoalan: S3P1_MATA, sambungan: true };
+  }
+  const { data: allS3 } = await db.from("percubaan").select("set_no").eq("peringkat", "S3P1");
+  const taken: Record<number, boolean> = {};
+  (allS3 || []).forEach((r) => { if (r.set_no) taken[Number(r.set_no)] = true; });
+  let avail: number[] = [];
+  for (let s = 1; s <= S3P1_SET_COUNT; s++) if (!taken[s]) avail.push(s);
+  if (!avail.length) for (let s = 1; s <= S3P1_SET_COUNT; s++) avail.push(s);
+  const setNo = shuffle(avail)[0];
+  const ids = Object.keys(bank).filter((no) => bank[no].set === setNo).sort((a, b) => Number(a) - Number(b));
+  if (ids.length !== S3P1_SOALAN) throw new Error("Set " + setNo + " tidak lengkap.");
+  const { data: ins, error } = await db.from("percubaan").insert({
+    peringkat: "S3P1", ic, nama, daerah, set_no: setNo, soalan_ids: ids, status: "sedang", masa_mula: new Date().toISOString(),
+  }).select().single();
+  if (error) {
+    const { data: again } = await db.from("percubaan").select("*").eq("peringkat", "S3P1").eq("daerah", daerah).maybeSingle();
+    if (again) return { ok: true, peringkat: "S3P1", attempt_id: again.id, nama: again.nama, daerah, set: again.set_no,
+               soalan: stripJawapan(qsFromIds(bank as Record<string, Soalan>, again.soalan_ids)), jumlah: again.soalan_ids.length,
+               saat_sesoalan: S3P1_SAAT, mata_sesoalan: S3P1_MATA, sambungan: true };
+    throw new Error(error.message);
+  }
+  return { ok: true, peringkat: "S3P1", attempt_id: ins.id, nama, daerah, set: setNo,
+           soalan: stripJawapan(qsFromIds(bank as Record<string, Soalan>, ids)), jumlah: ids.length,
+           saat_sesoalan: S3P1_SAAT, mata_sesoalan: S3P1_MATA, sambungan: false };
+}
+
+// ================= PELAJAR: submitExam =================
+export async function submitExam(icRaw: unknown, attemptId: unknown, jawapan: unknown) {
+  const ic = normIc(icRaw);
+  if (!ic) return { ok: false, ralat: "IC diperlukan." };
+  if (!attemptId) return { ok: false, ralat: "attempt_id diperlukan." };
+  const { data: attempt } = await db.from("percubaan").select("*").eq("id", attemptId).maybeSingle();
+  if (!attempt) return { ok: false, ralat: "Percubaan tidak dijumpai." };
+  if (attempt.peringkat !== "S3P1" && attempt.ic !== ic) return { ok: false, ralat: "Percubaan tidak sepadan dengan IC." };
+  if (attempt.status === "selesai") return { ok: false, sudah_hantar: true, mesej_terima_kasih: MSJ_TERIMA_KASIH, ralat: "Jawapan telah dihantar." };
+
+  const jmap = (jawapan as Json) || {};
+  let graded, mata: number, skor: number;
+  if (attempt.peringkat === "S3P1") {
+    const bank = await loadBankS3P1();
+    graded = gred(qsFromIds(bank as Record<string, Soalan>, attempt.soalan_ids), jmap);
+    mata = graded.betul * S3P1_MATA; skor = graded.skor;
+  } else {
+    const t = timingS1S2(attempt.masa_mula);
+    if (Date.now() > t.batas_masa_ms) return { ok: false, ralat: "Masa kuiz 1 jam telah tamat. Sila hubungi pengawas." };
+    const bank = await loadBankSoalan();
+    graded = gred(qsFromIds(bank, attempt.soalan_ids), jmap);
+    mata = graded.betul; skor = graded.skor;
+  }
+  const masaHantar = new Date().toISOString();
+  await db.from("percubaan").update({ status: "selesai", masa_hantar: masaHantar, betul: graded.betul, jumlah: graded.jumlah, skor, mata, jawapan: jmap, butiran: graded.butiran }).eq("id", attempt.id);
+  return { ok: true, mesej_terima_kasih: MSJ_TERIMA_KASIH };
+}
+
+// ================= PELAJAR: getResult =================
+export async function getResult(icRaw: unknown, daerahRaw: unknown) {
+  const ic = normIc(icRaw), daerah = normDaerah(daerahRaw);
+  if (!ic) return { ok: false, ralat: "IC diperlukan." };
+  const peringkat = await getPeringkatAktif();
+  let q = db.from("percubaan").select("id").eq("peringkat", peringkat).eq("status", "selesai");
+  q = peringkat === "S3P1" ? q.eq("daerah", daerah) : q.eq("ic", ic);
+  const { data } = await q.limit(1);
+  if (data && data.length) return { ok: true, sudah_hantar: true, mesej_terima_kasih: MSJ_TERIMA_KASIH };
+  return { ok: false, ralat: "Tiada rekod peperiksaan." };
+}
+
+// ================= PENTADBIR =================
+function requirePin(pin: unknown): { ok: boolean; ralat?: string } {
+  const admin = getAdminPin();
+  if (!admin) return { ok: false, ralat: "ADMIN_PIN belum dikonfigurasi." };
+  if (normPin(pin) !== admin) return { ok: false, ralat: "PIN tidak sah." };
+  return { ok: true };
+}
+
+type KRow = { attempt_id: string; ic: string; nama: string; daerah: string; betul: number; jumlah: number; skor: number; mata: number; masa_hantar: unknown; tempoh_ms: number; tempoh_label: string; butiran: unknown };
+async function loadKeputusan(peringkat: string): Promise<KRow[]> {
+  const { data } = await db.from("percubaan").select("*").eq("peringkat", peringkat).eq("status", "selesai");
+  if (!data || !data.length) return [];
+  return data.map((r) => {
+    const start = toMs(r.masa_mula); const end = toMs(r.masa_hantar);
+    const tempoh = start <= end && start < Number.MAX_SAFE_INTEGER ? end - start : Number.MAX_SAFE_INTEGER;
+    return { attempt_id: r.id, ic: normIc(r.ic), nama: String(r.nama || ""), daerah: normDaerah(r.daerah),
+             betul: Number(r.betul), jumlah: Number(r.jumlah), skor: Number(r.skor), mata: Number(r.mata || 0),
+             masa_hantar: r.masa_hantar, tempoh_ms: tempoh, tempoh_label: fmtTempoh(tempoh), butiran: r.butiran };
+  });
+}
+
+async function buildRanking(peringkat: string) {
+  const rows = await loadKeputusan(peringkat);
+  const namaMap = await daerahNamaMap();
+  const bestByIc: Record<string, KRow> = {};
+  rows.forEach((r) => {
+    const c = bestByIc[r.ic];
+    if (!c || r.skor > c.skor || (r.skor === c.skor && r.tempoh_ms < c.tempoh_ms)) bestByIc[r.ic] = r;
+  });
+  const individu = Object.values(bestByIc).sort((a, b) => (b.skor !== a.skor ? b.skor - a.skor : a.tempoh_ms - b.tempoh_ms));
+  const individuOut = individu.map((r, i) => ({ kedudukan: i + 1, ic: r.ic, nama: r.nama, daerah: r.daerah,
+    nama_daerah: namaMap[r.daerah] || r.daerah, betul: r.betul, jumlah: r.jumlah, skor: r.skor, mata: r.mata, tempoh_label: r.tempoh_label }));
+
+  const byDaerah: Record<string, KRow[]> = {};
+  individu.forEach((r) => { (byDaerah[r.daerah] = byDaerah[r.daerah] || []).push(r); });
+  const pasukan = Object.keys(byDaerah).map((d) => {
+    const anggota = byDaerah[d].slice().sort((a, b) => (b.skor !== a.skor ? b.skor - a.skor : a.tempoh_ms - b.tempoh_ms)).slice(0, 3);
+    let mata = 0, skor = 0, tempoh = 0;
+    anggota.forEach((a) => { mata += a.mata; skor += a.skor; tempoh += a.tempoh_ms; });
+    return { daerah: d, nama_daerah: namaMap[d] || d, bil_ahli: byDaerah[d].length, jumlah_skor: skor, jumlah_mata: mata, tempoh_ms: tempoh, tempoh_label: fmtTempoh(tempoh), kedudukan: 0 };
+  });
+  pasukan.sort((a, b) => (b.jumlah_skor !== a.jumlah_skor ? b.jumlah_skor - a.jumlah_skor : a.tempoh_ms - b.tempoh_ms));
+  pasukan.forEach((p, i) => { p.kedudukan = i + 1; });
+  return { individu: individuOut, pasukan };
+}
+
+export async function adminState(pin: unknown) {
+  const chk = requirePin(pin); if (!chk.ok) return chk;
+  const { data } = await db.from("percubaan").select("peringkat").eq("status", "selesai");
+  const counts: Record<string, number> = {};
+  (data || []).forEach((r) => { const p = String(r.peringkat).toUpperCase(); counts[p] = (counts[p] || 0) + 1; });
+  return { ok: true, peringkat_aktif: await getPeringkatAktif(), peringkat_label: PERINGKAT_LABEL, jumlah_keputusan: counts,
+           daerah: await getDaerahList(), kelayakan: { S2: Object.keys(await getKelayakan("S2")), S3P1: Object.keys(await getKelayakan("S3P1")) } };
+}
+
+export async function adminSetPeringkat(pin: unknown, peringkat: unknown) {
+  const chk = requirePin(pin); if (!chk.ok) return chk;
+  const p = String(peringkat || "").toUpperCase();
+  if (!["S1", "S2", "S3P1", "S3P2", "S3P3", "TUTUP"].includes(p)) return { ok: false, ralat: "Peringkat tidak sah." };
+  await setTetapan("peringkat_aktif", p);
+  return { ok: true, peringkat_aktif: p, mesej: "Peringkat aktif: " + (PERINGKAT_LABEL[p] || p) };
+}
+
+export async function adminRanking(pin: unknown, peringkat: unknown) {
+  const chk = requirePin(pin); if (!chk.ok) return chk;
+  const p = String(peringkat || (await getPeringkatAktif())).toUpperCase();
+  const rk = await buildRanking(p);
+  return { ok: true, peringkat: p, peringkat_label: PERINGKAT_LABEL[p] || p, individu: rk.individu, pasukan: rk.pasukan };
+}
+
+export async function adminReview(pin: unknown, peringkat: unknown, icRaw: unknown) {
+  const chk = requirePin(pin); if (!chk.ok) return chk;
+  const ic = normIc(icRaw);
+  if (!ic) return adminRanking(pin, peringkat);
+  const p = String(peringkat || (await getPeringkatAktif())).toUpperCase();
+  const rows = (await loadKeputusan(p)).filter((r) => r.ic === ic).sort((a, b) => b.skor - a.skor);
+  if (!rows.length) return { ok: false, ralat: "Tiada rekod untuk IC ini pada peringkat " + p + "." };
+  const row = rows[0];
+  const namaMap = await daerahNamaMap();
+  return { ok: true, peringkat: p, ic, nama: row.nama, daerah: row.daerah, nama_daerah: namaMap[row.daerah] || row.daerah,
+           betul: row.betul, jumlah: row.jumlah, salah: row.jumlah - row.betul, skor: row.skor, mata: row.mata,
+           masa_hantar: fmtMasa(row.masa_hantar), tempoh_label: row.tempoh_label, butiran: row.butiran || [] };
+}
+
+export async function adminLock(pin: unknown, peringkat: unknown, daerahList: unknown) {
+  const chk = requirePin(pin); if (!chk.ok) return chk;
+  const p = String(peringkat || "").toUpperCase();
+  if (!["S2", "S3P1"].includes(p)) return { ok: false, ralat: "Hanya S2 atau S3P1 boleh dikunci." };
+  let list: string[] = typeof daerahList === "string" ? daerahList.split(",") : (daerahList as string[]) || [];
+  list = list.map(normDaerah).filter(Boolean);
+  if (!list.length) return { ok: false, ralat: "Senarai daerah kosong." };
+  await db.from("kelayakan").delete().eq("peringkat", p);
+  await db.from("kelayakan").insert(list.map((d) => ({ peringkat: p, daerah: d })));
+  return { ok: true, peringkat: p, daerah: list, mesej: list.length + " pasukan dikunci untuk " + p + "." };
+}
+
+// ---- Rebutan S3P2 ----
+export async function adminRebutanSoalan(pin: unknown, pilihSemula?: unknown) {
+  const chk = requirePin(pin); if (!chk.ok) return chk;
+  const { data } = await db.from("soalan_rebutan").select("*");
+  const bank = (data || []).map((r) => ({ no: Number(r.no), topik: String(r.topik || ""), soalan: String(r.soalan || ""),
+    A: String(r.a || ""), B: String(r.b || ""), C: String(r.c || ""), D: String(r.d || ""), jawapan: normHuruf(r.jawapan) }));
+  if (!bank.length) return { ok: false, ralat: "SoalanRebutan kosong." };
+  let pilihan = (await getTetapan("rebutan_pilihan", "")).split(",").map((s) => s.trim()).filter(Boolean);
+  if (pilihSemula === true || String(pilihSemula) === "true" || !pilihan.length) {
+    pilihan = shuffle(bank.map((q) => String(q.no))).slice(0, REBUTAN_PILIH);
+    await setTetapan("rebutan_pilihan", pilihan.join(","));
+  }
+  const byNo: Record<string, typeof bank[0]> = {}; bank.forEach((q) => { byNo[String(q.no)] = q; });
+  const soalan = pilihan.map((no, i) => { const q = byNo[no]; return q ? { urutan: i + 1, ...q } : null; }).filter(Boolean);
+  return { ok: true, soalan, daerah_layak: Object.keys(await getKelayakan("S3P1")) };
+}
+
+export async function adminRebutanScore(pin: unknown, noSoalan: unknown, daerahRaw: unknown, betul: unknown, mata: unknown) {
+  const chk = requirePin(pin); if (!chk.ok) return chk;
+  const daerah = normDaerah(daerahRaw);
+  if (!daerah) return { ok: false, ralat: "Daerah diperlukan." };
+  const isBetul = betul === true || String(betul) === "true";
+  const m = Number(mata != null ? mata : isBetul ? 5 : 0);
+  await db.from("rebutan_log").insert({ no_soalan: noSoalan ? Number(noSoalan) : null, daerah, betul: isBetul, mata: m, catatan: isBetul ? "betul" : "salah/tiada", masa: new Date().toISOString() });
+  return { ok: true, mesej: "Direkod: " + daerah + " " + (m >= 0 ? "+" : "") + m + " mata." };
+}
+
+// ---- Markah manual S3P3 ----
+export async function adminSetManual(pin: unknown, peringkat: unknown, daerahRaw: unknown, mata: unknown, catatan: unknown) {
+  const chk = requirePin(pin); if (!chk.ok) return chk;
+  const p = String(peringkat || "S3P3").toUpperCase();
+  const daerah = normDaerah(daerahRaw);
+  if (!daerah) return { ok: false, ralat: "Daerah diperlukan." };
+  const m = Number(mata || 0);
+  await db.from("markah_manual").upsert({ peringkat: p, daerah, mata: m, catatan: String(catatan || ""), masa: new Date().toISOString() }, { onConflict: "peringkat,daerah" });
+  return { ok: true, mesej: "Markah " + p + " " + daerah + " disimpan: " + m };
+}
+
+// ---- Kedudukan akhir ----
+export async function adminFinal(pin: unknown) {
+  const chk = requirePin(pin); if (!chk.ok) return chk;
+  const namaMap = await daerahNamaMap();
+  const agg: Record<string, { daerah: string; nama_daerah: string; s3p1: number; s3p2: number; s3p3: number; jumlah: number; kedudukan: number }> = {};
+  const ensure = (d: string) => (agg[d] = agg[d] || { daerah: d, nama_daerah: namaMap[d] || d, s3p1: 0, s3p2: 0, s3p3: 0, jumlah: 0, kedudukan: 0 });
+  (await loadKeputusan("S3P1")).forEach((r) => { ensure(r.daerah).s3p1 += r.mata; });
+  const { data: reb } = await db.from("rebutan_log").select("daerah,mata");
+  (reb || []).forEach((r) => { if (r.daerah) ensure(normDaerah(r.daerah)).s3p2 += Number(r.mata || 0); });
+  const { data: man } = await db.from("markah_manual").select("daerah,mata,peringkat").eq("peringkat", "S3P3");
+  (man || []).forEach((r) => { ensure(normDaerah(r.daerah)).s3p3 += Number(r.mata || 0); });
+  const list = Object.values(agg).map((a) => { a.jumlah = a.s3p1 + a.s3p2 + a.s3p3; return a; });
+  list.sort((a, b) => b.jumlah - a.jumlah);
+  list.forEach((a, i) => { a.kedudukan = i + 1; });
+  return { ok: true, kedudukan: list };
+}
+
+// ---- Reset ----
+export async function adminReset(pin: unknown, skop: unknown) {
+  const chk = requirePin(pin); if (!chk.ok) return chk;
+  const s = String(skop || "semua").toLowerCase();
+  const delAll = async (t: string) => { await db.from(t).delete().neq("id", "00000000-0000-0000-0000-000000000000"); };
+  if (s === "semua" || s === "percubaan") { await delAll("percubaan"); }
+  if (s === "semua") {
+    await delAll("rebutan_log");
+    await db.from("markah_manual").delete().neq("daerah", "___none___");
+    await db.from("kelayakan").delete().neq("daerah", "___none___");
+    await setTetapan("rebutan_pilihan", "");
+  }
+  return { ok: true, mesej: "Reset (" + s + ") selesai. Bank soalan & daerah tidak diubah." };
+}

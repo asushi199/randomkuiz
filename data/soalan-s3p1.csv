@@ -1,0 +1,41 @@
+set,no,aras,soalan,A,B,C,D,jawapan
+1,1,rendah,Apakah kitab suci yang diturunkan kepada Nabi Muhammad SAW?,Taurat,Al-Quran,Zabur,Injil,B
+1,2,rendah,Berapakah jumlah surah dalam Al-Quran?,104,110,114,120,C
+1,3,rendah,Surah manakah yang menjadi surah pertama dalam susunan mushaf Al-Quran?,Al-Baqarah,Al-Fatihah,An-Nas,Al-Ikhlas,B
+1,4,rendah,Apakah surah yang terletak pada akhir susunan mushaf Al-Quran?,Al-Falaq,Al-Kafirun,Al-Ikhlas,An-Nas,D
+1,5,rendah,Apakah maksud umum perkataan 'hadis' dalam ilmu Islam?,Kisah para raja,"Perkataan, perbuatan, pengakuan atau sifat Nabi SAW",Catatan sejarah bangsa Arab,Himpunan doa sahaja,B
+1,6,sederhana,Apakah tujuan utama Al-Quran diturunkan kepada manusia?,Sebagai panduan hidup,Sebagai buku sejarah semata-mata,Sebagai bahan hiburan,Sebagai catatan keturunan,A
+1,7,sederhana,Hadis yang menerangkan sesuatu yang dilakukan atau diakui oleh Nabi Muhammad SAW disebut sebagai?,Hadis qauli,Hadis fi'li,Hadis taqriri,Hadis qudsi,C
+1,8,sederhana,Surah Al-Fatihah mengandungi berapa ayat?,5,6,7,8,C
+1,9,tinggi,Mengapakah umat Islam perlu merujuk Al-Quran dan hadis secara bersama ketika memahami ajaran Islam?,Hadis menggantikan Al-Quran,Hadis membantu menjelaskan dan menerangkan ajaran Al-Quran,Al-Quran hanya untuk dibaca,Kedua-duanya mempunyai kandungan yang sama sepenuhnya,B
+1,10,tinggi,Seorang murid membaca Al-Quran dengan baik tetapi tidak mengamalkan ajaran yang dibacanya. Apakah pengajaran paling tepat?,Bacaan sahaja sudah mencukupi,Ilmu perlu diterjemahkan melalui penghayatan dan amalan,Tidak perlu memahami maksud ayat,Amalan tidak berkaitan dengan Al-Quran,B
+2,11,rendah,Surah apakah yang dikenali sebagai Ummul Kitab?,Al-Fatihah,Al-Baqarah,Yasin,Al-Mulk,A
+2,12,rendah,Apakah nama malaikat yang menyampaikan wahyu kepada Nabi Muhammad SAW?,Mikail,Israfil,Jibril,Izrail,C
+2,13,rendah,Nabi Muhammad SAW menerima wahyu pertama ketika berada di?,Gua Thur,Gua Hira',Masjid Nabawi,Bukit Uhud,B
+2,14,rendah,Apakah ayat pertama daripada wahyu yang diturunkan kepada Nabi Muhammad SAW?,Qul huwallahu ahad,Iqra' bismi rabbikallazi khalaq,Alhamdulillahi rabbil 'alamin,Qul a'uzu birabbil falaq,B
+2,15,rendah,Apakah surah yang mengandungi ayat Kursi?,Ali 'Imran,Al-Baqarah,An-Nisa',Al-Ma'idah,B
+2,16,sederhana,Apakah maksud 'Iqra'' dalam konteks wahyu pertama?,Duduklah,Berjalanlah,Bacalah,Diamlah,C
+2,17,sederhana,"Antara berikut, yang manakah contoh mengamalkan hadis Nabi SAW?",Mengabaikan nasihat ibu bapa,Bercakap benar dan menjaga amanah,Meninggalkan solat,Berlaku kasar kepada orang lain,B
+2,18,sederhana,Apakah kelebihan membaca Al-Quran dengan memahami maknanya?,Membantu penghayatan dan pelaksanaan ajaran,Menjadikan seseorang tidak perlu beramal,Menggantikan semua pembelajaran lain,Hanya untuk pertandingan,A
+2,19,tinggi,"Jika seorang murid menemui dua maklumat agama yang kelihatan bercanggah, apakah tindakan paling wajar?",Terus memilih maklumat yang disukai,Menyebarkannya kepada rakan,Merujuk sumber yang sahih dan guru yang berautoriti,Mengabaikan kedua-duanya,C
+2,20,tinggi,Mengapakah hadis perlu dinilai kesahihannya sebelum dijadikan hujah?,Semua hadis pasti sama taraf,Untuk memastikan maklumat benar-benar bersumber daripada Nabi SAW,Kerana hadis tidak penting,Supaya hadis boleh diubah mengikut keadaan,B
+3,21,rendah,Apakah surah yang mempunyai tiga ayat dan membincangkan tentang nikmat yang banyak?,Al-Kawthar,Al-'Asr,Al-Fil,Al-Ma'un,A
+3,22,rendah,Surah Al-Ikhlas menerangkan tentang?,Kisah peperangan,Keesaan Allah SWT,Hukum haji,Kisah Nabi Yusuf,B
+3,23,rendah,Apakah maksud umum 'Alhamdulillah'?,Maha Suci Allah,Segala puji bagi Allah,Allah Maha Besar,Tiada Tuhan selain Allah,B
+3,24,rendah,"Apakah nama kitab yang menghimpunkan sabda, perbuatan dan pengakuan Nabi SAW?",Hadis,Tafsir,Sirah,Fiqh,A
+3,25,rendah,Siapakah yang menjadi contoh teladan utama dalam hadis?,Nabi Muhammad SAW,Raja Rom,Pedagang Quraisy,Para penyair,A
+3,26,sederhana,Apakah hubungan antara membaca Al-Quran dan membentuk akhlak?,Al-Quran mengajar nilai dan panduan yang boleh membentuk akhlak,Al-Quran hanya berkaitan bahasa,Akhlak tidak berkaitan dengan agama,Membaca Al-Quran menyebabkan seseorang tidak perlu bergaul,A
+3,27,sederhana,"Antara berikut, yang manakah menunjukkan adab terhadap Al-Quran?",Meletakkannya di tempat yang sesuai dan membacanya dengan hormat,Meletakkannya di lantai dengan sengaja,Membaca sambil mengejek,Meninggalkan mushaf di tempat yang kotor,A
+3,28,sederhana,Apakah maksud hadis qudsi secara umum?,Hadis yang maknanya disandarkan kepada Allah SWT dan disampaikan oleh Nabi SAW,Semua ayat Al-Quran,Hadis yang hanya berkaitan peperangan,Hadis yang tidak mempunyai sumber,A
+3,29,tinggi,Seorang murid menghafaz banyak hadis tetapi sering berbohong. Apakah kesimpulan yang paling tepat?,Hafazan tidak perlu,Ilmu hadis sepatutnya mendorong penghayatan dan pembentukan akhlak,Berbohong dibenarkan jika hafal hadis,Akhlak tidak berkaitan dengan ilmu,B
+3,30,tinggi,Mengapakah memahami konteks dan maksud hadis penting sebelum mengamalkannya?,Supaya hadis tidak disalahfahami atau diamalkan secara tidak tepat,Supaya hadis boleh diubah,Kerana hadis tidak boleh diamalkan,Supaya hanya orang tertentu boleh membaca hadis,A
+4,31,rendah,Apakah surah yang dikenali sebagai 'Qul huwallahu ahad'?,Al-Falaq,Al-Ikhlas,An-Nas,Al-Kafirun,B
+4,32,rendah,Berapakah bilangan ayat dalam Surah Al-Kawthar?,2,3,4,5,B
+4,33,rendah,Apakah maksud 'Rabbil 'alamin' dalam Surah Al-Fatihah?,Raja pada hari pembalasan,Tuhan sekalian alam,Yang Maha Pengampun,Yang Maha Mengetahui,B
+4,34,rendah,Apakah yang dimaksudkan dengan sanad dalam ilmu hadis?,Rangkaian perawi yang menyampaikan hadis,Tajuk hadis,Terjemahan hadis,Kesimpulan hadis,A
+4,35,rendah,Apakah yang dimaksudkan dengan matan hadis?,Rangkaian perawi,Isi atau teks hadis,Nama kitab,Nama tempat,B
+4,36,sederhana,Apakah pengajaran utama Surah Al-'Asr?,"Kepentingan masa, iman, amal soleh, kebenaran dan kesabaran",Kisah Nabi Nuh,Hukum pembahagian harta,Kisah tentera bergajah,A
+4,37,sederhana,Apakah tindakan yang menunjukkan penghayatan terhadap hadis tentang menjaga kebersihan?,Membuang sampah merata-rata,Menjaga kebersihan diri dan persekitaran,Membiarkan kelas kotor,Mengabaikan kebersihan tandas,B
+4,38,sederhana,Mengapakah membaca Al-Quran secara bertajwid penting?,Untuk membaca dengan betul dan menjaga sebutan ayat,Untuk membaca lebih cepat sahaja,Supaya tidak perlu memahami makna,Untuk menggantikan hafazan,A
+4,39,tinggi,"Dalam satu program, murid diminta memilih antara menghafaz ayat tanpa memahami makna atau memahami, menghayati dan mengamalkan ayat yang dipelajari. Pilihan manakah lebih selari dengan matlamat pendidikan Al-Quran?",Menghafaz tanpa memahami,"Memahami, menghayati dan mengamalkan",Tidak perlu membaca Al-Quran,Menghafaz hanya untuk mendapat hadiah,B
+4,40,tinggi,"Jika sebuah hadis mengajar tentang amanah, apakah tindakan yang paling jelas menunjukkan pemahaman terhadap hadis tersebut?",Memulangkan barang yang dipinjam dan menjaga tanggungjawab,Menyembunyikan barang orang lain,Mengelak daripada tanggungjawab,Mengambil barang tanpa izin,A

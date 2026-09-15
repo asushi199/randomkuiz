@@ -1,187 +1,110 @@
-# Peperiksaan Agama — Pertandingan Peringkat Negeri
+# Kuiz Ilmuan Cilik — FiESH (Sistem Pertandingan Berbilang Peringkat)
 
-Sistem peperiksaan dalam talian: pelajar log masuk dengan **daerah**, **No. Kad Pengenalan** dan **nama**, menjawab **50 soalan** yang dicabut mengikut peraturan 7 topik, dan hanya melihat mesej **terima kasih** selepas hantar. Pentadbir/juri menyemak jawapan melalui halaman berasingan dengan **PIN daerah** atau **PIN negeri**.
+Sistem kuiz dalam talian untuk pertandingan **peringkat negeri** (12 daerah). Pelajar log
+masuk dengan **daerah + No. KP + nama**; pentadbir mengawal keseluruhan pertandingan melalui
+**satu PIN** dari panel pentadbir. Backend menggunakan **Google Apps Script + Google Sheet**;
+frontend statik di **GitHub Pages**.
 
-## Bank soalan
+## Format pertandingan
 
-- **7 topik**, setiap satu **50 soalan** (1–25 aras sederhana, 26–50 aras tinggi) = **350 soalan**
-- Sumber: folder [`Bank Soalan/`](Bank%20Soalan/) (fail DOCX)
-- Jana semula CSV:
-
-```bash
-pip install -r requirements.txt
-python scripts/convert_docx_bank.py
+```
+Saringan 1 (50 soalan, peraturan cabutan)                 12 pasukan → 6 pasukan
+Saringan 2 (50 soalan, individu TIADA soalan berulang)     6 pasukan → 4 pasukan
+Saringan 3 — penentu kedudukan akhir (markah terkumpul):
+   Pusingan 1  4 set objektif (10 soalan) diagih rawak; satu kertas sepasukan;
+               setiap soalan 20 saat, 2 markah; kira markah + masa
+   Pusingan 2  8 soalan rebutan (dipilih 8 drpd 12) — dipapar di skrin besar,
+               juri sahkan betul, jawapan didedah, markah direkod
+   Pusingan 3  soalan tulisan — markah dimasukkan manual oleh pentadbir
+   → Kedudukan akhir 1–4 = jumlah (P1 + P2 + P3)
 ```
 
-Import [`data/questions.csv`](data/questions.csv) ke helaian Google Sheet **`Soalan`** (ganti kandungan lama).
+- **Pasukan = daerah** (3 ahli). Markah pasukan (S1/S2) = **jumlah 3 markah tertinggi**; seri → masa lebih pendek menang.
+- **No. KP = kunci pengenalan** (nama ditaip sendiri). Pelajar mesti pilih **daerah** semasa log masuk.
 
-| Kod topik | Fail |
-|-----------|------|
-| AKIDAH | SOALAN TOPIK AKIDAH.docx |
-| ALQURAN | SOALAN TOPIK AL-QURAN.docx |
-| JAWI | SOALAN TOPIK JAWI.docx |
-| SIRAH | SOALAN TOPIK SIRAH.docx |
-| HADIS | 50 SOALAN HADIS.docx |
-| IBADAH | 50 SOALAN IBADAH.docx |
-| ADAB | 50 SOALAN ADAB.docx |
+## Peraturan cabutan (S1/S2)
 
-## Peraturan cabutan 50 soalan
-
-1. Satu topik dipilih secara rawak untuk **8 soalan**; enam topik lain **7 soalan** setiap satu.
-2. Topik 7 soalan: **4 sederhana** + **3 tinggi**
-3. Topik 8 soalan: **4 sederhana** + **4 tinggi**
-4. Urutan 50 soalan dikocok untuk paparan
+1. Satu topik rawak dapat **8 soalan**; enam topik lain **7 soalan**.
+2. Topik 7 soalan: **4 sederhana + 3 tinggi**; topik 8 soalan: **4 sederhana + 4 tinggi**.
+3. 50 soalan dikocok. **S2 mengecualikan** soalan yang pernah diterima IC itu di S1.
 
 ## Seni bina
 
 ```
-Pelajar → GitHub Pages (index.html)
-       → Google Apps Script (Web App)
-       → Google Sheet (Soalan, Daerah, Pentadbir, Percubaan, Keputusan)
-
-Pentadbir → GitHub Pages (pentadbir.html) + PIN → adminReview / adminReset / adminSetPin
+Pelajar   → GitHub Pages (index.html)      ┐
+Pentadbir → GitHub Pages (pentadbir.html)  ├→ Google Apps Script (Web App /exec)
+Skrin     → GitHub Pages (skrin.html)      ┘        → Google Sheet (pangkalan data)
 ```
 
-## Google Sheet
+## Pemasangan (sekali sahaja)
 
-### Soalan
+### 1. Google Sheet
+Buat satu Google Sheet, import CSV ke helaian bernama **sama**:
 
-`id` | `topik` | `aras` | `soalan` | `A` | `B` | `C` | `D` | `jawapan`
+| Helaian | Import |
+|---------|--------|
+| `Soalan` | `data/questions.csv` |
+| `SoalanS3P1` | `data/soalan-s3p1.csv` |
+| `SoalanRebutan` | `data/soalan-rebutan.csv` |
+| `Daerah` | `data/daerah-perak.csv` |
 
-### Daerah (senarai 12 daerah — dropdown pelajar)
+Helaian lain (`Tetapan`, `Kelayakan`, `Percubaan`, `Keputusan`, `Rebutan`, `MarkahManual`)
+dibuat automatik oleh skrip pada penggunaan pertama.
 
-`kod` | `nama`
+### 2. Apps Script
+1. Extensions → Apps Script (atau projek berasingan). Tampal [`apps-script/Code.gs`](apps-script/Code.gs).
+2. Project Settings → **Script properties**:
+   - `SPREADSHEET_ID` = ID Sheet (bahagian antara `/d/` dan `/edit` pada URL)
+   - `ADMIN_PIN` = PIN pentadbir (**kuat, bukan nama daerah/123456**)
+3. Deploy → **New deployment** → Web app → Execute as **Me**, Who has access **Anyone** → salin URL `/exec`.
 
-Contoh:
+### 3. Frontend
+- Salin URL `/exec` ke [`js/config.js`](js/config.example.js) (`API_URL`).
+- GitHub Pages: Settings → Pages → deploy dari `main` (root). Laman:
+  - Pelajar: `https://<user>.github.io/<repo>/`
+  - Pentadbir: `.../pentadbir.html`  · Skrin rebutan: `.../skrin.html`
 
-| kod | nama |
-|-----|------|
-| MANJUNG | Daerah Manjung |
-| KERIAN | Daerah Kerian |
-| PERAK_TENGAH | Daerah Perak Tengah |
-| … | *(12 daerah — lihat `data/daerah-perak.csv`)* |
-| KINTA_UTARA | Daerah Kinta Utara |
-| KINTA_SELATAN | Daerah Kinta Selatan |
+### 4. Regenerasi CSV / SQL (jika soalan berubah)
+```bash
+python scripts/convert_docx_bank.py        # bank S1/S2 (DOCX → questions.csv)
+python scripts/convert_saringan3.py        # S3P1 + rebutan (DOCX → CSV)
+```
 
-> `kod` huruf besar, tanpa ruang (gunakan `_` jika perlu). Import [`data/daerah-perak.csv`](data/daerah-perak.csv) ke helaian `Daerah`; kemas kini [`js/daerah-perak.js`](js/daerah-perak.js) jika senarai berubah.
+## Panel pentadbir (satu PIN)
 
-### Pentadbir (PIN — jangan kongsi helaian ini)
+- **Peringkat aktif** — buka/tukar peringkat yang pelajar boleh masuk (S1 / S2 / S3P1 / S3P2 / S3P3 / TUTUP).
+- **Kedudukan** — pilih peringkat → jadual **pasukan** + **individu**. Pada S1/S2, tanda pasukan layak → **Kunci kelayakan** ke peringkat seterusnya (6 lalu 4).
+- **Semakan individu** — masukkan No. KP + peringkat → jawapan penuh peserta (untuk aduan).
+- **Skrin rebutan (S3P2)** — buka `skrin.html`: papar soalan+pilihan, "Papar Jawapan", butang markah setiap pasukan.
+- **Markah manual (S3P3)** — masukkan markah tulisan setiap pasukan.
+- **Kedudukan akhir** — jana kedudukan terkumpul (P1+P2+P3).
+- **Reset** — kosongkan rekod (sebelum perlawanan rasmi). Bank soalan & daerah tidak diubah.
 
-`kod_daerah` | `nama_daerah` | `pin` | `peranan`
+## Senarai semak hari pertandingan
 
-| kod_daerah | nama_daerah | pin | peranan |
-|------------|-------------|-----|---------|
-| MANJUNG | Daerah Manjung | *(8 digit rawak)* | daerah |
-| … | … | … | daerah |
-| NEGERI | Peringkat Negeri | *(8 digit rawak)* | negeri |
+1. [ ] `ADMIN_PIN` ditukar kepada PIN kuat rasmi.
+2. [ ] **Reset semua rekod** (buang data ujian).
+3. [ ] Peringkat = **S1**. Pelajar log masuk (pilih daerah), jawab 50 soalan.
+4. [ ] Selepas S1: Kedudukan → kunci **6 pasukan** ke S2. Tukar peringkat ke **S2**.
+5. [ ] Selepas S2: kunci **4 pasukan** ke S3P1. Tukar peringkat ke **S3P1**.
+6. [ ] S3P1 selesai → peringkat **S3P2**, buka skrin rebutan, rekod markah.
+7. [ ] S3P3: masukkan markah tulisan → **Jana Kedudukan Akhir** → juara 1–4.
 
-- **PIN daerah** (`peranan` = `daerah`): ranking dan semakan **hanya peserta daerah itu**.
-- **PIN negeri** (`peranan` = `negeri`, `kod_daerah` = `NEGERI`): ranking **36 peserta** + lajur daerah; reset data; tukar PIN daerah.
-- Jana PIN rawak 8 digit (elak 123456, 111111, urutan nombor). Jangan commit PIN dalam Git.
-
-### Percubaan
-
-`attempt_id` | `masa_mula` | `ic` | `nama` | `daerah` | `soalan_ids` | `status` | `topik_lapan`
-
-### Keputusan
-
-`attempt_id` | `masa_hantar` | `ic` | `nama` | `daerah` | `betul` | `jumlah` | `skor` | `jawapan_json` | `butiran_json`
-
-> **Migrasi helaian lama:** sisipkan lajur `daerah` selepas `nama` dalam `Percubaan` dan `Keputusan`, atau buat helaian baharu. Tambah helaian `Daerah` dan `Pentadbir` mengikut jadual di atas.
-
-## Google Apps Script
-
-1. Tampal [`apps-script/Code.gs`](apps-script/Code.gs)
-2. **Script properties:**
-
-| Property | Nilai |
-|----------|--------|
-| `SPREADSHEET_ID` | ID spreadsheet |
-| `ADMIN_PIN` | *(pilihan)* fallback jika helaian `Pentadbir` kosong — guna mod negeri sahaja |
-
-3. **Deploy** → Web app → Execute as: **Me** → Who has access: **Anyone**
-4. Salin URL `/exec` ke [`js/config.js`](js/config.example.js) (fail tempatan, jangan commit)
-
-## GitHub Pages
-
-- Laman pelajar: `https://<pengguna>.github.io/<repo>/`
-- Pautan pra-pilih daerah: `…/?daerah=MANJUNG` (masih laman sama)
-- Laman pentadbir: `https://<pengguna>.github.io/<repo>/pentadbir.html`  
-  (jangan pautkan dari laman pelajar)
-
-## Aliran pelajar
-
-1. Pilih **daerah** + IC + nama → **Mula Kuiz**
-2. Jawab 50 soalan → **Hantar Jawapan**
-3. Paparan **Terima kasih** sahaja (tiada markah)
-
-Satu IC boleh digunakan dalam daerah berbeza (contoh ujian), tetapi **hanya sekali setiap daerah**.
-
-## Aliran pentadbir
-
-### PIN daerah
-
-1. Buka `pentadbir.html`, masukkan **PIN daerah**
-2. Kosongkan No. KP → **kedudukan daerah** (peserta daerah itu sahaja)
-3. PIN + No. KP → semak jawapan individu (hanya IC dalam daerah itu)
-
-### PIN negeri (juri / jawatankuasa)
-
-1. Masukkan **PIN negeri** → kedudukan **36 peserta** dengan lajur daerah
-2. **Reset data peperiksaan** — kosongkan `Percubaan` + `Keputusan` sebelum perlawanan rasmi (selepas ujian pra-perlawanan)
-3. **Tukar PIN daerah** — pilih daerah, masukkan PIN baharu (6–12 digit)
-
-4. **Cetak / PDF**, **Muat turun PNG** atau **JPG** pada laporan
-5. Susunan ranking: markah tertinggi dahulu; **markah sama** → tempoh jawapan lebih pendek menang
-6. Tempoh kuiz: **1 jam** dari masa mula
-
-## Ujian pra-perlawanan → perlawanan rasmi (12 daerah)
-
-Checklist jawatankuasa negeri:
-
-1. [ ] Isi helaian `Daerah` (12 baris) dan `Pentadbir` (12 PIN daerah + 1 PIN negeri)
-2. [ ] Import bank soalan ke `Soalan`
-3. [ ] Deploy GAS + kemas kini `config.js` + GitHub Pages
-4. [ ] Edar kepada setiap daerah: pautan pelajar (+ `?daerah=KOD` jika perlu) + pautan pentadbir + **PIN daerah mereka sahaja**
-5. [ ] Setiap daerah uji 1–2 IC; sahkan daerah lain **tidak** nampak dalam ranking
-6. [ ] Sebelum hari perlawanan: log masuk dengan **PIN negeri** → **Reset data peperiksaan**
-7. [ ] *(Pilihan)* Tukar PIN daerah jika PIN ujian didedahkan
-8. [ ] Hari perlawanan: 36 peserta, negeri guna PIN negeri; daerah guna PIN masing-masing
-
-## API (ringkas)
-
-| action | Pengguna | Nota |
-|--------|----------|------|
-| `getDaerahList` | Pelajar / pentadbir | `{ kod, nama }[]` — tiada PIN |
-| `startExam` | Pelajar | `ic`, `nama`, `daerah` — soalan tanpa jawapan |
-| `submitExam` | Pelajar | Simpan keputusan; respons terima kasih sahaja |
-| `getResult` | Pelajar | `ic`, `daerah` — `sudah_hantar` + mesej |
-| `adminReview` | Pentadbir | PIN daerah → ranking daerah; PIN negeri → ranking negeri |
-| `adminReset` | PIN negeri | Kosongkan Percubaan + Keputusan |
-| `adminSetPin` | PIN negeri | `kod_daerah`, `pin_baru` |
-
-## Pertandingan ~36 peserta serentak
-
-Skala disasarkan **12 daerah × 3 peserta**. Platform (**GAS + Sheet**) biasanya mencukupi jika:
-
-- Peserta dibenarkan log masuk **2–3 minit lebih awal**
-- Masa hantar berbeza (tiada konflik tulis antara IC berbeza)
-- Ujian pra-perlawanan: **5–10 IC ujian** serentak
-
-Frontend pelajar cuba sehingga **6 kali**; pentadbir **2 kali** pada ralat sambungan.
-
-## Privasi
-
-- IC disimpan dalam Sheet — **hadkan akses spreadsheet** kepada IT jawatankuasa negeri sahaja
-- Jangan kongsi PIN negeri kepada pentadbir daerah
-- Jangan commit `js/config.js` atau PIN dalam Git
+> Nasihat operasi: minta peserta log masuk dalam tempoh 1–2 minit (bukan serentak sesaat)
+> untuk kelancaran; frontend cuba semula automatik jika sambungan sekejap sibuk.
 
 ## Struktur repositori
 
 | Laluan | Fungsi |
 |--------|--------|
-| `index.html`, `js/app.js` | Peperiksaan pelajar |
-| `pentadbir.html`, `js/pentadbir.js` | Semakan juri |
-| `apps-script/Code.gs` | Backend |
-| `data/questions.csv` | Bank untuk import Sheet |
-| `scripts/convert_docx_bank.py` | DOCX → CSV |
+| `index.html`, `js/app.js` | Pelajar (S1/S2 + S3P1 pantas 20s) |
+| `pentadbir.html`, `js/pentadbir.js` | Panel pentadbir |
+| `skrin.html` | Skrin rebutan S3P2 (paparan besar) |
+| `apps-script/Code.gs` | Backend GAS |
+| `data/*.csv` | Bank soalan & daerah (import ke Sheet) |
+| `scripts/*.py` | Penukar DOCX/XLSX → CSV, penjana SQL, ujian cabutan |
+
+## Privasi
+
+- No. KP disimpan dalam Sheet — **hadkan akses spreadsheet** kepada jawatankuasa sahaja.
+- `ADMIN_PIN` rahsia; jangan kongsi. `js/config.js` mengandungi URL Web App awam (bukan rahsia).
