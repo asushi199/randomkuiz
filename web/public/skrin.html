@@ -76,9 +76,21 @@
       .kawalan button.reveal { background: var(--gold); color: #3a2c05; }
       .kawalan .sep { flex: 1; }
       .kawalan .mata-input { width: 64px; padding: .5rem; border-radius: 8px; border: 2px solid var(--line); font-size: 1rem; }
-      .team-btns { display: flex; gap: .5rem; flex-wrap: wrap; }
-      .team-btns button { background: var(--green); color: #fff; font-weight: 700; }
-      .team-btns button:hover { background: var(--green-d); }
+      .team-btns { display: flex; gap: .6rem; flex-wrap: wrap; }
+      .team-btns button {
+        display: inline-flex; align-items: center; gap: .5rem;
+        background: var(--white); color: var(--green-d); border: 2px solid var(--green);
+        padding: .5rem .95rem; border-radius: 999px; font-weight: 700; font-size: 1.02rem;
+        box-shadow: 0 2px 7px rgba(14,107,79,.16); transition: transform .08s, background .14s, color .14s;
+      }
+      .team-btns button:hover { background: var(--green); color: #fff; transform: translateY(-2px); box-shadow: 0 5px 14px rgba(14,107,79,.28); }
+      .team-btns button:active { transform: scale(.96); }
+      .team-btns button .tk {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--green); color: #fff;
+        font-size: .85rem; flex: none;
+      }
+      .team-btns button:hover .tk { background: #fff; color: var(--green); }
       .team-note { color: #9a5b12; font-size: .95rem; }
 
       .toast {
@@ -181,7 +193,7 @@
           }
           teams.forEach(function (kod) {
             var b = document.createElement("button");
-            b.textContent = (daerahNama[kod] || kod) + " ✔";
+            b.innerHTML = '<span class="tk">✔</span>' + esc(daerahNama[kod] || kod);
             b.title = "Rekod jawapan BETUL untuk " + (daerahNama[kod] || kod);
             b.addEventListener("click", function () { score(kod); });
             wrap.appendChild(b);
