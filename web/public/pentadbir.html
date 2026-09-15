@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pentadbir — Kuiz Ilmuan Cilik</title>
     <link rel="stylesheet" href="css/style.css?v=4" />
-    <link rel="stylesheet" href="css/admin.css?v=7" />
+    <link rel="stylesheet" href="css/admin.css?v=8" />
   </head>
   <body>
     <header class="header header-admin">
@@ -40,16 +40,17 @@
             Tetapkan peringkat yang <strong>dibuka</strong> untuk pelajar. Hanya S1, S2, S3P1
             memerlukan jawapan dalam talian. S3P2 (rebutan) &amp; S3P3 dikendalikan di pentas.
           </p>
-          <div class="peringkat-bar">
-            <div class="peringkat-now">
-              <span class="peringkat-now-label">Sedang dibuka</span>
-              <strong id="peringkat-semasa" class="peringkat-pill">—</strong>
-            </div>
-            <div class="peringkat-ubah">
-              <label for="peringkat-select" class="sr-inline">Tukar ke:</label>
-              <select id="peringkat-select"></select>
-              <button type="button" class="btn btn-primary btn-sm" id="btn-set-peringkat">Tukar</button>
-            </div>
+          <div class="peringkat-now">
+            <span class="peringkat-now-label">Sedang dibuka</span>
+            <strong id="peringkat-semasa" class="peringkat-pill">—</strong>
+          </div>
+          <div class="stage-rail" id="stage-rail"></div>
+          <div class="stage-confirm" id="stage-confirm" hidden>
+            <span id="stage-confirm-text"></span>
+            <span class="stage-confirm-actions">
+              <button type="button" class="btn btn-primary btn-sm" id="stage-confirm-yes">Ya, tukar</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="stage-confirm-no">Batal</button>
+            </span>
           </div>
           <p id="peringkat-msg" class="success" hidden></p>
         </section>
@@ -178,6 +179,6 @@
 
     <script src="js/config.js?v=1" onerror="this.remove()"></script>
     <script src="js/config.example.js?v=10"></script>
-    <script src="js/pentadbir.js?v=14"></script>
+    <script src="js/pentadbir.js?v=15"></script>
   </body>
 </html>

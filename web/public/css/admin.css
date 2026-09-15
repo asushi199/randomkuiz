@@ -40,11 +40,33 @@ input[type="password"] { width: 100%; }
 .tab-btn:hover { color: var(--text); background: #f0f2f5; }
 .tab-btn.tab-active { color: var(--primary); border-bottom-color: var(--primary); }
 
-.peringkat-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-top: 0.9rem; }
-.peringkat-now { display: flex; flex-direction: column; gap: 3px; }
+.peringkat-now { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
 .peringkat-now-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
-.peringkat-ubah { display: flex; align-items: center; gap: 0.5rem; margin-left: auto; flex-wrap: wrap; }
-#peringkat-select { min-width: 210px; }
+
+.stage-rail { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.stage-node {
+  display: inline-flex; align-items: center; gap: 9px; cursor: pointer; font-family: inherit;
+  border: 1.5px solid var(--border); background: #fff; color: var(--muted);
+  padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: .86rem;
+  transition: border-color .12s, color .12s, background .12s, transform .08s, box-shadow .12s;
+}
+.stage-node .dot { width: 9px; height: 9px; border-radius: 50%; background: #cfd6d2; flex: none; }
+.stage-node.done { color: #16342a; border-color: #c7e0d2; background: #f1f8f4; }
+.stage-node.done .dot { background: #5aa886; }
+.stage-node.upcoming:hover { border-color: #0e6b4f; color: #0e6b4f; transform: translateY(-1px); }
+.stage-node.upcoming:hover .dot { background: #0e6b4f; }
+.stage-node.live { color: #fff; background: #0e6b4f; border-color: #0e6b4f; cursor: default; box-shadow: 0 4px 12px rgba(14,107,79,.3); }
+.stage-node.live .dot { background: #fff; animation: livepulse 1.6s ease-out infinite; }
+.stage-node .live-badge { font-size: .66rem; font-weight: 700; letter-spacing: .06em; background: rgba(255,255,255,.22); padding: 2px 7px; border-radius: 999px; }
+@keyframes livepulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,.7); } 70% { box-shadow: 0 0 0 7px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
+@media (prefers-reduced-motion: reduce) { .stage-node.live .dot { animation: none; } }
+
+.stage-confirm {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin-top: 12px; padding: 11px 14px; background: #fff8e6;
+  border: 1px solid #ecd9a6; border-radius: 10px; font-weight: 600;
+}
+.stage-confirm-actions { display: flex; gap: 8px; margin-left: auto; }
 
 .peringkat-pill {
   display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px;

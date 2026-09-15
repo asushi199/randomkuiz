@@ -74,9 +74,7 @@
   function logout() { clearPin(); pin = ""; location.reload(); }
 
   function renderPanel(state) {
-    // Peringkat: dropdown ringkas
-    const psel = $("#peringkat-select");
-    if (psel && !psel.options.length) STAGES.forEach((s) => opt(psel, s, PERINGKAT_LABEL[s]));
+    // Peringkat: rel progres (stage rail)
     setPeringkatSemasa(state.peringkat_aktif);
 
     // Dropdowns
@@ -88,11 +86,41 @@
     renderManualTeams(state.kelayakan && state.kelayakan.S3P1);
   }
 
+  // Rel progres peringkat (stage rail)
+  const STAGE_SHORT = {
+    S1: "Saringan 1", S2: "Saringan 2", S3P1: "S3 · Pusingan 1",
+    S3P2: "S3 · Pusingan 2", S3P3: "S3 · Pusingan 3", TUTUP: "Ditutup",
+  };
+  let pendingStage = "";
+
+  function buildStageRail(active) {
+    const rail = $("#stage-rail"); if (!rail) return;
+    const curIdx = STAGES.indexOf(active);
+    rail.innerHTML = "";
+    STAGES.forEach((s, i) => {
+      const node = document.createElement("button");
+      node.type = "button";
+      node.className = "stage-node " + (i < curIdx ? "done" : i === curIdx ? "live" : "upcoming");
+      let inner = '<span class="dot"></span><span>' + STAGE_SHORT[s] + "</span>";
+      if (i === curIdx) inner += '<span class="live-badge">LANGSUNG</span>';
+      node.innerHTML = inner;
+      node.addEventListener("click", () => { if (s !== active) askOpen(s); });
+      rail.appendChild(node);
+    });
+  }
+  function askOpen(s) {
+    pendingStage = s;
+    $("#stage-confirm-text").textContent = s === "TUTUP"
+      ? "Tutup — tiada peringkat dibuka untuk peserta?"
+      : "Buka " + (STAGE_SHORT[s] || s) + " untuk peserta?";
+    $("#stage-confirm").hidden = false;
+  }
+
   function setPeringkatSemasa(p) {
     const el = $("#peringkat-semasa");
     el.textContent = PERINGKAT_LABEL[p] || p;
     el.dataset.p = p;
-    const sel = $("#peringkat-select"); if (sel) sel.value = p;
+    buildStageRail(p);
   }
 
   async function setPeringkat(s) {
@@ -322,8 +350,12 @@
     if (!getApiUrl()) { $("#config-warning").hidden = false; return; }
     $("#form-pin").addEventListener("submit", (e) => { e.preventDefault(); const v = $("#pin").value.trim(); if (v) login(v); });
     const btnLogout = $("#btn-logout"); if (btnLogout) btnLogout.addEventListener("click", logout);
-    const btnSetP = $("#btn-set-peringkat");
-    if (btnSetP) btnSetP.addEventListener("click", () => { const v = $("#peringkat-select").value; if (v) setPeringkat(v); });
+    $("#stage-confirm-yes").addEventListener("click", async () => {
+      if (!pendingStage) return;
+      const s = pendingStage; pendingStage = ""; $("#stage-confirm").hidden = true;
+      await setPeringkat(s);
+    });
+    $("#stage-confirm-no").addEventListener("click", () => { pendingStage = ""; $("#stage-confirm").hidden = true; });
     document.querySelectorAll(".tab-btn").forEach((b) => b.addEventListener("click", () => activateTab(b.dataset.tab)));
     $("#btn-rank").addEventListener("click", loadRanking);
     $("#btn-auto-advance").addEventListener("click", autoAdvance);
