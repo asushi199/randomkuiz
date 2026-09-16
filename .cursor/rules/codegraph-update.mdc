@@ -1,0 +1,27 @@
+---
+description: CodeGraph 索引用法与 git 提交细则
+alwaysApply: true
+---
+
+# CodeGraph
+
+本仓库已初始化 `.codegraph/`。查代码优先 MCP `codegraph_explore`；本会话没有该工具时用 `codegraph explore <query>`。
+
+## 同步
+
+MCP 在跑时文件监视会自动增量更新，一般不必手跑。监视不可用或结构大变时：
+
+1. `codegraph sync`
+2. 失败或明显过期：`codegraph index --force`
+3. `codegraph status` 应为 up to date
+
+典型触发：新增/删除/重命名源文件、较大重构、改导出符号。文案或样式微调可跳过。
+
+`.gs` / HTML 不在图里，改 `apps-script/Code.gs` 或页面标记时直接读文件。
+
+## Git
+
+- 只提交 `.codegraph/.gitignore`（以及 `.cursor/mcp.json`）
+- **不要**提交 `codegraph.db`、WAL、daemon/pid、日志
+- **不要**把 `.codegraph/` 写进根目录 `.gitignore`（否则内部 `.gitignore` 无法入库）
+- 用户未要求 commit 时只更新本地索引
