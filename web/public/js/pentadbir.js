@@ -499,6 +499,16 @@
     showOk($("#reset-msg"), data.ok ? data.mesej : (data.ralat || "Gagal."));
   }
 
+  async function resetS3p2() {
+    if (!confirm("Kosongkan markah dan soalan Pusingan 2 sahaja? Saringan 1–2, Pusingan 1, kelayakan dan Pusingan 3 tidak diubah. Buka semula skrin selepas reset. Tindakan ini tidak boleh dibatalkan.")) return;
+    const data = await apiCall("adminReset", { pin, skop: "s3p2" });
+    const mesej = data.ok ? (data.mesej || "Pusingan 2 dikosongkan.") : (data.ralat || "Gagal.");
+    const el = $("#s3p2-reset-msg") || $("#reset-msg");
+    if (el) showOk(el, mesej);
+    if ($("#reset-msg") && el !== $("#reset-msg")) showOk($("#reset-msg"), mesej);
+    if (data.ok) loadRebutanMarkah();
+  }
+
   // ---------- Cetak & Muat turun CSV ----------
   const COMP_NAME = "Kuiz Ilmuan Cilik";
 
@@ -736,6 +746,10 @@
       else if (b.dataset.csv) handleExport(b.dataset.csv, "csv");
     });
     $("#btn-reset").addEventListener("click", reset);
+    const btnResetP2 = $("#btn-reset-s3p2");
+    if (btnResetP2) btnResetP2.addEventListener("click", resetS3p2);
+    const btnResetP2set = $("#btn-reset-s3p2-set");
+    if (btnResetP2set) btnResetP2set.addEventListener("click", resetS3p2);
     $("#btn-open-skrin").addEventListener("click", () => window.open("skrin.html?v=9", "_blank"));
     const btnS3p2 = $("#btn-s3p2-refresh");
     if (btnS3p2) btnS3p2.addEventListener("click", loadRebutanMarkah);

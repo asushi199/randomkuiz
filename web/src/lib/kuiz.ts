@@ -610,13 +610,20 @@ export async function adminReset(pin: unknown, skop: unknown) {
   const chk = requirePin(pin); if (!chk.ok) return chk;
   const s = String(skop || "semua").toLowerCase();
   const delAll = async (t: string) => { await db.from(t).delete().neq("id", "00000000-0000-0000-0000-000000000000"); };
-  if (s === "semua" || s === "percubaan") { await delAll("percubaan"); }
-  if (s === "semua") {
+  const clearPusingan2 = async () => {
     await delAll("rebutan_log");
-    await db.from("markah_manual").delete().neq("daerah", "___none___");
-    await db.from("kelayakan").delete().neq("daerah", "___none___");
     await setTetapan("rebutan_pilihan", "");
     await setTetapan("rebutan_skrin", "");
+  };
+  if (s === "s3p2" || s === "rebutan" || s === "pusingan2") {
+    await clearPusingan2();
+    return { ok: true, mesej: "Pusingan 2 dikosongkan. Buka semula skrin untuk cabut soalan baharu." };
+  }
+  if (s === "semua" || s === "percubaan") { await delAll("percubaan"); }
+  if (s === "semua") {
+    await clearPusingan2();
+    await db.from("markah_manual").delete().neq("daerah", "___none___");
+    await db.from("kelayakan").delete().neq("daerah", "___none___");
   }
   return { ok: true, mesej: "Reset (" + s + ") selesai. Bank soalan & daerah tidak diubah." };
 }
