@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pentadbir — Kuiz Ilmuan Cilik</title>
-    <link rel="stylesheet" href="css/style.css?v=4" />
-    <link rel="stylesheet" href="css/admin.css?v=8" />
+    <link rel="stylesheet" href="css/style.css?v=6" />
+    <link rel="stylesheet" href="css/admin.css?v=10" />
   </head>
   <body>
     <header class="header header-admin">
@@ -76,7 +76,13 @@
           <div id="rank-wait" class="wait-msg" hidden>Memuatkan…</div>
 
           <div id="rank-pasukan-wrap" hidden>
-            <h3>Kedudukan Pasukan (Daerah)</h3>
+            <div class="sec-head">
+              <h3>Kedudukan Pasukan (Daerah)</h3>
+              <div class="tool-group">
+                <button type="button" class="tool-btn" data-print="pasukan" title="Cetak kedudukan pasukan" aria-label="Cetak kedudukan pasukan"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg></button>
+                <button type="button" class="tool-btn" data-csv="pasukan" title="Muat turun CSV (pasukan)" aria-label="Muat turun CSV kedudukan pasukan"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+              </div>
+            </div>
             <p class="hint" id="lock-hint" hidden>
               Tanda pasukan yang <strong>layak</strong> ke peringkat seterusnya, kemudian klik "Kunci kelayakan".
             </p>
@@ -103,7 +109,13 @@
           </div>
 
           <div id="rank-individu-wrap" hidden>
-            <h3>Kedudukan Individu</h3>
+            <div class="sec-head">
+              <h3>Kedudukan Individu</h3>
+              <div class="tool-group">
+                <button type="button" class="tool-btn" data-print="individu" title="Cetak kedudukan individu" aria-label="Cetak kedudukan individu"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg></button>
+                <button type="button" class="tool-btn" data-csv="individu" title="Muat turun CSV (individu)" aria-label="Muat turun CSV kedudukan individu"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+              </div>
+            </div>
             <div class="table-wrap">
               <table class="ranking-table" id="table-individu">
                 <thead>
@@ -127,6 +139,9 @@
           </div>
           <p id="review-error" class="error" hidden></p>
           <div id="review-result" hidden>
+            <div class="result-toolbar">
+              <button type="button" class="tool-btn" id="btn-review-print" title="Cetak semakan (untuk tunjuk kepada peserta)" aria-label="Cetak semakan untuk tunjuk kepada peserta"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg></button>
+            </div>
             <div class="review-summary" id="review-summary"></div>
             <ul class="result-list" id="review-details"></ul>
           </div>
@@ -151,7 +166,13 @@
             <button type="button" class="btn btn-primary" id="btn-final">Jana Kedudukan Akhir</button>
           </div>
           <div id="final-wrap" hidden>
-            <h3>Kedudukan Akhir</h3>
+            <div class="sec-head">
+              <h3>Kedudukan Akhir</h3>
+              <div class="tool-group">
+                <button type="button" class="tool-btn" data-print="final" title="Cetak kedudukan akhir" aria-label="Cetak kedudukan akhir"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg></button>
+                <button type="button" class="tool-btn" data-csv="final" title="Muat turun CSV (kedudukan akhir)" aria-label="Muat turun CSV kedudukan akhir"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+              </div>
+            </div>
             <div class="table-wrap">
               <table class="ranking-table" id="table-final">
                 <thead>
@@ -179,6 +200,6 @@
 
     <script src="js/config.js?v=1" onerror="this.remove()"></script>
     <script src="js/config.example.js?v=10"></script>
-    <script src="js/pentadbir.js?v=15"></script>
+    <script src="js/pentadbir.js?v=16"></script>
   </body>
 </html>

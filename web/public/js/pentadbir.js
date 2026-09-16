@@ -14,6 +14,9 @@
   let pin = "";
   let daerahList = [];
   let curRankPeringkat = "";
+  let lastReview = null;   // data semakan individu terakhir (untuk cetak)
+  let lastRanking = null;  // { pasukan, individu, peringkat } terakhir (cetak / CSV)
+  let lastFinal = null;    // senarai kedudukan akhir terakhir (cetak / CSV)
 
   function getApiUrl() { return ((window.EXAM_CONFIG || {}).API_URL || "").trim(); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -160,6 +163,7 @@
       if (!data.ok) { $("#rank-empty").textContent = data.ralat || "Ralat."; $("#rank-empty").hidden = false; return; }
       const pasukan = data.pasukan || [], individu = data.individu || [];
       if (!pasukan.length && !individu.length) { $("#rank-empty").hidden = false; return; }
+      lastRanking = { pasukan: pasukan, individu: individu, peringkat: p };
       renderPasukan(pasukan, p);
       renderIndividu(individu);
     } catch (e) {
@@ -246,6 +250,7 @@
     if (!ic) { showErr($("#review-error"), "Masukkan No. KP."); return; }
     const data = await apiCall("adminReview", { pin, peringkat: p, ic });
     if (!data.ok) { showErr($("#review-error"), data.ralat || "Tiada rekod."); return; }
+    lastReview = Object.assign({ peringkat: p }, data);
     $("#review-summary").innerHTML =
       "<strong>" + (data.nama || "-") + "</strong> (" + data.ic + ") — " + (data.nama_daerah || data.daerah) +
       "<br>Betul: " + data.betul + "/" + data.jumlah + " · Skor: " + data.skor + "% · Markah: " + data.mata +
@@ -328,6 +333,7 @@
   async function final() {
     const data = await apiCall("adminFinal", { pin });
     if (!data.ok) { showOk($("#manual-msg"), data.ralat || "Gagal."); return; }
+    lastFinal = data.kedudukan || [];
     const tb = $("#table-final").querySelector("tbody"); tb.innerHTML = "";
     (data.kedudukan || []).forEach((r) => {
       const tr = document.createElement("tr");
@@ -343,6 +349,188 @@
     if (!confirm("Kosongkan SEMUA rekod peperiksaan (percubaan, keputusan, rebutan, markah, kelayakan)? Tindakan ini tidak boleh dibatalkan.")) return;
     const data = await apiCall("adminReset", { pin, skop: "semua" });
     showOk($("#reset-msg"), data.ok ? data.mesej : (data.ralat || "Gagal."));
+  }
+
+  // ---------- Cetak & Muat turun CSV ----------
+  const COMP_NAME = "Kuiz Ilmuan Cilik";
+
+  function tarikhKini() {
+    const d = new Date();
+    const p = (n) => String(n).padStart(2, "0");
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+  function masaKini() {
+    const d = new Date();
+    const p = (n) => String(n).padStart(2, "0");
+    return tarikhKini() + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+  }
+
+  // --- CSV ---
+  function csvCell(v) {
+    const s = String(v == null ? "" : v);
+    return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+  function downloadCsv(filename, rows) {
+    // BOM supaya Excel baca UTF-8 (nama Melayu/Arab) dengan betul
+    const csv = "﻿" + rows.map((r) => r.map(csvCell).join(",")).join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+  }
+
+  // --- Cetak (buka tetingkap bersih) ---
+  const PRINT_CSS =
+    '*{box-sizing:border-box}' +
+    'body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#1a1a1a;margin:24px;font-size:13px;line-height:1.5}' +
+    '.p-head{border-bottom:3px solid #1565c0;padding-bottom:10px;margin-bottom:14px}' +
+    '.p-title{font-size:20px;font-weight:800;margin:0}' +
+    '.p-sub{font-size:13px;color:#5c6670;margin:3px 0 0}' +
+    '.p-meta{display:flex;flex-wrap:wrap;gap:5px 22px;margin:12px 0 16px;font-size:12.5px}' +
+    '.p-meta b{font-weight:700}' +
+    '.p-summary{background:#f4f6f8;border:1px solid #dde3ea;border-radius:8px;padding:10px 12px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:6px 22px;font-size:12.5px}' +
+    '.p-q{border:1px solid #dde3ea;border-radius:8px;padding:10px 12px;margin-bottom:10px;page-break-inside:avoid}' +
+    '.p-qhead{display:flex;align-items:center;gap:8px;margin-bottom:6px}' +
+    '.p-tag{font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px}' +
+    '.p-tag.ok{background:#c8e6c9;color:#2e7d32}.p-tag.no{background:#ffcdd2;color:#c62828}' +
+    '.p-ref{margin-left:auto;color:#5c6670;font-size:11px;text-transform:capitalize}' +
+    '.p-stem{font-weight:700;margin-bottom:6px}' +
+    '.p-opts{display:grid;gap:4px}' +
+    '.p-opt{border:1px solid #dde3ea;border-radius:6px;padding:5px 8px;font-size:12.5px}' +
+    '.p-opt.p-correct{background:#e8f5e9;border-color:#a5d6a7}.p-opt.p-wrong{background:#ffebee;border-color:#ef9a9a}' +
+    '.p-mark{font-size:11px;font-weight:700;margin-left:4px}.p-mark.ok{color:#2e7d32}.p-mark.no{color:#c62828}' +
+    '.p-table{width:100%;border-collapse:collapse;font-size:12.5px}' +
+    '.p-table th,.p-table td{border:1px solid #cfd6de;padding:6px 9px;text-align:left}' +
+    '.p-table th{background:#eef2f6;font-weight:700}.p-table tr:nth-child(even) td{background:#fafbfc}' +
+    '.p-foot{margin-top:20px;padding-top:12px;border-top:1px solid #dde3ea;color:#5c6670;font-size:11.5px}' +
+    '.p-sign{margin-top:26px;display:flex;gap:40px;flex-wrap:wrap}' +
+    '.p-sign>div{flex:1;min-width:180px}' +
+    '.p-sign .line{border-top:1px solid #1a1a1a;margin-top:34px;padding-top:4px;font-size:11.5px}' +
+    '@media print{body{margin:0}@page{margin:16mm}}';
+
+  // Cetak melalui iframe tersembunyi — tidak bergantung pada pop-up (elak disekat)
+  function printHtml(title, bodyHtml) {
+    const frame = document.createElement("iframe");
+    frame.setAttribute("aria-hidden", "true");
+    frame.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;";
+    document.body.appendChild(frame);
+    let cleaned = false;
+    const cleanup = () => { if (cleaned) return; cleaned = true; setTimeout(() => frame.remove(), 500); };
+    const doc = frame.contentWindow.document;
+    doc.open();
+    doc.write(
+      '<!DOCTYPE html><html lang="ms"><head><meta charset="utf-8">' +
+      "<title>" + esc(title) + "</title><style>" + PRINT_CSS + "</style></head><body>" +
+      bodyHtml + "</body></html>"
+    );
+    doc.close();
+    setTimeout(() => {
+      try {
+        frame.contentWindow.focus();
+        frame.contentWindow.onafterprint = cleanup;
+        frame.contentWindow.print();
+      } catch (e) { /* teruskan pembersihan */ }
+      setTimeout(cleanup, 60000); // sandaran jika onafterprint tidak dipanggil
+    }, 300);
+  }
+
+  function printHead(title, sub) {
+    return '<div class="p-head"><p class="p-title">' + esc(COMP_NAME) + "</p>" +
+      '<p class="p-sub">' + esc(title) + (sub ? " — " + esc(sub) : "") + "</p></div>";
+  }
+  function printFoot() {
+    return '<div class="p-foot">Dicetak: ' + esc(masaKini()) + " · Panel Pentadbir " + esc(COMP_NAME) + "</div>";
+  }
+
+  function printReview() {
+    if (!lastReview) return;
+    const d = lastReview;
+    const sum = '<div class="p-summary">' +
+      "<span><b>Nama:</b> " + esc(d.nama || "-") + "</span>" +
+      "<span><b>No. KP:</b> " + esc(d.ic || "-") + "</span>" +
+      "<span><b>Daerah:</b> " + esc(d.nama_daerah || d.daerah || "-") + "</span>" +
+      "<span><b>Betul:</b> " + esc(d.betul) + "/" + esc(d.jumlah) + "</span>" +
+      "<span><b>Skor:</b> " + esc(d.skor) + "%</span>" +
+      "<span><b>Markah:</b> " + esc(d.mata) + "</span>" +
+      "<span><b>Masa hantar:</b> " + esc(d.masa_hantar || "-") + "</span>" +
+      "<span><b>Tempoh:</b> " + esc(d.tempoh_label || "-") + "</span></div>";
+    const qs = (d.butiran || []).map((it) => {
+      const opts = ["A", "B", "C", "D"].map((L) => {
+        const isB = it.jawapan_betul === L, isP = it.jawapan_pelajar === L;
+        let cls = "p-opt";
+        if (isB) cls += " p-correct";
+        if (isP && !isB) cls += " p-wrong";
+        let mark = "";
+        if (isB) mark = ' <span class="p-mark ok">&#10003; jawapan betul</span>';
+        else if (isP) mark = ' <span class="p-mark no">&#10007; pilihan peserta</span>';
+        return '<div class="' + cls + '"><b>' + L + ".</b> " + esc(it[L] || "") + mark + "</div>";
+      }).join("");
+      return '<div class="p-q"><div class="p-qhead"><span class="p-tag ' + (it.betul ? "ok" : "no") + '">' +
+        (it.betul ? "Betul" : "Salah") + '</span><b>Soalan ' + esc(it.nombor) + "</b>" +
+        '<span class="p-ref">' + esc(it.topik || "") + (it.aras ? " &middot; " + esc(it.aras) : "") + "</span></div>" +
+        '<div class="p-stem">' + esc(it.soalan || "") + "</div>" +
+        '<div class="p-opts">' + opts + "</div></div>";
+    }).join("");
+    const sign = '<div class="p-sign">' +
+      '<div><div class="line">Disemak oleh (Pentadbir)</div></div>' +
+      '<div><div class="line">Pengesahan peserta / penjaga</div></div></div>';
+    printHtml(
+      "Semakan Jawapan — " + (d.nama || d.ic || ""),
+      printHead("Semakan Jawapan Individu", PERINGKAT_LABEL[d.peringkat] || d.peringkat) +
+      sum + qs + sign + printFoot()
+    );
+  }
+
+  function printTable(title, sub, headers, rows) {
+    const thead = "<tr>" + headers.map((h) => "<th>" + esc(h) + "</th>").join("") + "</tr>";
+    const tbody = rows.map((r) => "<tr>" + r.map((c) => "<td>" + esc(c) + "</td>").join("") + "</tr>").join("");
+    printHtml(title + (sub ? " — " + sub : ""),
+      printHead(title, sub) +
+      '<table class="p-table"><thead>' + thead + "</thead><tbody>" + tbody + "</tbody></table>" +
+      printFoot());
+  }
+
+  const CSV_SPEC = {
+    pasukan: {
+      title: "Kedudukan Pasukan (Daerah)",
+      headers: ["Kedudukan", "Daerah", "Ahli", "Jumlah Skor", "Jumlah Markah", "Masa"],
+      rows: () => (lastRanking && lastRanking.pasukan || []).map((r) =>
+        [r.kedudukan, r.nama_daerah || r.daerah, r.bil_ahli, r.jumlah_skor, r.jumlah_mata, r.tempoh_label || "-"]),
+      stage: () => lastRanking && lastRanking.peringkat,
+    },
+    individu: {
+      title: "Kedudukan Individu",
+      headers: ["Kedudukan", "Nama", "No. KP", "Daerah", "Betul", "Jumlah", "Skor (%)", "Masa"],
+      rows: () => (lastRanking && lastRanking.individu || []).map((r) =>
+        [r.kedudukan, r.nama || "-", r.ic, r.nama_daerah || r.daerah || "-", r.betul, r.jumlah, r.skor, r.tempoh_label || "-"]),
+      stage: () => lastRanking && lastRanking.peringkat,
+    },
+    final: {
+      title: "Kedudukan Akhir",
+      headers: ["Kedudukan", "Daerah", "S3P1", "S3P2 Rebutan", "S3P3", "Jumlah"],
+      rows: () => (lastFinal || []).map((r) =>
+        [r.kedudukan, r.nama_daerah || r.daerah, r.s3p1, r.s3p2, r.s3p3, r.jumlah]),
+      stage: () => "S3-AKHIR",
+    },
+  };
+
+  function handleExport(kind, mode) {
+    const spec = CSV_SPEC[kind]; if (!spec) return;
+    const rows = spec.rows();
+    if (!rows.length) { alert("Tiada data untuk " + spec.title.toLowerCase() + "."); return; }
+    const stage = spec.stage() || "";
+    const sub = PERINGKAT_LABEL[stage] || stage;
+    if (mode === "print") {
+      printTable(spec.title, sub, spec.headers, rows);
+    } else {
+      downloadCsv(
+        spec.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") +
+        (stage ? "-" + stage : "") + "-" + tarikhKini() + ".csv",
+        [spec.headers].concat(rows)
+      );
+    }
   }
 
   // ---------- Init ----------
@@ -367,6 +555,17 @@
     });
     $("#btn-review").addEventListener("click", review);
     $("#btn-final").addEventListener("click", final);
+
+    // Cetak semakan individu (untuk tunjuk kepada peserta)
+    const btnRevPrint = $("#btn-review-print");
+    if (btnRevPrint) btnRevPrint.addEventListener("click", printReview);
+    // Cetak / muat turun CSV untuk jadual kedudukan (delegasi)
+    document.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-print],[data-csv]");
+      if (!b) return;
+      if (b.dataset.print) handleExport(b.dataset.print, "print");
+      else if (b.dataset.csv) handleExport(b.dataset.csv, "csv");
+    });
     $("#btn-reset").addEventListener("click", reset);
     $("#btn-open-skrin").addEventListener("click", () => window.open("skrin.html", "_blank"));
 

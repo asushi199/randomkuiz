@@ -180,9 +180,15 @@ async function servedIdsForIc(ic: string): Promise<Record<string, boolean>> {
 // ================= PELAJAR: getInit =================
 export async function getInit() {
   const peringkat = await getPeringkatAktif();
+  let daerah = await getDaerahList();
+  // S2/S3P1: hanya papar daerah yang LAYAK (pasukan yang lolos) untuk dipilih pelajar.
+  if (peringkat === "S2" || peringkat === "S3P1") {
+    const layak = await getKelayakan(peringkat);
+    daerah = daerah.filter((d) => layak[d.kod]);
+  }
   return {
     ok: true, peringkat_aktif: peringkat, peringkat_label: PERINGKAT_LABEL[peringkat] || peringkat,
-    dibuka: PERINGKAT_PELAJAR.includes(peringkat), daerah: await getDaerahList(),
+    dibuka: PERINGKAT_PELAJAR.includes(peringkat), daerah,
   };
 }
 
