@@ -821,7 +821,7 @@
     if (btnResetP2) btnResetP2.addEventListener("click", resetS3p2);
     const btnResetP2set = $("#btn-reset-s3p2-set");
     if (btnResetP2set) btnResetP2set.addEventListener("click", resetS3p2);
-    $("#btn-open-skrin").addEventListener("click", () => window.open("skrin.html?v=11", "_blank"));
+    $("#btn-open-skrin").addEventListener("click", () => window.open("skrin.html?v=12", "_blank"));
     const btnS3p2 = $("#btn-s3p2-refresh");
     if (btnS3p2) btnS3p2.addEventListener("click", loadRebutanMarkah);
     document.addEventListener("visibilitychange", function () {

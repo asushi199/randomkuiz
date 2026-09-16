@@ -404,8 +404,20 @@
         }
         function snapStreak(fl) {
           if (fl.streak0) return;
-          fl.streak0 = {};
-          teams.forEach(function (k) { fl.streak0[k] = streak[k] || 0; });
+          fl.streak0 = salinStreak();
+        }
+        function salinStreak() {
+          var o = {};
+          teams.forEach(function (k) { o[k] = streak[k] || 0; });
+          return o;
+        }
+        function pulihStreak(o) {
+          teams.forEach(function (k) { streak[k] = (o && o[k]) || 0; });
+        }
+        function potongRantaian(kecuali) {
+          teams.forEach(function (k) {
+            if (k !== kecuali) streak[k] = 0;
+          });
         }
         function senaraiRevealed() {
           return Object.keys(revealedNos).map(Number).filter(function (n) { return revealedNos[n]; });
@@ -656,16 +668,19 @@
             var kod = fl.fasa === "cuba1" ? fl.cuba1 : fl.cuba2;
             var mata = fl.fasa === "cuba1" ? 4 : 3;
             var jenis = fl.fasa === "cuba1" ? "betul4" : "betul3";
-            var streakBefore = streak[kod] || 0;
-            if (fl.fasa === "cuba1") streak[kod] = 0;
+            var streakSnap = fl.fasa === "cuba1" ? salinStreak() : null;
+            if (fl.fasa === "cuba1") {
+              potongRantaian(kod);
+              streak[kod] = 0;
+            }
             var ok = await rekodMata(kod, mata, jenis, false);
             if (!ok) {
-              if (jenis === "betul4") streak[kod] = streakBefore;
+              if (streakSnap) pulihStreak(streakSnap);
               return;
             }
             fl.hasil = jenis;
             fl.fasa = "selesai";
-            fl.undo.push({ type: "betul", kod: kod, mata: mata, streakBefore: streakBefore });
+            fl.undo.push({ type: "betul", kod: kod, mata: mata, streakSnap: streakSnap });
             revealJawapan();
             toast(namaPasukan(kod) + " +" + mata);
             renderPapan();
@@ -674,11 +689,13 @@
           }
           if (fl.fasa === "cuba1") {
             var kod1 = fl.cuba1;
+            var streakSnap1 = salinStreak();
+            potongRantaian(kod1);
             var before = streak[kod1] || 0;
             var penalti = before + 1 >= 3;
             if (penalti) {
               var okP = await rekodMata(kod1, -1, "penalti", false);
-              if (!okP) return;
+              if (!okP) { pulihStreak(streakSnap1); return; }
               streak[kod1] = 0;
               toast("Penalti −1. Kiraan salah pertama bermula semula.", 2400);
             } else {
@@ -686,7 +703,7 @@
             }
             flashSalah(huruf);
             fl.fasa = "tunggu2";
-            fl.undo.push({ type: "salah1", kod: kod1, streakBefore: before, penalti: penalti });
+            fl.undo.push({ type: "salah1", kod: kod1, streakSnap: streakSnap1, penalti: penalti });
             $("opsyen").classList.add("is-wait");
             renderPapan();
             simpanSkrin();
@@ -717,7 +734,8 @@
             fl.cuba2 = "";
             fl.fasa = "tunggu2";
           } else if (last.type === "salah1") {
-            streak[last.kod] = last.streakBefore || 0;
+            if (last.streakSnap) pulihStreak(last.streakSnap);
+            else streak[last.kod] = last.streakBefore || 0;
             if (last.penalti) {
               var ok = await rekodMata(last.kod, 1, "pindaan", true);
               if (!ok) { fl.undo.push(last); return; }
@@ -734,7 +752,10 @@
             unreveal();
             fl.hasil = "";
             fl.fasa = last.mata === 4 ? "cuba1" : "cuba2";
-            if (last.mata === 4) streak[last.kod] = last.streakBefore || 0;
+            if (last.mata === 4) {
+              if (last.streakSnap) pulihStreak(last.streakSnap);
+              else streak[last.kod] = last.streakBefore || 0;
+            }
           } else if (last.type === "dedah") {
             unreveal();
             fl.hasil = "";
