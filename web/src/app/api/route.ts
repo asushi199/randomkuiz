@@ -22,6 +22,7 @@ async function dispatch(action: string, p: Payload) {
     case "adminRebutanSoalan": return K.adminRebutanSoalan(p.pin, p.pilih_semula);
     case "adminRebutanScore": return K.adminRebutanScore(p.pin, p.no_soalan, p.daerah, p.betul, p.mata);
     case "adminRebutanState": return K.adminRebutanState(p.pin);
+    case "adminRebutanSkrin": return K.adminRebutanSkrin(p.pin, p.idx, p.revealed);
     case "adminSetManual": return K.adminSetManual(p.pin, p.peringkat, p.daerah, p.mata1, p.mata2, p.mata3, p.catatan);
     case "adminFinal": return K.adminFinal(p.pin);
     case "adminReset": return K.adminReset(p.pin, p.skop);

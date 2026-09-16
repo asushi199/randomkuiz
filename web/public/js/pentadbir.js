@@ -736,7 +736,7 @@
       else if (b.dataset.csv) handleExport(b.dataset.csv, "csv");
     });
     $("#btn-reset").addEventListener("click", reset);
-    $("#btn-open-skrin").addEventListener("click", () => window.open("skrin.html?v=8", "_blank"));
+    $("#btn-open-skrin").addEventListener("click", () => window.open("skrin.html?v=9", "_blank"));
     const btnS3p2 = $("#btn-s3p2-refresh");
     if (btnS3p2) btnS3p2.addEventListener("click", loadRebutanMarkah);
 

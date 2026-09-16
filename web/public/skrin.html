@@ -54,12 +54,22 @@
       /* Papan */
       #main { display: none; flex: 1; flex-direction: column; min-height: 0; }
       .mast {
-        display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
+        display: flex; align-items: center; justify-content: space-between; gap: 1rem;
         padding: 0.7rem 1.4rem 0.55rem;
         background: var(--green-d); color: #e7f3ed;
       }
       .mast .tajuk { font-weight: 700; font-size: 1.05rem; }
+      .mast-right { display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap; justify-content: flex-end; }
       .mast .prog { font-weight: 800; font-size: 1.05rem; color: #f3d48a; font-variant-numeric: tabular-nums; }
+      .prog-nav { display: flex; gap: 0.28rem; }
+      .prog-nav button {
+        width: 1.85rem; height: 1.85rem; border-radius: 999px; padding: 0;
+        border: 1.5px solid rgba(243, 212, 138, 0.4);
+        background: transparent; color: #e7f3ed;
+        font: inherit; font-weight: 800; font-size: 0.82rem; cursor: pointer;
+      }
+      .prog-nav button.kini { background: var(--gold); color: var(--gold-ink); border-color: var(--gold); }
+      .prog-nav button.sudah { background: #1a7a5c; border-color: #8fd4b8; color: #fff; }
 
       .board {
         flex: 1; min-height: 0; display: flex; flex-direction: column;
@@ -284,7 +294,10 @@
     <div id="main">
       <div class="mast">
         <span class="tajuk">Saringan 3 — Pusingan 2</span>
-        <span class="prog" id="prog"></span>
+        <div class="mast-right">
+          <div class="prog-nav" id="prog-nav" aria-label="Urutan soalan"></div>
+          <span class="prog" id="prog"></span>
+        </div>
       </div>
       <div class="board">
         <div class="stage">
@@ -321,6 +334,8 @@
         var lastAksi = [];
         var busy = false;
         var salahTimer = null;
+        var revealedNos = {};
+        var simpanTimer = null;
         var $ = function (id) { return document.getElementById(id); };
 
         async function api(action, payload) {
@@ -341,6 +356,25 @@
           return Math.max(1, Number($("mata").value || 5));
         }
 
+        function senaraiRevealed() {
+          return Object.keys(revealedNos).map(Number).filter(function (n) { return revealedNos[n]; });
+        }
+        function simpanSkrinSegera() {
+          if (!pin) return;
+          api("adminRebutanSkrin", { pin: pin, idx: idx, revealed: senaraiRevealed() }).catch(function () {});
+        }
+        function simpanSkrin() {
+          if (!pin) return;
+          if (simpanTimer) clearTimeout(simpanTimer);
+          simpanTimer = setTimeout(simpanSkrinSegera, 150);
+        }
+        function lompat(n) {
+          if (n < 0 || n >= soalan.length) return;
+          idx = n;
+          render();
+          simpanSkrin();
+        }
+
         async function masuk() {
           var v = $("pin").value.trim();
           if (!v) return;
@@ -354,12 +388,19 @@
             soalan = data.soalan || [];
             teams = (data.daerah_layak && data.daerah_layak.length) ? data.daerah_layak : [];
             if (!soalan.length) { $("err").textContent = "Tiada soalan rebutan."; return; }
+            revealedNos = {};
+            var st = data.skrin || {};
+            idx = Math.min(soalan.length - 1, Math.max(0, Number(st.idx) || 0));
+            (st.revealed || []).forEach(function (n) { revealedNos[Number(n)] = true; });
             $("gate").style.display = "none";
             $("main").style.display = "flex";
-            idx = 0; render();
+            render();
             renderPapan();
             loadScores();
             setInterval(loadScores, 5000);
+            if (idx > 0 || senaraiRevealed().length) {
+              toast("Sambung soalan " + (idx + 1));
+            }
           } catch (e) { $("err").textContent = "Ralat sambungan."; }
         }
 
@@ -447,6 +488,21 @@
           await ubahMata(last.kod, -last.mata, true);
         }
 
+        function renderProgNav() {
+          var nav = $("prog-nav");
+          if (!nav) return;
+          nav.innerHTML = "";
+          soalan.forEach(function (q, i) {
+            var b = document.createElement("button");
+            b.type = "button";
+            b.textContent = String(i + 1);
+            if (i === idx) b.classList.add("kini");
+            else if (revealedNos[q.no]) b.classList.add("sudah");
+            b.setAttribute("aria-label", "Soalan " + (i + 1) + (revealedNos[q.no] ? ", jawapan telah dipapar" : ""));
+            b.addEventListener("click", function () { lompat(i); });
+            nav.appendChild(b);
+          });
+        }
         function render() {
           revealed = false;
           if (salahTimer) { clearTimeout(salahTimer); salahTimer = null; }
@@ -466,6 +522,8 @@
             btn.addEventListener("click", function () { pilihOpt(l); });
             wrap.appendChild(btn);
           });
+          renderProgNav();
+          if (revealedNos[q.no]) applyReveal();
         }
         function pilihOpt(huruf) {
           if (revealed) return;
@@ -483,21 +541,30 @@
             salahTimer = null;
           }, 1200);
         }
-        function reveal() {
-          if (revealed) return;
+        function applyReveal() {
+          var q = soalan[idx];
+          if (!q) return;
           revealed = true;
           if (salahTimer) { clearTimeout(salahTimer); salahTimer = null; }
-          var q = soalan[idx];
           $("opsyen").classList.add("is-on");
           Array.prototype.forEach.call(document.querySelectorAll(".opt"), function (el) {
             el.classList.remove("salah");
             if (el.dataset.huruf === q.jawapan) el.classList.add("betul");
           });
+          renderProgNav();
+        }
+        function reveal() {
+          if (revealed) return;
+          var q = soalan[idx];
+          if (q) revealedNos[q.no] = true;
+          applyReveal();
+          if (simpanTimer) clearTimeout(simpanTimer);
+          simpanSkrinSegera();
         }
         $("btn-masuk").addEventListener("click", masuk);
         $("pin").addEventListener("keydown", function (e) { if (e.key === "Enter") masuk(); });
-        $("btn-prev").addEventListener("click", function () { if (idx > 0) { idx--; render(); } });
-        $("btn-next").addEventListener("click", function () { if (idx < soalan.length - 1) { idx++; render(); } });
+        $("btn-prev").addEventListener("click", function () { lompat(idx - 1); });
+        $("btn-next").addEventListener("click", function () { lompat(idx + 1); });
         $("btn-reveal").addEventListener("click", reveal);
         $("mata").addEventListener("input", renderPapan);
         $("btn-undo").addEventListener("click", undoTerakhir);
@@ -509,10 +576,14 @@
         });
         document.addEventListener("keydown", function (e) {
           if ($("main").style.display !== "flex") return;
-          if (e.key === "ArrowRight") { if (idx < soalan.length - 1) { idx++; render(); } }
-          if (e.key === "ArrowLeft") { if (idx > 0) { idx--; render(); } }
+          if (e.key === "ArrowRight") lompat(idx + 1);
+          if (e.key === "ArrowLeft") lompat(idx - 1);
           if (e.key === " " || e.key === "Enter") { e.preventDefault(); reveal(); }
         });
+        document.addEventListener("visibilitychange", function () {
+          if (document.visibilityState === "hidden") simpanSkrinSegera();
+        });
+        window.addEventListener("pagehide", simpanSkrinSegera);
       })();
     </script>
   </body>

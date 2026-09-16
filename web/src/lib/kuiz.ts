@@ -486,6 +486,38 @@ export async function adminLock(pin: unknown, peringkat: unknown, daerahList: un
   return { ok: true, peringkat: p, daerah: list, mesej: list.length + " pasukan dikunci untuk " + p + "." };
 }
 
+const SKRIN_KEY = "rebutan_skrin";
+
+type SkrinState = { idx: number; revealed: number[]; pilihan: string };
+
+async function loadSkrinState(): Promise<SkrinState> {
+  try {
+    const raw = await getTetapan(SKRIN_KEY, "");
+    if (!raw) return { idx: 0, revealed: [], pilihan: "" };
+    const o = JSON.parse(raw) as { idx?: unknown; revealed?: unknown; pilihan?: unknown };
+    const revealed = Array.isArray(o.revealed)
+      ? o.revealed.map((n) => Number(n)).filter((n) => Number.isFinite(n) && n > 0)
+      : [];
+    return { idx: Math.max(0, Number(o.idx) || 0), revealed, pilihan: String(o.pilihan || "") };
+  } catch {
+    return { idx: 0, revealed: [], pilihan: "" };
+  }
+}
+
+export async function adminRebutanSkrin(pin: unknown, idxRaw: unknown, revealedRaw: unknown) {
+  const chk = requirePin(pin); if (!chk.ok) return chk;
+  const pilihan = await getTetapan("rebutan_pilihan", "");
+  const revealed = Array.isArray(revealedRaw)
+    ? revealedRaw.map((n) => Number(n)).filter((n) => Number.isFinite(n) && n > 0)
+    : [];
+  await setTetapan(SKRIN_KEY, JSON.stringify({
+    idx: Math.max(0, Number(idxRaw) || 0),
+    revealed,
+    pilihan,
+  }));
+  return { ok: true };
+}
+
 // ---- Rebutan S3P2 ----
 export async function adminRebutanSoalan(pin: unknown, pilihSemula?: unknown) {
   const chk = requirePin(pin); if (!chk.ok) return chk;
@@ -494,13 +526,24 @@ export async function adminRebutanSoalan(pin: unknown, pilihSemula?: unknown) {
     A: String(r.a || ""), B: String(r.b || ""), C: String(r.c || ""), D: String(r.d || ""), jawapan: normHuruf(r.jawapan) }));
   if (!bank.length) return { ok: false, ralat: "SoalanRebutan kosong." };
   let pilihan = (await getTetapan("rebutan_pilihan", "")).split(",").map((s) => s.trim()).filter(Boolean);
-  if (pilihSemula === true || String(pilihSemula) === "true" || !pilihan.length) {
+  const semula = pilihSemula === true || String(pilihSemula) === "true" || !pilihan.length;
+  if (semula) {
     pilihan = shuffle(bank.map((q) => String(q.no))).slice(0, REBUTAN_PILIH);
     await setTetapan("rebutan_pilihan", pilihan.join(","));
+    await setTetapan(SKRIN_KEY, JSON.stringify({ idx: 0, revealed: [], pilihan: pilihan.join(",") }));
   }
   const byNo: Record<string, typeof bank[0]> = {}; bank.forEach((q) => { byNo[String(q.no)] = q; });
   const soalan = pilihan.map((no, i) => { const q = byNo[no]; return q ? { urutan: i + 1, ...q } : null; }).filter(Boolean);
-  return { ok: true, soalan, daerah_layak: Object.keys(await getKelayakan("S3P1")) };
+  let skrin = await loadSkrinState();
+  if (skrin.pilihan && skrin.pilihan !== pilihan.join(",")) {
+    skrin = { idx: 0, revealed: [], pilihan: pilihan.join(",") };
+    await setTetapan(SKRIN_KEY, JSON.stringify(skrin));
+  }
+  const maxIdx = Math.max(0, soalan.length - 1);
+  return {
+    ok: true, soalan, daerah_layak: Object.keys(await getKelayakan("S3P1")),
+    skrin: { idx: Math.min(maxIdx, skrin.idx), revealed: skrin.revealed },
+  };
 }
 
 export async function adminRebutanScore(pin: unknown, noSoalan: unknown, daerahRaw: unknown, betul: unknown, mata: unknown) {
@@ -573,6 +616,7 @@ export async function adminReset(pin: unknown, skop: unknown) {
     await db.from("markah_manual").delete().neq("daerah", "___none___");
     await db.from("kelayakan").delete().neq("daerah", "___none___");
     await setTetapan("rebutan_pilihan", "");
+    await setTetapan("rebutan_skrin", "");
   }
   return { ok: true, mesej: "Reset (" + s + ") selesai. Bank soalan & daerah tidak diubah." };
 }
