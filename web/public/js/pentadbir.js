@@ -94,36 +94,66 @@
     S1: "Saringan 1", S2: "Saringan 2", S3P1: "S3 · Pusingan 1",
     S3P2: "S3 · Pusingan 2", S3P3: "S3 · Pusingan 3", TUTUP: "Ditutup",
   };
+  let liveStage = "";
   let pendingStage = "";
 
-  function buildStageRail(active) {
+  function showStageConfirm(open) {
+    const box = $("#stage-confirm");
+    if (!box) return;
+    box.hidden = !open;
+    box.classList.toggle("is-open", !!open);
+  }
+
+  function buildStageRail() {
     const rail = $("#stage-rail"); if (!rail) return;
-    const curIdx = STAGES.indexOf(active);
+    const curIdx = STAGES.indexOf(liveStage);
     rail.innerHTML = "";
     STAGES.forEach((s, i) => {
       const node = document.createElement("button");
       node.type = "button";
-      node.className = "stage-node " + (i < curIdx ? "done" : i === curIdx ? "live" : "upcoming");
+      const isLive = s === liveStage;
+      const isArmed = s === pendingStage;
+      node.className = "stage-node " + (isLive ? "live" : i < curIdx ? "done" : "upcoming") +
+        (isArmed ? " armed" : "");
       let inner = '<span class="dot"></span><span>' + STAGE_SHORT[s] + "</span>";
-      if (i === curIdx) inner += '<span class="live-badge">LANGSUNG</span>';
+      if (isLive) inner += '<span class="live-badge">LANGSUNG</span>';
       node.innerHTML = inner;
-      node.addEventListener("click", () => { if (s !== active) askOpen(s); });
+      node.addEventListener("click", () => {
+        if (isLive) { if (pendingStage) cancelStageConfirm(); return; }
+        if (isArmed) { cancelStageConfirm(); return; }
+        askOpen(s);
+      });
       rail.appendChild(node);
     });
   }
+  function cancelStageConfirm() {
+    pendingStage = "";
+    showStageConfirm(false);
+    buildStageRail();
+  }
   function askOpen(s) {
+    if (s === liveStage) return;
     pendingStage = s;
-    $("#stage-confirm-text").textContent = s === "TUTUP"
-      ? "Tutup — tiada peringkat dibuka untuk peserta?"
-      : "Buka " + (STAGE_SHORT[s] || s) + " untuk peserta?";
-    $("#stage-confirm").hidden = false;
+    const yes = $("#stage-confirm-yes");
+    if (s === "TUTUP") {
+      $("#stage-confirm-text").textContent = "Tutup dewan — tiada peringkat dibuka untuk peserta?";
+      if (yes) yes.textContent = "Tutup";
+    } else {
+      $("#stage-confirm-text").textContent = "Buka " + (STAGE_SHORT[s] || s) + " untuk peserta?";
+      if (yes) yes.textContent = "Buka";
+    }
+    showStageConfirm(true);
+    buildStageRail();
   }
 
   function setPeringkatSemasa(p) {
+    liveStage = p;
+    pendingStage = "";
+    showStageConfirm(false);
     const el = $("#peringkat-semasa");
     el.textContent = PERINGKAT_LABEL[p] || p;
     el.dataset.p = p;
-    buildStageRail(p);
+    buildStageRail();
   }
 
   async function setPeringkat(s) {
@@ -540,10 +570,17 @@
     const btnLogout = $("#btn-logout"); if (btnLogout) btnLogout.addEventListener("click", logout);
     $("#stage-confirm-yes").addEventListener("click", async () => {
       if (!pendingStage) return;
-      const s = pendingStage; pendingStage = ""; $("#stage-confirm").hidden = true;
-      await setPeringkat(s);
+      const s = pendingStage;
+      const yes = $("#stage-confirm-yes");
+      const no = $("#stage-confirm-no");
+      if (yes) yes.disabled = true;
+      if (no) no.disabled = true;
+      try { await setPeringkat(s); } finally {
+        if (yes) yes.disabled = false;
+        if (no) no.disabled = false;
+      }
     });
-    $("#stage-confirm-no").addEventListener("click", () => { pendingStage = ""; $("#stage-confirm").hidden = true; });
+    $("#stage-confirm-no").addEventListener("click", cancelStageConfirm);
     document.querySelectorAll(".tab-btn").forEach((b) => b.addEventListener("click", () => activateTab(b.dataset.tab)));
     $("#btn-rank").addEventListener("click", loadRanking);
     $("#btn-auto-advance").addEventListener("click", autoAdvance);

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pentadbir — Kuiz Ilmuan Cilik</title>
     <link rel="stylesheet" href="css/style.css?v=6" />
-    <link rel="stylesheet" href="css/admin.css?v=10" />
+    <link rel="stylesheet" href="css/admin.css?v=11" />
   </head>
   <body>
     <header class="header header-admin">
@@ -45,11 +45,11 @@
             <strong id="peringkat-semasa" class="peringkat-pill">—</strong>
           </div>
           <div class="stage-rail" id="stage-rail"></div>
-          <div class="stage-confirm" id="stage-confirm" hidden>
+          <div class="stage-confirm" id="stage-confirm" hidden role="status" aria-live="polite">
             <span id="stage-confirm-text"></span>
             <span class="stage-confirm-actions">
-              <button type="button" class="btn btn-primary btn-sm" id="stage-confirm-yes">Ya, tukar</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="stage-confirm-no">Batal</button>
+              <button type="button" class="btn btn-primary btn-sm" id="stage-confirm-yes">Buka</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="stage-confirm-no">Kembali</button>
             </span>
           </div>
           <p id="peringkat-msg" class="success" hidden></p>
@@ -200,6 +200,6 @@
 
     <script src="js/config.js?v=1" onerror="this.remove()"></script>
     <script src="js/config.example.js?v=10"></script>
-    <script src="js/pentadbir.js?v=16"></script>
+    <script src="js/pentadbir.js?v=17"></script>
   </body>
 </html>

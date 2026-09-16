@@ -57,15 +57,18 @@ input[type="password"] { width: 100%; }
 .stage-node.upcoming:hover .dot { background: #0e6b4f; }
 .stage-node.live { color: #fff; background: #0e6b4f; border-color: #0e6b4f; cursor: default; box-shadow: 0 4px 12px rgba(14,107,79,.3); }
 .stage-node.live .dot { background: #fff; animation: livepulse 1.6s ease-out infinite; }
+.stage-node.armed { border-color: var(--gold); color: #14342a; box-shadow: 0 0 0 2px rgba(199,154,59,.22); }
+.stage-node.armed .dot { background: var(--gold); }
 .stage-node .live-badge { font-size: .66rem; font-weight: 700; letter-spacing: .06em; background: rgba(255,255,255,.22); padding: 2px 7px; border-radius: 999px; }
 @keyframes livepulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,.7); } 70% { box-shadow: 0 0 0 7px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
 @media (prefers-reduced-motion: reduce) { .stage-node.live .dot { animation: none; } }
 
 .stage-confirm {
-  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-  margin-top: 12px; padding: 11px 14px; background: #fff8e6;
-  border: 1px solid #ecd9a6; border-radius: 10px; font-weight: 600;
+  display: none; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin-top: 12px; padding: 11px 14px; background: #faf6ec;
+  border: 1px solid #e4d4a8; border-left: 4px solid var(--gold); border-radius: 10px; font-weight: 600;
 }
+.stage-confirm.is-open { display: flex; }
 .stage-confirm-actions { display: flex; gap: 8px; margin-left: auto; }
 
 .peringkat-pill {
