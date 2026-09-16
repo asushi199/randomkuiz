@@ -80,10 +80,8 @@
     // Peringkat: rel progres (stage rail)
     setPeringkatSemasa(state.peringkat_aktif);
 
-    // Dropdowns
-    const rankSel = $("#rank-peringkat"), revSel = $("#review-peringkat");
-    if (!rankSel.options.length) RANK_STAGES.forEach((s) => opt(rankSel, s, PERINGKAT_LABEL[s]));
-    if (!revSel.options.length) RANK_STAGES.forEach((s) => opt(revSel, s, PERINGKAT_LABEL[s]));
+    const revSel = $("#review-peringkat");
+    if (revSel && !revSel.options.length) RANK_STAGES.forEach((s) => opt(revSel, s, PERINGKAT_LABEL[s]));
 
     // Markah manual: hanya pasukan layak S3P1 (finalis)
     renderManualTeams(state.kelayakan && state.kelayakan.S3P1);
@@ -165,27 +163,61 @@
 
   // ---------- Tab setiap saringan ----------
   const TAB_PERINGKAT = { s1: "S1", s2: "S2", s3: "S3P1" };
+  let s3Round = "S3P1";
+
+  function setS3Round(round) {
+    s3Round = round;
+    document.querySelectorAll(".round-btn").forEach((b) => b.classList.toggle("is-on", b.dataset.round === round));
+    const p1 = round === "S3P1", p2 = round === "S3P2", p3 = round === "S3P3";
+    const ked = $("#sec-kedudukan"), pan2 = $("#sec-s3p2"), extra = $("#sec-s3extra"), semak = $("#sec-semakan");
+    if (ked) ked.hidden = !p1;
+    if (pan2) pan2.hidden = !p2;
+    if (extra) extra.hidden = !p3;
+    if (semak) semak.hidden = !p1;
+    if (p1) {
+      curRankPeringkat = "S3P1";
+      const title = $("#rank-title");
+      if (title) title.textContent = "Kedudukan Pusingan 1";
+      loadRanking();
+    }
+  }
+
   function activateTab(tab) {
     document.querySelectorAll(".tab-btn").forEach((b) => b.classList.toggle("tab-active", b.dataset.tab === tab));
     document.querySelectorAll(".tab-sec").forEach((s) => {
       s.hidden = (s.dataset.show || "").split(" ").indexOf(tab) < 0;
     });
+    const rounds = $("#s3-rounds");
+    if (rounds) rounds.hidden = tab !== "s3";
     const p = TAB_PERINGKAT[tab];
     if (p) {
-      const rankSel = $("#rank-peringkat"); if (rankSel) rankSel.value = p;
       const revSel = $("#review-peringkat"); if (revSel) revSel.value = p;
-      const title = $("#rank-title"); if (title) title.textContent = "Kedudukan — " + (PERINGKAT_LABEL[p] || p);
       $("#review-result").hidden = true; showErr($("#review-error"), "");
       const ic = $("#review-ic"); if (ic) ic.value = "";
-      loadRanking();
     }
-    if (tab === "s3") refreshManualTeams();
+    if (tab === "s1" || tab === "s2") {
+      curRankPeringkat = TAB_PERINGKAT[tab];
+      const title = $("#rank-title");
+      if (title) title.textContent = "Kedudukan";
+      loadRanking();
+    } else if (tab === "s3") {
+      setS3Round(s3Round || "S3P1");
+      refreshManualTeams();
+    }
   }
 
   // ---------- Kedudukan ----------
+  function updateLockCount() {
+    const n = document.querySelectorAll(".lock-cb:checked").length;
+    const el = $("#lock-count");
+    if (el) el.textContent = String(n);
+    const lockBtn = $("#btn-lock");
+    if (lockBtn) lockBtn.disabled = n === 0;
+  }
+
   async function loadRanking() {
-    const p = $("#rank-peringkat").value;
-    curRankPeringkat = p;
+    const p = curRankPeringkat;
+    if (!p) return;
     $("#rank-wait").hidden = false;
     ["#rank-pasukan-wrap", "#rank-individu-wrap", "#rank-empty"].forEach((s) => ($(s).hidden = true));
     try {
@@ -207,7 +239,6 @@
     const showLock = !!lockTarget;
 
     document.querySelectorAll(".col-lock").forEach((el) => (el.hidden = !showLock));
-    $("#lock-hint").hidden = !showLock;
     $("#lock-controls").hidden = !showLock;
 
     const tb = $("#table-pasukan").querySelector("tbody"); tb.innerHTML = "";
@@ -227,14 +258,20 @@
     });
 
     if (showLock) {
+      const dest = peringkat === "S1" ? "Saringan 2" : "Saringan 3";
       const sel = $("#lock-target"); sel.innerHTML = "";
       opt(sel, lockTarget, PERINGKAT_LABEL[lockTarget]);
-      $("#btn-lock-auto").textContent = "Tanda " + lockN + " teratas";
+      const title = $("#lock-title");
+      if (title) title.textContent = "Layak ke " + dest;
+      const hint = $("#lock-hint");
+      if (hint) hint.textContent = lockN + " pasukan teratas disyorkan. Ubah tanda di jadual jika susunan berbeza.";
+      $("#btn-lock-auto").textContent = "Tanda semula " + lockN + " teratas";
       $("#btn-lock-auto").dataset.n = String(lockN);
       const auto = $("#btn-auto-advance");
-      auto.textContent = "Auto-kunci " + lockN + " teratas → " + PERINGKAT_LABEL[lockTarget];
+      auto.textContent = "Kunci " + lockN + " teratas ke " + dest;
       auto.dataset.target = lockTarget;
       auto.dataset.n = String(lockN);
+      updateLockCount();
     }
     $("#rank-pasukan-wrap").hidden = false;
   }
@@ -261,6 +298,7 @@
     showOk($("#lock-msg"), (data.mesej || "Dikunci.") + " — " + (data.nama_daerah || []).join(", "));
     const n = Number(btn.dataset.n || 0);
     document.querySelectorAll(".lock-cb").forEach((c, i) => { c.checked = i < n; });
+    updateLockCount();
   }
 
   async function lockKelayakan() {
@@ -582,13 +620,18 @@
     });
     $("#stage-confirm-no").addEventListener("click", cancelStageConfirm);
     document.querySelectorAll(".tab-btn").forEach((b) => b.addEventListener("click", () => activateTab(b.dataset.tab)));
-    $("#btn-rank").addEventListener("click", loadRanking);
+    document.querySelectorAll(".round-btn").forEach((b) => b.addEventListener("click", () => setS3Round(b.dataset.round)));
+    const tblPasukan = $("#table-pasukan");
+    if (tblPasukan) tblPasukan.addEventListener("change", (e) => {
+      if (e.target && e.target.classList && e.target.classList.contains("lock-cb")) updateLockCount();
+    });
     $("#btn-auto-advance").addEventListener("click", autoAdvance);
     $("#btn-lock").addEventListener("click", lockKelayakan);
     $("#btn-lock-auto").addEventListener("click", () => {
       const n = Number($("#btn-lock-auto").dataset.n || 0);
       const cbs = Array.from(document.querySelectorAll(".lock-cb"));
       cbs.forEach((c, i) => { c.checked = i < n; });
+      updateLockCount();
     });
     $("#btn-review").addEventListener("click", review);
     $("#btn-final").addEventListener("click", final);

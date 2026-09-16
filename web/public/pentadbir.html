@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pentadbir — Kuiz Ilmuan Cilik</title>
     <link rel="stylesheet" href="css/style.css?v=6" />
-    <link rel="stylesheet" href="css/admin.css?v=11" />
+    <link rel="stylesheet" href="css/admin.css?v=12" />
   </head>
   <body>
     <header class="header header-admin">
@@ -62,17 +62,15 @@
           <button type="button" class="tab-btn" data-tab="s3">Saringan 3</button>
           <button type="button" class="tab-btn" data-tab="set">Tetapan</button>
         </nav>
+        <nav class="round-switch" id="s3-rounds" hidden aria-label="Pusingan Saringan 3">
+          <button type="button" class="round-btn is-on" data-round="S3P1">Pusingan 1</button>
+          <button type="button" class="round-btn" data-round="S3P2">Pusingan 2 (Rebutan)</button>
+          <button type="button" class="round-btn" data-round="S3P3">Pusingan 3 (Tulisan)</button>
+        </nav>
 
         <!-- Kedudukan -->
         <section class="card tab-sec" id="sec-kedudukan" data-show="s1 s2 s3">
-          <div class="row-between">
-            <h2 id="rank-title">Kedudukan</h2>
-            <div class="inline-controls" hidden>
-              <label for="rank-peringkat" class="sr-inline">Peringkat</label>
-              <select id="rank-peringkat"></select>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-rank">Papar</button>
-            </div>
-          </div>
+          <h2 id="rank-title">Kedudukan</h2>
           <div id="rank-wait" class="wait-msg" hidden>Memuatkan…</div>
 
           <div id="rank-pasukan-wrap" hidden>
@@ -83,9 +81,6 @@
                 <button type="button" class="tool-btn" data-csv="pasukan" title="Muat turun CSV (pasukan)" aria-label="Muat turun CSV kedudukan pasukan"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
               </div>
             </div>
-            <p class="hint" id="lock-hint" hidden>
-              Tanda pasukan yang <strong>layak</strong> ke peringkat seterusnya, kemudian klik "Kunci kelayakan".
-            </p>
             <div class="table-wrap">
               <table class="ranking-table" id="table-pasukan">
                 <thead>
@@ -98,13 +93,19 @@
                 <tbody></tbody>
               </table>
             </div>
-            <div id="lock-controls" class="lock-controls" hidden>
-              <button type="button" class="btn btn-primary btn-sm" id="btn-auto-advance">Auto-kunci teratas</button>
-              <span class="lock-or">atau pilih manual:</span>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-lock-auto">Tanda teratas</button>
-              <button type="button" class="btn btn-secondary btn-sm" id="btn-lock">Kunci pilihan bertanda</button>
-              <select id="lock-target" hidden></select>
-              <span id="lock-msg" class="success" hidden></span>
+            <div id="lock-controls" class="kelayakan-bar" hidden>
+              <div class="kelayakan-copy">
+                <strong id="lock-title">Layak ke peringkat seterusnya</strong>
+                <p id="lock-hint" class="kelayakan-hint">Tanda pasukan di jadual, atau kunci teratas terus.</p>
+              </div>
+              <div class="kelayakan-side">
+                <span class="kelayakan-count"><b id="lock-count">0</b> ditanda</span>
+                <button type="button" class="btn btn-primary btn-sm" id="btn-auto-advance">Kunci teratas</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-lock">Kunci yang ditanda</button>
+                <button type="button" class="kelayakan-reset" id="btn-lock-auto">Tanda semula teratas</button>
+                <select id="lock-target" hidden></select>
+                <span id="lock-msg" class="success" hidden></span>
+              </div>
             </div>
           </div>
 
@@ -147,22 +148,28 @@
           </div>
         </section>
 
+        <section class="card tab-sec" id="sec-s3p2" data-show="s3" hidden>
+          <h2>Pusingan 2 (Rebutan)</h2>
+          <p class="hint">
+            Pusingan ini dikendalikan di pentas. Buka skrin untuk paparan soalan dan kiraan markah pasukan.
+          </p>
+          <button type="button" class="btn btn-primary" id="btn-open-skrin">Buka skrin rebutan</button>
+        </section>
+
         <!-- Markah manual S3P3 + Kedudukan akhir -->
         <section class="card tab-sec" id="sec-s3extra" data-show="s3">
-          <h2>Saringan 3 — Markah &amp; Kedudukan Akhir</h2>
+          <h2>Pusingan 3 (Tulisan)</h2>
           <p class="hint">
-            Rebutan (S3P2) direkod di skrin rebutan. Di sini masukkan <strong>markah Pusingan 3 (S3P3)</strong>
-            setiap pasukan — <strong>3 soalan (dijumlah automatik)</strong> — kemudian jana kedudukan akhir
-            terkumpul (S3P1 + S3P2 + S3P3).
+            Masukkan markah setiap pasukan — 3 soalan, dijumlah automatik — kemudian jana
+            kedudukan akhir terkumpul (Pusingan 1 + Rebutan + Pusingan 3).
           </p>
           <p id="manual-note" class="hint" hidden>
-            Belum ada pasukan layak. Sila pergi tab <strong>Saringan 2</strong> → klik
-            <strong>Auto-kunci 4 teratas</strong> untuk kunci pasukan akhir dahulu.
+            Belum ada pasukan layak. Sila pergi tab <strong>Saringan 2</strong> →
+            kunci 4 teratas ke Saringan 3 dahulu.
           </p>
           <div id="manual-rows"></div>
           <p id="manual-msg" class="success" hidden></p>
           <div class="row-between" style="margin-top:1rem">
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-open-skrin">Buka Skrin Rebutan (S3P2)</button>
             <button type="button" class="btn btn-primary" id="btn-final">Jana Kedudukan Akhir</button>
           </div>
           <div id="final-wrap" hidden>
@@ -200,6 +207,6 @@
 
     <script src="js/config.js?v=1" onerror="this.remove()"></script>
     <script src="js/config.example.js?v=10"></script>
-    <script src="js/pentadbir.js?v=17"></script>
+    <script src="js/pentadbir.js?v=18"></script>
   </body>
 </html>
