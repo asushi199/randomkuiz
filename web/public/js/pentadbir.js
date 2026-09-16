@@ -16,6 +16,7 @@
   let curRankPeringkat = "";
   let lastReview = null;   // data semakan individu terakhir (untuk cetak)
   let lastRanking = null;  // { pasukan, individu, peringkat } terakhir (cetak / CSV)
+  let individuFilter = ""; // kod daerah untuk tapisan kedudukan individu
   let lastFinal = null;    // senarai kedudukan akhir terakhir (cetak / CSV)
 
   function getApiUrl() { return ((window.EXAM_CONFIG || {}).API_URL || "").trim(); }
@@ -285,16 +286,61 @@
     $("#rank-pasukan-wrap").hidden = false;
   }
 
-  function renderIndividu(list) {
-    const tb = $("#table-individu").querySelector("tbody"); tb.innerHTML = "";
-    list.forEach((r) => {
-      const tr = document.createElement("tr");
-      if (r.kedudukan <= 3) tr.className = "rank-top";
-      tr.innerHTML = "<td>" + r.kedudukan + "</td><td>" + (r.nama || "-") + "</td>" +
-        "<td>" + r.ic + "</td><td>" + (r.nama_daerah || r.daerah || "-") + "</td>" +
-        "<td>" + r.betul + "/" + r.jumlah + "</td><td>" + r.skor + "%</td><td>" + (r.tempoh_label || "-") + "</td>";
-      tb.appendChild(tr);
+  function visibleIndividu() {
+    const all = (lastRanking && lastRanking.individu) || [];
+    if (!individuFilter) return all;
+    return all.filter((r) => r.daerah === individuFilter);
+  }
+
+  function fillIndividuFilter(list) {
+    const sel = $("#individu-daerah");
+    if (!sel) return;
+    const prev = sel.value || individuFilter;
+    const seen = {};
+    const opts = [];
+    (list || []).forEach((r) => {
+      const kod = r.daerah || "";
+      if (!kod || seen[kod]) return;
+      seen[kod] = true;
+      opts.push({ kod: kod, nama: r.nama_daerah || daerahNama(kod) || kod });
     });
+    opts.sort((a, b) => a.nama.localeCompare(b.nama, "ms"));
+    sel.innerHTML = "";
+    opt(sel, "", "Semua daerah");
+    opts.forEach((o) => opt(sel, o.kod, o.nama));
+    if (prev && seen[prev]) {
+      sel.value = prev;
+      individuFilter = prev;
+    } else {
+      sel.value = "";
+      individuFilter = "";
+    }
+  }
+
+  function paintIndividuRows(list) {
+    const shown = individuFilter
+      ? (list || []).filter((r) => r.daerah === individuFilter)
+      : (list || []);
+    const tb = $("#table-individu").querySelector("tbody"); tb.innerHTML = "";
+    if (!shown.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = '<td colspan="7" class="hint">Tiada peserta untuk daerah ini.</td>';
+      tb.appendChild(tr);
+    } else {
+      shown.forEach((r) => {
+        const tr = document.createElement("tr");
+        if (r.kedudukan <= 3) tr.className = "rank-top";
+        tr.innerHTML = "<td>" + r.kedudukan + "</td><td>" + (r.nama || "-") + "</td>" +
+          "<td>" + r.ic + "</td><td>" + (r.nama_daerah || r.daerah || "-") + "</td>" +
+          "<td>" + r.betul + "/" + r.jumlah + "</td><td>" + r.skor + "%</td><td>" + (r.tempoh_label || "-") + "</td>";
+        tb.appendChild(tr);
+      });
+    }
+  }
+
+  function renderIndividu(list) {
+    fillIndividuFilter(list);
+    paintIndividuRows(list);
     $("#rank-individu-wrap").hidden = false;
   }
 
@@ -580,9 +626,11 @@
     individu: {
       title: "Kedudukan Individu",
       headers: ["Kedudukan", "Nama", "No. KP", "Daerah", "Betul", "Jumlah", "Skor (%)", "Masa"],
-      rows: () => (lastRanking && lastRanking.individu || []).map((r) =>
+      rows: () => visibleIndividu().map((r) =>
         [r.kedudukan, r.nama || "-", r.ic, r.nama_daerah || r.daerah || "-", r.betul, r.jumlah, r.skor, r.tempoh_label || "-"]),
       stage: () => lastRanking && lastRanking.peringkat,
+      filterLabel: () => individuFilter ? (daerahNama(individuFilter) || individuFilter) : "",
+      filterSlug: () => individuFilter ? String(individuFilter).toLowerCase().replace(/[^a-z0-9]+/g, "-") : "",
     },
     final: {
       title: "Kedudukan Akhir",
@@ -598,13 +646,15 @@
     const rows = spec.rows();
     if (!rows.length) { alert("Tiada data untuk " + spec.title.toLowerCase() + "."); return; }
     const stage = spec.stage() || "";
-    const sub = PERINGKAT_LABEL[stage] || stage;
+    const filter = (spec.filterLabel && spec.filterLabel()) || "";
+    const sub = [PERINGKAT_LABEL[stage] || stage, filter].filter(Boolean).join(" / ");
     if (mode === "print") {
       printTable(spec.title, sub, spec.headers, rows);
     } else {
+      const slug = (spec.filterSlug && spec.filterSlug()) || "";
       downloadCsv(
         spec.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") +
-        (stage ? "-" + stage : "") + "-" + tarikhKini() + ".csv",
+        (stage ? "-" + stage : "") + (slug ? "-" + slug : "") + "-" + tarikhKini() + ".csv",
         [spec.headers].concat(rows)
       );
     }
@@ -641,6 +691,11 @@
       const cbs = Array.from(document.querySelectorAll(".lock-cb"));
       cbs.forEach((c, i) => { c.checked = i < n; });
       updateLockCount();
+    });
+    const selDaerah = $("#individu-daerah");
+    if (selDaerah) selDaerah.addEventListener("change", () => {
+      individuFilter = selDaerah.value;
+      if (lastRanking) paintIndividuRows(lastRanking.individu || []);
     });
     $("#btn-review").addEventListener("click", review);
     $("#btn-final").addEventListener("click", final);
