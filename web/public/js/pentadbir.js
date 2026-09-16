@@ -18,6 +18,9 @@
   let lastRanking = null;  // { pasukan, individu, peringkat } terakhir (cetak / CSV)
   let individuFilter = ""; // kod daerah untuk tapisan kedudukan individu
   let lastFinal = null;    // senarai kedudukan akhir terakhir (cetak / CSV)
+  const manualTimers = {};
+  const manualBusy = {};
+  const manualNeed = {};
 
   function getApiUrl() { return ((window.EXAM_CONFIG || {}).API_URL || "").trim(); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -80,7 +83,7 @@
     const revSel = $("#review-peringkat");
     if (revSel && !revSel.options.length) RANK_STAGES.forEach((s) => opt(revSel, s, PERINGKAT_LABEL[s]));
     setPeringkatSemasa(state.peringkat_aktif);
-    renderManualTeams(state.kelayakan && state.kelayakan.S3P1);
+    renderManualTeams(state.kelayakan && state.kelayakan.S3P1, state.s3p3);
   }
 
   // Rel progres peringkat (stage rail)
@@ -411,46 +414,105 @@
   async function refreshManualTeams() {
     try {
       const d = await apiCall("adminState", { pin });
-      if (d && d.ok) renderManualTeams(d.kelayakan && d.kelayakan.S3P1);
+      if (d && d.ok) renderManualTeams(d.kelayakan && d.kelayakan.S3P1, d.s3p3);
     } catch (e) { /* biar kekal */ }
   }
 
-  function renderManualTeams(list) {
+  function nomborMarkah(v) {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  }
+  function bacaManualRow(kod) {
+    const wrap = $("#manual-rows");
+    const get = (c) => wrap && wrap.querySelector("." + c + '[data-daerah="' + kod + '"]');
+    return {
+      m1: nomborMarkah(get("m1") && get("m1").value),
+      m2: nomborMarkah(get("m2") && get("m2").value),
+      m3: nomborMarkah(get("m3") && get("m3").value),
+    };
+  }
+  function setManualStatus(kod, text, kind) {
+    const el = document.querySelector('.manual-status[data-daerah="' + kod + '"]');
+    if (!el) return;
+    el.textContent = text || "";
+    el.className = "manual-status" + (kind ? " " + kind : "");
+  }
+  async function simpanManual(kod) {
+    if (manualBusy[kod]) { manualNeed[kod] = true; return; }
+    manualBusy[kod] = true;
+    setManualStatus(kod, "Menyimpan…", "");
+    try {
+      const m = bacaManualRow(kod);
+      const data = await apiCall("adminSetManual", {
+        pin, peringkat: "S3P3", daerah: kod,
+        mata1: m.m1, mata2: m.m2, mata3: m.m3,
+      });
+      if (data && data.ok) setManualStatus(kod, "Disimpan", "ok");
+      else setManualStatus(kod, data && data.ralat ? data.ralat : "Gagal disimpan", "err");
+    } catch (e) {
+      setManualStatus(kod, "Gagal disimpan", "err");
+    } finally {
+      manualBusy[kod] = false;
+      if (manualNeed[kod]) { manualNeed[kod] = false; simpanManual(kod); }
+    }
+  }
+  function jadualSimpanManual(kod) {
+    if (manualTimers[kod]) clearTimeout(manualTimers[kod]);
+    manualTimers[kod] = setTimeout(function () { simpanManual(kod); }, 450);
+  }
+  function simpanManualSegera(kod) {
+    if (manualTimers[kod]) { clearTimeout(manualTimers[kod]); manualTimers[kod] = null; }
+    simpanManual(kod);
+  }
+  function siramManualSemua() {
+    const wrap = $("#manual-rows");
+    if (!wrap) return;
+    wrap.querySelectorAll(".m1").forEach(function (el) {
+      const kod = el.dataset.daerah;
+      if (!kod) return;
+      if (manualTimers[kod]) { clearTimeout(manualTimers[kod]); manualTimers[kod] = null; }
+      simpanManual(kod);
+    });
+  }
+
+  function renderManualTeams(list, savedMap) {
     const kods = list || [];
-    const wrap = $("#manual-rows"); wrap.innerHTML = "";
+    const wrap = $("#manual-rows");
     const note = $("#manual-note");
-    if (!kods.length) { if (note) note.hidden = false; return; }
+    if (!kods.length) { wrap.innerHTML = ""; if (note) note.hidden = false; return; }
     if (note) note.hidden = true;
-    const val = (kod, c) => Number((wrap.querySelector("." + c + '[data-daerah="' + kod + '"]') || {}).value || 0);
+    const existing = Array.prototype.map.call(wrap.querySelectorAll(".manual-row .m1"), function (el) { return el.dataset.daerah; });
+    if (existing.length === kods.length && kods.every(function (k, i) { return existing[i] === k; })) return;
+    wrap.innerHTML = "";
+    const saved = savedMap || {};
+    const val = (kod, c) => nomborMarkah((wrap.querySelector("." + c + '[data-daerah="' + kod + '"]') || {}).value);
     const refreshTotal = (kod) => {
       const el = wrap.querySelector('.manual-total[data-daerah="' + kod + '"]');
       if (el) el.textContent = "Jumlah: " + (val(kod, "m1") + val(kod, "m2") + val(kod, "m3"));
     };
-    const field = (kod, c, n) =>
+    const field = (kod, c, n, v) =>
       '<label class="ml-field"><span class="ml-lbl">Soalan ' + n + '</span>' +
-      '<input type="number" class="manual-input ' + c + '" data-daerah="' + kod + '" placeholder="markah" min="0" step="1"></label>';
+      '<input type="number" class="manual-input ' + c + '" data-daerah="' + kod + '" min="0" step="1" value="' + nomborMarkah(v) + '"></label>';
     kods.forEach((kod) => {
+      const s = saved[kod] || {};
       const row = document.createElement("div");
       row.className = "manual-row";
       row.innerHTML =
         '<span class="manual-daerah">' + daerahNama(kod) + "</span>" +
-        '<div class="ml-fields">' + field(kod, "m1", 1) + field(kod, "m2", 2) + field(kod, "m3", 3) + "</div>" +
+        '<div class="ml-fields">' + field(kod, "m1", 1, s.mata1) + field(kod, "m2", 2, s.mata2) + field(kod, "m3", 3, s.mata3) + "</div>" +
         '<span class="manual-total" data-daerah="' + kod + '">Jumlah: 0</span>' +
-        '<button type="button" class="btn btn-secondary btn-sm manual-save" data-daerah="' + kod + '">Simpan</button>';
+        '<span class="manual-status" data-daerah="' + kod + '"></span>';
       wrap.appendChild(row);
+      refreshTotal(kod);
     });
     wrap.querySelectorAll(".manual-input").forEach((inp) => {
-      inp.addEventListener("input", () => refreshTotal(inp.dataset.daerah));
-    });
-    wrap.querySelectorAll(".manual-save").forEach((b) => {
-      b.addEventListener("click", async () => {
-        const kod = b.dataset.daerah;
-        const data = await apiCall("adminSetManual", {
-          pin, peringkat: "S3P3", daerah: kod,
-          mata1: val(kod, "m1"), mata2: val(kod, "m2"), mata3: val(kod, "m3"),
-        });
-        showOk($("#manual-msg"), data.ok ? data.mesej : (data.ralat || "Gagal."));
+      inp.addEventListener("input", () => {
+        refreshTotal(inp.dataset.daerah);
+        setManualStatus(inp.dataset.daerah, "", "");
+        jadualSimpanManual(inp.dataset.daerah);
       });
+      inp.addEventListener("change", () => simpanManualSegera(inp.dataset.daerah));
+      inp.addEventListener("blur", () => simpanManualSegera(inp.dataset.daerah));
     });
   }
 
@@ -753,6 +815,10 @@
     $("#btn-open-skrin").addEventListener("click", () => window.open("skrin.html?v=9", "_blank"));
     const btnS3p2 = $("#btn-s3p2-refresh");
     if (btnS3p2) btnS3p2.addEventListener("click", loadRebutanMarkah);
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "hidden") siramManualSemua();
+    });
+    window.addEventListener("pagehide", siramManualSemua);
 
     // Auto log masuk jika PIN diingati (elak log masuk semula selepas muat semula / buka semula)
     const saved = loadPin();

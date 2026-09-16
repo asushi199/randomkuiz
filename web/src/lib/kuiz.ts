@@ -414,7 +414,19 @@ export async function adminState(pin: unknown) {
   const counts: Record<string, number> = {};
   (data || []).forEach((r) => { const p = String(r.peringkat).toUpperCase(); counts[p] = (counts[p] || 0) + 1; });
   return { ok: true, peringkat_aktif: await getPeringkatAktif(), peringkat_label: PERINGKAT_LABEL, jumlah_keputusan: counts,
-           daerah: await getDaerahList(), kelayakan: { S2: Object.keys(await getKelayakan("S2")), S3P1: Object.keys(await getKelayakan("S3P1")) } };
+           daerah: await getDaerahList(), kelayakan: { S2: Object.keys(await getKelayakan("S2")), S3P1: Object.keys(await getKelayakan("S3P1")) },
+           s3p3: await loadS3p3Marks() };
+}
+
+async function loadS3p3Marks(): Promise<Record<string, { mata1: number; mata2: number; mata3: number }>> {
+  const { data } = await db.from("markah_manual").select("daerah,mata1,mata2,mata3").eq("peringkat", "S3P3");
+  const out: Record<string, { mata1: number; mata2: number; mata3: number }> = {};
+  (data || []).forEach((r) => {
+    out[normDaerah(r.daerah)] = {
+      mata1: Number(r.mata1 || 0), mata2: Number(r.mata2 || 0), mata3: Number(r.mata3 || 0),
+    };
+  });
+  return out;
 }
 
 export async function adminSetPeringkat(pin: unknown, peringkat: unknown) {
