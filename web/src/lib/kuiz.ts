@@ -177,6 +177,26 @@ async function servedIdsForIc(ic: string): Promise<Record<string, boolean>> {
   return served;
 }
 
+// ================= Senarai peserta (senarai putih log masuk) =================
+async function whitelistAktif(): Promise<boolean> {
+  const { data } = await db.from("peserta").select("id").limit(1);
+  return !!(data && data.length);
+}
+async function getPesertaByIc(ic: string): Promise<{ ic: string; nama: string; daerah: string; sekolah: string } | null> {
+  const { data } = await db.from("peserta").select("ic,nama,daerah,sekolah").eq("ic", ic).maybeSingle();
+  if (!data) return null;
+  return { ic: normIc(data.ic), nama: String(data.nama || ""), daerah: normDaerah(data.daerah), sekolah: String(data.sekolah || "") };
+}
+// Pratonton pengesahan sebelum mula kuiz (IC -> nama/daerah/sekolah).
+export async function pesertaInfo(icRaw: unknown) {
+  const ic = normIc(icRaw);
+  if (!ic || ic.length < 6) return { ok: false, ralat: "No. Kad Pengenalan tidak sah." };
+  const p = await getPesertaByIc(ic);
+  if (!p) return { ok: false, ralat: "IC ini tiada dalam senarai peserta. Sila semak semula atau maklumkan pengawas." };
+  const namaMap = await daerahNamaMap();
+  return { ok: true, ic: p.ic, nama: p.nama, daerah: p.daerah, nama_daerah: namaMap[p.daerah] || p.daerah, sekolah: p.sekolah };
+}
+
 // ================= PELAJAR: getInit =================
 export async function getInit() {
   const peringkat = await getPeringkatAktif();
@@ -189,6 +209,7 @@ export async function getInit() {
   return {
     ok: true, peringkat_aktif: peringkat, peringkat_label: PERINGKAT_LABEL[peringkat] || peringkat,
     dibuka: PERINGKAT_PELAJAR.includes(peringkat), daerah,
+    guna_peserta: await whitelistAktif(),
   };
 }
 
@@ -225,21 +246,38 @@ async function ahliPasukanS1(daerah: string): Promise<{ ic: string; nama: string
 
 // ================= PELAJAR: startExam =================
 export async function startExam(icRaw: unknown, namaRaw: unknown, daerahRaw: unknown, icsRaw?: unknown) {
-  const daerah = normDaerah(daerahRaw);
   const peringkat = await getPeringkatAktif();
   if (!PERINGKAT_PELAJAR.includes(peringkat)) return { ok: false, ralat: "Peperiksaan belum dibuka. Sila tunggu arahan pengawas." };
-  if (!daerah) return { ok: false, ralat: "Sila pilih daerah." };
-  if (!(await isValidDaerah(daerah))) return { ok: false, ralat: "Daerah tidak sah." };
-  if (!(await isLayak(peringkat, daerah))) return { ok: false, ralat: "Daerah anda tidak layak untuk peringkat ini." };
+
+  // Peringkat pasukan (S3P1): kekal seperti sedia ada — daerah + tiga IC.
   if (peringkat === "S3P1") {
+    const daerah = normDaerah(daerahRaw);
+    if (!daerah) return { ok: false, ralat: "Sila pilih daerah." };
+    if (!(await isValidDaerah(daerah))) return { ok: false, ralat: "Daerah tidak sah." };
+    if (!(await isLayak(peringkat, daerah))) return { ok: false, ralat: "Daerah anda tidak layak untuk peringkat ini." };
     const ics = parseIcs(icsRaw, icRaw);
     if (ics.length !== 3) return { ok: false, ralat: "Sila isi tiga nombor kad pengenalan ahli pasukan." };
     if (new Set(ics).size !== 3) return { ok: false, ralat: "Tiga IC mesti berbeza." };
     if (ics.some((ic) => ic.length < 6)) return { ok: false, ralat: "No. Kad Pengenalan tidak sah." };
     return startS3P1(ics, daerah);
   }
-  const ic = normIc(icRaw), nama = normNama(namaRaw);
+
+  // Peringkat individu (S1).
+  const ic = normIc(icRaw);
   if (!ic || ic.length < 6) return { ok: false, ralat: "No. Kad Pengenalan tidak sah." };
+
+  // Jika senarai peserta ada: sahkan IC dalam senarai; nama & daerah diambil dari
+  // senarai (abaikan input pelanggan) supaya tiada penyamaran / salah daerah.
+  if (await whitelistAktif()) {
+    const p = await getPesertaByIc(ic);
+    if (!p) return { ok: false, ralat: "Anda tiada dalam senarai peserta. Sila maklumkan pengawas." };
+    return startS1S2(peringkat, p.ic, p.nama, p.daerah);
+  }
+
+  // Sandaran (senarai kosong): cara lama — perlu daerah & nama.
+  const daerah = normDaerah(daerahRaw), nama = normNama(namaRaw);
+  if (!daerah) return { ok: false, ralat: "Sila pilih daerah." };
+  if (!(await isValidDaerah(daerah))) return { ok: false, ralat: "Daerah tidak sah." };
   if (!nama) return { ok: false, ralat: "Nama penuh diperlukan." };
   return startS1S2(peringkat, ic, nama, daerah);
 }

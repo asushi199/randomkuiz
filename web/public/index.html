@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kuiz Ilmuan Cilik — FiESH</title>
-    <link rel="stylesheet" href="css/style.css?v=7" />
+    <link rel="stylesheet" href="css/style.css?v=8" />
   </head>
   <body>
     <header class="header">
@@ -53,6 +53,24 @@
           <p id="login-wait" class="wait-msg" hidden></p>
           <button type="submit" class="btn btn-primary" id="btn-start">Mula Kuiz</button>
         </form>
+
+        <!-- Pengesahan peserta (mod senarai putih) -->
+        <div id="login-confirm" class="login-confirm" hidden>
+          <h3>Sahkan maklumat anda</h3>
+          <dl class="confirm-list">
+            <div><dt>Nama</dt><dd id="cf-nama">—</dd></div>
+            <div><dt>Daerah</dt><dd id="cf-daerah">—</dd></div>
+            <div><dt>Sekolah</dt><dd id="cf-sekolah">—</dd></div>
+            <div><dt>No. IC</dt><dd id="cf-ic">—</dd></div>
+          </dl>
+          <p class="confirm-warning">⚠ Pastikan ini benar-benar anda. Menyamar atau menggunakan IC orang lain akan menyebabkan <strong>penyingkiran / pembatalan kelayakan</strong>.</p>
+          <p id="confirm-error" class="error" hidden></p>
+          <p id="confirm-wait" class="wait-msg" hidden></p>
+          <div class="confirm-actions">
+            <button type="button" class="btn btn-primary" id="btn-confirm-start">Sahkan &amp; Mula Kuiz</button>
+            <button type="button" class="btn btn-secondary" id="btn-confirm-cancel">Bukan saya</button>
+          </div>
+        </div>
       </section>
 
       <!-- Peperiksaan biasa (S1/S2): semua soalan satu halaman -->
@@ -115,6 +133,6 @@
 
     <script src="js/config.js?v=1" onerror="this.remove()"></script>
     <script src="js/config.example.js?v=10"></script>
-    <script src="js/app.js?v=11"></script>
+    <script src="js/app.js?v=12"></script>
   </body>
 </html>

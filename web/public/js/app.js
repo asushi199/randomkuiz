@@ -22,6 +22,8 @@
     ics: [],
   };
   let loginPasukan = false;
+  let gunaPeserta = false;      // mod senarai putih: log masuk hanya dengan IC
+  let pendingPeserta = null;    // maklumat peserta menunggu pengesahan
 
   function getApiUrl() {
     const cfg = window.EXAM_CONFIG || {};
@@ -155,6 +157,7 @@
   }
   function applyLoginMode(peringkat) {
     loginPasukan = peringkat === "S3P1";
+    const whitelistInd = gunaPeserta && !loginPasukan; // S1 dengan senarai putih: IC sahaja
     const ind = $("#login-individu");
     const pas = $("#login-pasukan");
     const tajuk = $("#login-tajuk");
@@ -163,17 +166,30 @@
     if (ind) ind.hidden = loginPasukan;
     if (pas) pas.hidden = !loginPasukan;
     const icEl = $("#ic"), namaEl = $("#nama");
+    const namaLabel = document.querySelector('label[for="nama"]');
+    const daerahLabel = document.querySelector('label[for="daerah"]');
+    const daerahSel = $("#daerah");
+    // Daerah & nama disembunyikan dalam mod senarai putih (diambil dari IC).
+    [daerahLabel, daerahSel, namaLabel, namaEl].forEach((el) => { if (el) el.hidden = whitelistInd; });
+    if (daerahSel) daerahSel.required = !whitelistInd && !loginPasukan;
     if (icEl) icEl.required = !loginPasukan;
-    if (namaEl) namaEl.required = !loginPasukan;
+    if (namaEl) namaEl.required = !loginPasukan && !whitelistInd;
     ["#ic1", "#ic2", "#ic3"].forEach((s) => { const el = $(s); if (el) el.required = loginPasukan; });
     if (tajuk) tajuk.textContent = loginPasukan ? "Log Masuk Pasukan" : "Log Masuk Kuiz";
     if (nota) {
-      nota.hidden = !loginPasukan;
-      nota.textContent = loginPasukan
+      const teks = loginPasukan
         ? "Pusingan ini dijawab sebagai pasukan. Pilih daerah, isi IC ketiga-tiga ahli, kemudian cabut satu set soalan."
-        : "";
+        : whitelistInd
+          ? "Masukkan No. Kad Pengenalan anda. Sistem akan memaparkan nama, daerah dan sekolah anda untuk pengesahan."
+          : "";
+      nota.hidden = !teks;
+      nota.textContent = teks;
     }
-    if (btn) btn.textContent = loginPasukan ? "Cabut Set Soalan" : "Mula Kuiz";
+    if (btn) btn.textContent = loginPasukan ? "Cabut Set Soalan" : whitelistInd ? "Semak" : "Mula Kuiz";
+    // Pastikan kad pengesahan tertutup apabila borang dipaparkan semula.
+    const confirmBox = $("#login-confirm"), formLogin = $("#form-login");
+    if (confirmBox) confirmBox.hidden = true;
+    if (formLogin) formLogin.hidden = false;
     syncStartButton();
   }
 
@@ -345,27 +361,28 @@
   }
 
   // ---------- Mula & hantar ----------
-  async function handleStart(payload) {
-    const btn = $("#btn-start");
-    btn.disabled = true;
-    showError($("#login-error"), "");
-    showWait($("#login-wait"), true,
+  async function handleStart(payload, ui) {
+    ui = ui || { wait: "#login-wait", err: "#login-error", btn: "#btn-start" };
+    const btn = $(ui.btn);
+    if (btn) btn.disabled = true;
+    showError($(ui.err), "");
+    showWait($(ui.wait), true,
       loginPasukan
         ? "Sedang mencabut set soalan. Sila tunggu…"
         : "Sistem sedang menyediakan soalan. Sila tunggu 10–30 saat.");
     try {
       const data = await apiCall("startExam", payload, undefined,
-        function () { showWait($("#login-wait"), true, "Menyediakan soalan… sila tunggu."); });
+        function () { showWait($(ui.wait), true, "Menyediakan soalan… sila tunggu."); });
       if (!data.ok) {
         if (data.sudah_hantar) { showThanks(data.mesej_terima_kasih); return; }
-        showError($("#login-error"), data.ralat || "Gagal memulakan peperiksaan.");
+        showError($(ui.err), data.ralat || "Gagal memulakan peperiksaan.");
         return;
       }
       state.peringkat = data.peringkat || "";
       state.ic = data.ic || payload.ic || (payload.ics ? payload.ics.slice().sort().join(",") : "");
-      state.nama = data.nama || payload.nama || "";
-      state.daerah = data.daerah || payload.daerah;
-      state.daerahNama = daerahNamaFromSelect(state.daerah);
+      state.nama = data.nama || payload.nama || (pendingPeserta && pendingPeserta.nama) || "";
+      state.daerah = data.daerah || payload.daerah || (pendingPeserta && pendingPeserta.daerah) || "";
+      state.daerahNama = daerahNamaFromSelect(state.daerah) || (pendingPeserta && pendingPeserta.nama_daerah) || "";
       state.ics = payload.ics || state.ics || [];
       state.attemptId = data.attempt_id;
       state.soalan = data.soalan || [];
@@ -382,12 +399,48 @@
         setView("exam");
       }
     } catch (err) {
-      showError($("#login-error"), err.message || MSJ_GAGAL);
+      showError($(ui.err), err.message || MSJ_GAGAL);
     } finally {
       syncStartButton();
-      if (!loginPasukan) btn.disabled = false;
+      if (!loginPasukan) { if (btn) btn.disabled = false; }
+      showWait($(ui.wait), false);
+    }
+  }
+
+  // Mod senarai putih: semak IC -> papar kad pengesahan.
+  async function semakPeserta(ic) {
+    const btn = $("#btn-start"); if (btn) btn.disabled = true;
+    showError($("#login-error"), "");
+    showWait($("#login-wait"), true, "Menyemak No. Kad Pengenalan…");
+    try {
+      const data = await apiCall("pesertaInfo", { ic });
+      if (!data.ok) { showError($("#login-error"), data.ralat || "IC tidak dijumpai."); return; }
+      pendingPeserta = data;
+      $("#cf-nama").textContent = data.nama || "—";
+      $("#cf-daerah").textContent = data.nama_daerah || data.daerah || "—";
+      $("#cf-sekolah").textContent = data.sekolah || "—";
+      $("#cf-ic").textContent = data.ic || ic;
+      showError($("#confirm-error"), "");
+      $("#form-login").hidden = true;
+      $("#login-confirm").hidden = false;
+    } catch (e) {
+      showError($("#login-error"), e.message || MSJ_GAGAL);
+    } finally {
+      if (btn) btn.disabled = false;
       showWait($("#login-wait"), false);
     }
+  }
+  function backToLogin() {
+    pendingPeserta = null;
+    showError($("#confirm-error"), "");
+    showWait($("#confirm-wait"), false);
+    const cb = $("#login-confirm"); if (cb) cb.hidden = true;
+    const fl = $("#form-login"); if (fl) fl.hidden = false;
+    const icEl = $("#ic"); if (icEl) { icEl.value = ""; icEl.focus(); }
+  }
+  function confirmStart() {
+    if (!pendingPeserta) { backToLogin(); return; }
+    handleStart({ ic: pendingPeserta.ic }, { wait: "#confirm-wait", err: "#confirm-error", btn: "#btn-confirm-start" });
   }
   function hasSavedProgress() {
     return sessionStorage.getItem(STORAGE.p1idx) != null;
@@ -434,9 +487,10 @@
     const formLogin = $("#form-login");
     if (formLogin) formLogin.addEventListener("submit", (e) => {
       e.preventDefault();
-      const daerah = ($("#daerah") && $("#daerah").value) || "";
-      if (!daerah) { showError($("#login-error"), "Sila pilih daerah."); return; }
+      showError($("#login-error"), "");
       if (loginPasukan) {
+        const daerah = ($("#daerah") && $("#daerah").value) || "";
+        if (!daerah) { showError($("#login-error"), "Sila pilih daerah."); return; }
         const ics = collectTeamIcs();
         if (ics.some((ic) => ic.length < 6)) {
           showError($("#login-error"), "Sila isi tiga nombor kad pengenalan ahli pasukan.");
@@ -449,11 +503,23 @@
         handleStart({ daerah: daerah, ics: ics });
         return;
       }
+      if (gunaPeserta) {
+        const ic = normIcInput($("#ic") && $("#ic").value);
+        if (ic.length < 6) { showError($("#login-error"), "Sila masukkan No. Kad Pengenalan yang sah."); return; }
+        semakPeserta(ic);
+        return;
+      }
+      const daerah = ($("#daerah") && $("#daerah").value) || "";
+      if (!daerah) { showError($("#login-error"), "Sila pilih daerah."); return; }
       const ic = $("#ic").value.trim();
       const nama = $("#nama").value.trim();
       if (!ic || !nama) { showError($("#login-error"), "Sila isi IC dan nama penuh."); return; }
       handleStart({ ic: ic, nama: nama, daerah: daerah });
     });
+    const btnConfirmStart = $("#btn-confirm-start");
+    if (btnConfirmStart) btnConfirmStart.addEventListener("click", confirmStart);
+    const btnConfirmCancel = $("#btn-confirm-cancel");
+    if (btnConfirmCancel) btnConfirmCancel.addEventListener("click", backToLogin);
     ["#daerah", "#ic1", "#ic2", "#ic3"].forEach((s) => {
       const el = $(s);
       if (el) el.addEventListener("input", syncStartButton);
@@ -478,6 +544,7 @@
     catch (e) { $("#config-warning").hidden = false; return; }
     if (!init || !init.ok) { $("#config-warning").hidden = false; return; }
 
+    gunaPeserta = !!init.guna_peserta;
     populateDaerah(init.daerah);
     applyLoginMode(init.peringkat_aktif);
 
