@@ -4,7 +4,7 @@
   const STORAGE = {
     ic: "exam_ic", nama: "exam_nama", daerah: "exam_daerah",
     attempt: "exam_attempt_id", batas: "exam_batas_ms", peringkat: "exam_peringkat",
-    p1idx: "exam_p1_index", p1ans: "exam_p1_answers",
+    p1idx: "exam_p1_index", p1ans: "exam_p1_answers", ics: "exam_ics",
   };
   const API_MAX_RETRIES = 6;
   const MSJ_GAGAL =
@@ -19,7 +19,9 @@
     attemptId: "", soalan: [], batasMs: 0,
     // S3P1
     saatSesoalan: 20, mataSesoalan: 2, p1Index: 0, p1Answers: {},
+    ics: [],
   };
+  let loginPasukan = false;
 
   function getApiUrl() {
     const cfg = window.EXAM_CONFIG || {};
@@ -89,6 +91,7 @@
     sessionStorage.setItem(STORAGE.daerah, state.daerah);
     sessionStorage.setItem(STORAGE.attempt, state.attemptId);
     sessionStorage.setItem(STORAGE.peringkat, state.peringkat);
+    if (state.ics && state.ics.length) sessionStorage.setItem(STORAGE.ics, JSON.stringify(state.ics));
     if (state.batasMs) sessionStorage.setItem(STORAGE.batas, String(state.batasMs));
   }
   function loadSession() {
@@ -99,6 +102,9 @@
     state.peringkat = sessionStorage.getItem(STORAGE.peringkat) || "";
     const b = sessionStorage.getItem(STORAGE.batas);
     state.batasMs = b ? parseInt(b, 10) : 0;
+    try { state.ics = JSON.parse(sessionStorage.getItem(STORAGE.ics) || "[]"); }
+    catch (e) { state.ics = []; }
+    if (!Array.isArray(state.ics)) state.ics = [];
   }
   function clearSession() {
     Object.values(STORAGE).forEach((k) => sessionStorage.removeItem(k));
@@ -123,6 +129,52 @@
         if (sel.options[i].value === kod) { sel.value = kod; sel.disabled = true; break; }
       }
     }
+  }
+
+  function normIcInput(v) {
+    return String(v || "").replace(/[\s-]/g, "").trim();
+  }
+  function collectTeamIcs() {
+    return ["#ic1", "#ic2", "#ic3"].map((s) => normIcInput($(s) && $(s).value));
+  }
+  function teamFormReady() {
+    const daerah = ($("#daerah") && $("#daerah").value) || "";
+    const ics = collectTeamIcs();
+    return !!daerah && ics.every((ic) => ic.length >= 6) && new Set(ics).size === 3;
+  }
+  function syncStartButton() {
+    const btn = $("#btn-start");
+    if (!btn) return;
+    if (loginPasukan) {
+      btn.disabled = !teamFormReady();
+      btn.title = btn.disabled ? "Sila pilih daerah dan isi tiga IC dahulu." : "";
+    } else {
+      btn.disabled = false;
+      btn.title = "";
+    }
+  }
+  function applyLoginMode(peringkat) {
+    loginPasukan = peringkat === "S3P1";
+    const ind = $("#login-individu");
+    const pas = $("#login-pasukan");
+    const tajuk = $("#login-tajuk");
+    const nota = $("#login-nota");
+    const btn = $("#btn-start");
+    if (ind) ind.hidden = loginPasukan;
+    if (pas) pas.hidden = !loginPasukan;
+    const icEl = $("#ic"), namaEl = $("#nama");
+    if (icEl) icEl.required = !loginPasukan;
+    if (namaEl) namaEl.required = !loginPasukan;
+    ["#ic1", "#ic2", "#ic3"].forEach((s) => { const el = $(s); if (el) el.required = loginPasukan; });
+    if (tajuk) tajuk.textContent = loginPasukan ? "Log Masuk Pasukan" : "Log Masuk Kuiz";
+    if (nota) {
+      nota.hidden = !loginPasukan;
+      nota.textContent = loginPasukan
+        ? "Pusingan ini dijawab sebagai pasukan. Pilih daerah, isi IC ketiga-tiga ahli, kemudian cabut satu set soalan."
+        : "";
+    }
+    if (btn) btn.textContent = loginPasukan ? "Cabut Set Soalan" : "Mula Kuiz";
+    syncStartButton();
   }
 
   // ---------- S1/S2 exam ----------
@@ -198,8 +250,7 @@
     sessionStorage.setItem(STORAGE.p1ans, JSON.stringify(state.p1Answers));
   }
   function startPantas(resume) {
-    $("#pantas-pasukan").textContent =
-      state.nama + (state.daerahNama ? " — " + state.daerahNama : "");
+    $("#pantas-pasukan").textContent = state.nama || state.daerahNama || "";
     if (resume) {
       const idx = parseInt(sessionStorage.getItem(STORAGE.p1idx) || "0", 10);
       try { state.p1Answers = JSON.parse(sessionStorage.getItem(STORAGE.p1ans) || "{}"); }
@@ -294,13 +345,16 @@
   }
 
   // ---------- Mula & hantar ----------
-  async function handleStart(ic, nama, daerah) {
+  async function handleStart(payload) {
     const btn = $("#btn-start");
     btn.disabled = true;
     showError($("#login-error"), "");
-    showWait($("#login-wait"), true, "Sistem sedang menyediakan soalan. Sila tunggu 10–30 saat.");
+    showWait($("#login-wait"), true,
+      loginPasukan
+        ? "Sedang mencabut set soalan. Sila tunggu…"
+        : "Sistem sedang menyediakan soalan. Sila tunggu 10–30 saat.");
     try {
-      const data = await apiCall("startExam", { ic, nama, daerah }, undefined,
+      const data = await apiCall("startExam", payload, undefined,
         function () { showWait($("#login-wait"), true, "Menyediakan soalan… sila tunggu."); });
       if (!data.ok) {
         if (data.sudah_hantar) { showThanks(data.mesej_terima_kasih); return; }
@@ -308,10 +362,11 @@
         return;
       }
       state.peringkat = data.peringkat || "";
-      state.ic = ic;
-      state.nama = data.nama || nama;
-      state.daerah = data.daerah || daerah;
+      state.ic = data.ic || payload.ic || (payload.ics ? payload.ics.slice().sort().join(",") : "");
+      state.nama = data.nama || payload.nama || "";
+      state.daerah = data.daerah || payload.daerah;
       state.daerahNama = daerahNamaFromSelect(state.daerah);
+      state.ics = payload.ics || state.ics || [];
       state.attemptId = data.attempt_id;
       state.soalan = data.soalan || [];
       saveSession();
@@ -329,7 +384,8 @@
     } catch (err) {
       showError($("#login-error"), err.message || MSJ_GAGAL);
     } finally {
-      btn.disabled = false;
+      syncStartButton();
+      if (!loginPasukan) btn.disabled = false;
       showWait($("#login-wait"), false);
     }
   }
@@ -379,11 +435,29 @@
     if (formLogin) formLogin.addEventListener("submit", (e) => {
       e.preventDefault();
       const daerah = ($("#daerah") && $("#daerah").value) || "";
+      if (!daerah) { showError($("#login-error"), "Sila pilih daerah."); return; }
+      if (loginPasukan) {
+        const ics = collectTeamIcs();
+        if (ics.some((ic) => ic.length < 6)) {
+          showError($("#login-error"), "Sila isi tiga nombor kad pengenalan ahli pasukan.");
+          return;
+        }
+        if (new Set(ics).size !== 3) {
+          showError($("#login-error"), "Tiga IC mesti berbeza.");
+          return;
+        }
+        handleStart({ daerah: daerah, ics: ics });
+        return;
+      }
       const ic = $("#ic").value.trim();
       const nama = $("#nama").value.trim();
-      if (!daerah) { showError($("#login-error"), "Sila pilih daerah."); return; }
       if (!ic || !nama) { showError($("#login-error"), "Sila isi IC dan nama penuh."); return; }
-      handleStart(ic, nama, daerah);
+      handleStart({ ic: ic, nama: nama, daerah: daerah });
+    });
+    ["#daerah", "#ic1", "#ic2", "#ic3"].forEach((s) => {
+      const el = $(s);
+      if (el) el.addEventListener("input", syncStartButton);
+      if (el) el.addEventListener("change", syncStartButton);
     });
     const formExam = $("#form-exam");
     if (formExam) formExam.addEventListener("submit", (e) => {
@@ -405,6 +479,7 @@
     if (!init || !init.ok) { $("#config-warning").hidden = false; return; }
 
     populateDaerah(init.daerah);
+    applyLoginMode(init.peringkat_aktif);
 
     const banner = $("#peringkat-banner");
     if (init.dibuka) {
@@ -426,20 +501,28 @@
 
   async function tryResume(peringkatAktif) {
     loadSession();
-    if (!state.ic || state.peringkat !== peringkatAktif) return false;
+    if (!state.daerah || state.peringkat !== peringkatAktif) return false;
+    if (peringkatAktif === "S3P1") {
+      if (!state.ics || state.ics.length !== 3) return false;
+    } else if (!state.ic) {
+      return false;
+    }
     try {
       const r = await apiCall("getResult", { ic: state.ic, daerah: state.daerah });
       if (r.ok && r.sudah_hantar) { showThanks(r.mesej_terima_kasih); return true; }
     } catch (e) { /* teruskan */ }
     if (!state.attemptId) return false;
-    // Sambung dengan memanggil startExam semula
     try {
-      const data = await apiCall("startExam",
-        { ic: state.ic, nama: state.nama || "Peserta", daerah: state.daerah });
+      const payload = peringkatAktif === "S3P1"
+        ? { daerah: state.daerah, ics: state.ics }
+        : { ic: state.ic, nama: state.nama || "Peserta", daerah: state.daerah };
+      const data = await apiCall("startExam", payload);
       if (!data.ok) return false;
       state.peringkat = data.peringkat;
       state.attemptId = data.attempt_id;
       state.soalan = data.soalan || [];
+      state.nama = data.nama || state.nama;
+      state.ic = data.ic || state.ic;
       state.daerahNama = daerahNamaFromSelect(state.daerah);
       if (data.peringkat === "S3P1") {
         state.saatSesoalan = data.saat_sesoalan || 20;

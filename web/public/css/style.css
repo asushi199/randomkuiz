@@ -244,6 +244,31 @@ input[type="text"],
   margin: 0.5rem 0 0;
 }
 
+.login-nota {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin: -0.25rem 0 1rem;
+}
+
+.pasukan-ics {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem 1rem;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold);
+  border-radius: 6px;
+  background: #f7faf8;
+}
+
+.pasukan-hint {
+  margin: 0 0 0.35rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.pasukan-ics label {
+  margin-top: 0.7rem;
+}
+
 .thanks-card {
   text-align: center;
 }

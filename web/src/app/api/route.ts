@@ -10,7 +10,7 @@ type Payload = Record<string, unknown>;
 async function dispatch(action: string, p: Payload) {
   switch (action) {
     case "getInit": return K.getInit();
-    case "startExam": return K.startExam(p.ic, p.nama, p.daerah);
+    case "startExam": return K.startExam(p.ic, p.nama, p.daerah, p.ics);
     case "submitExam": return K.submitExam(p.ic, p.attempt_id, p.jawapan);
     case "getResult": return K.getResult(p.ic, p.daerah);
     case "adminState": return K.adminState(p.pin);

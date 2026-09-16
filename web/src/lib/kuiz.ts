@@ -12,7 +12,7 @@ const REBUTAN_PILIH = 8;
 const PERINGKAT_PELAJAR = ["S1", "S2", "S3P1"];
 export const PERINGKAT_LABEL: Record<string, string> = {
   S1: "Saringan 1", S2: "Saringan 2", S3P1: "Saringan 3 — Pusingan 1",
-  S3P2: "Saringan 3 — Pusingan 2 (Rebutan)", S3P3: "Saringan 3 — Pusingan 3",
+  S3P2: "Saringan 3 — Pusingan 2", S3P3: "Saringan 3 — Pusingan 3",
   TUTUP: "Ditutup",
 };
 const MSJ_TERIMA_KASIH =
@@ -192,17 +192,56 @@ export async function getInit() {
   };
 }
 
+function parseIcs(icsRaw: unknown, icRaw: unknown): string[] {
+  let arr: unknown[] = [];
+  if (Array.isArray(icsRaw)) arr = icsRaw;
+  else if (typeof icsRaw === "string" && icsRaw.includes(",")) arr = icsRaw.split(",");
+  else if (icRaw != null && String(icRaw).includes(",")) arr = String(icRaw).split(",");
+  else if (icRaw != null && String(icRaw).trim()) arr = [icRaw];
+  return arr.map(normIc).filter(Boolean);
+}
+
+async function ahliPasukanS2(daerah: string): Promise<{ ic: string; nama: string }[]> {
+  const { data } = await db.from("percubaan")
+    .select("ic,nama,skor,masa_mula,masa_hantar")
+    .eq("peringkat", "S2").eq("status", "selesai").eq("daerah", daerah);
+  const best: Record<string, { ic: string; nama: string; skor: number; tempoh: number }> = {};
+  (data || []).forEach((r) => {
+    const ic = normIc(r.ic);
+    if (!ic) return;
+    const start = toMs(r.masa_mula), end = toMs(r.masa_hantar);
+    const tempoh = start <= end && start < Number.MAX_SAFE_INTEGER ? end - start : Number.MAX_SAFE_INTEGER;
+    const skor = Number(r.skor);
+    const cur = best[ic];
+    if (!cur || skor > cur.skor || (skor === cur.skor && tempoh < cur.tempoh)) {
+      best[ic] = { ic, nama: String(r.nama || ""), skor, tempoh };
+    }
+  });
+  return Object.values(best)
+    .sort((a, b) => (b.skor !== a.skor ? b.skor - a.skor : a.tempoh - b.tempoh))
+    .slice(0, 3)
+    .map((a) => ({ ic: a.ic, nama: a.nama }));
+}
+
 // ================= PELAJAR: startExam =================
-export async function startExam(icRaw: unknown, namaRaw: unknown, daerahRaw: unknown) {
-  const ic = normIc(icRaw), nama = normNama(namaRaw), daerah = normDaerah(daerahRaw);
+export async function startExam(icRaw: unknown, namaRaw: unknown, daerahRaw: unknown, icsRaw?: unknown) {
+  const daerah = normDaerah(daerahRaw);
   const peringkat = await getPeringkatAktif();
   if (!PERINGKAT_PELAJAR.includes(peringkat)) return { ok: false, ralat: "Peperiksaan belum dibuka. Sila tunggu arahan pengawas." };
-  if (!ic || ic.length < 6) return { ok: false, ralat: "No. Kad Pengenalan tidak sah." };
-  if (!nama) return { ok: false, ralat: "Nama penuh diperlukan." };
   if (!daerah) return { ok: false, ralat: "Sila pilih daerah." };
   if (!(await isValidDaerah(daerah))) return { ok: false, ralat: "Daerah tidak sah." };
   if (!(await isLayak(peringkat, daerah))) return { ok: false, ralat: "Daerah anda tidak layak untuk peringkat ini." };
-  return peringkat === "S3P1" ? startS3P1(ic, nama, daerah) : startS1S2(peringkat, ic, nama, daerah);
+  if (peringkat === "S3P1") {
+    const ics = parseIcs(icsRaw, icRaw);
+    if (ics.length !== 3) return { ok: false, ralat: "Sila isi tiga nombor kad pengenalan ahli pasukan." };
+    if (new Set(ics).size !== 3) return { ok: false, ralat: "Tiga IC mesti berbeza." };
+    if (ics.some((ic) => ic.length < 6)) return { ok: false, ralat: "No. Kad Pengenalan tidak sah." };
+    return startS3P1(ics, daerah);
+  }
+  const ic = normIc(icRaw), nama = normNama(namaRaw);
+  if (!ic || ic.length < 6) return { ok: false, ralat: "No. Kad Pengenalan tidak sah." };
+  if (!nama) return { ok: false, ralat: "Nama penuh diperlukan." };
+  return startS1S2(peringkat, ic, nama, daerah);
 }
 
 async function startS1S2(peringkat: string, ic: string, nama: string, daerah: string) {
@@ -238,12 +277,21 @@ async function startS1S2(peringkat: string, ic: string, nama: string, daerah: st
            soalan: stripJawapan(qsFromIds(bank, kertas.ids)), jumlah: kertas.ids.length, sambungan: false, ...timingS1S2(masaMula) };
 }
 
-async function startS3P1(ic: string, nama: string, daerah: string) {
+async function startS3P1(ics: string[], daerah: string) {
+  const ahli = await ahliPasukanS2(daerah);
+  if (ahli.length < 3) return { ok: false, ralat: "Ahli pasukan belum lengkap. Sila hubungi pentadbir." };
+  const expected = new Set(ahli.map((a) => a.ic));
+  if (!ics.every((ic) => expected.has(ic))) {
+    return { ok: false, ralat: "IC tidak sepadan dengan ahli pasukan daerah ini. Sila semak semula." };
+  }
+  const icCanon = [...ics].sort().join(",");
+  const namaMap = await daerahNamaMap();
+  const nama = "Pasukan " + (namaMap[daerah] || daerah);
   const bank = await loadBankS3P1();
   const { data: team } = await db.from("percubaan").select("*").eq("peringkat", "S3P1").eq("daerah", daerah).maybeSingle();
   if (team) {
     if (team.status === "selesai") return { ok: false, sudah_hantar: true, mesej_terima_kasih: MSJ_TERIMA_KASIH, ralat: "Pasukan anda telah menghantar." };
-    return { ok: true, peringkat: "S3P1", attempt_id: team.id, nama: team.nama, daerah, set: team.set_no,
+    return { ok: true, peringkat: "S3P1", attempt_id: team.id, ic: icCanon, nama: team.nama || nama, daerah, set: team.set_no,
              soalan: stripJawapan(qsFromIds(bank as Record<string, Soalan>, team.soalan_ids)), jumlah: team.soalan_ids.length,
              saat_sesoalan: S3P1_SAAT, mata_sesoalan: S3P1_MATA, sambungan: true };
   }
@@ -257,16 +305,19 @@ async function startS3P1(ic: string, nama: string, daerah: string) {
   const ids = Object.keys(bank).filter((no) => bank[no].set === setNo).sort((a, b) => Number(a) - Number(b));
   if (ids.length !== S3P1_SOALAN) throw new Error("Set " + setNo + " tidak lengkap.");
   const { data: ins, error } = await db.from("percubaan").insert({
-    peringkat: "S3P1", ic, nama, daerah, set_no: setNo, soalan_ids: ids, status: "sedang", masa_mula: new Date().toISOString(),
+    peringkat: "S3P1", ic: icCanon, nama, daerah, set_no: setNo, soalan_ids: ids, status: "sedang", masa_mula: new Date().toISOString(),
   }).select().single();
   if (error) {
     const { data: again } = await db.from("percubaan").select("*").eq("peringkat", "S3P1").eq("daerah", daerah).maybeSingle();
-    if (again) return { ok: true, peringkat: "S3P1", attempt_id: again.id, nama: again.nama, daerah, set: again.set_no,
+    if (again) {
+      if (again.status === "selesai") return { ok: false, sudah_hantar: true, mesej_terima_kasih: MSJ_TERIMA_KASIH, ralat: "Pasukan anda telah menghantar." };
+      return { ok: true, peringkat: "S3P1", attempt_id: again.id, ic: icCanon, nama: again.nama || nama, daerah, set: again.set_no,
                soalan: stripJawapan(qsFromIds(bank as Record<string, Soalan>, again.soalan_ids)), jumlah: again.soalan_ids.length,
                saat_sesoalan: S3P1_SAAT, mata_sesoalan: S3P1_MATA, sambungan: true };
+    }
     throw new Error(error.message);
   }
-  return { ok: true, peringkat: "S3P1", attempt_id: ins.id, nama, daerah, set: setNo,
+  return { ok: true, peringkat: "S3P1", attempt_id: ins.id, ic: icCanon, nama, daerah, set: setNo,
            soalan: stripJawapan(qsFromIds(bank as Record<string, Soalan>, ids)), jumlah: ids.length,
            saat_sesoalan: S3P1_SAAT, mata_sesoalan: S3P1_MATA, sambungan: false };
 }

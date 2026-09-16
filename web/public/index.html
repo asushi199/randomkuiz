@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kuiz Ilmuan Cilik — FiESH</title>
-    <link rel="stylesheet" href="css/style.css?v=6" />
+    <link rel="stylesheet" href="css/style.css?v=7" />
   </head>
   <body>
     <header class="header">
@@ -18,20 +18,36 @@
     <main class="container">
       <!-- Log masuk -->
       <section id="view-login" class="card" hidden>
-        <h2>Log Masuk Kuiz</h2>
+        <h2 id="login-tajuk">Log Masuk Kuiz</h2>
+        <p id="login-nota" class="login-nota" hidden></p>
         <form id="form-login" novalidate>
           <label for="daerah">Pilih Daerah</label>
           <select id="daerah" name="daerah" required>
             <option value="">— Sila pilih daerah anda —</option>
           </select>
 
-          <label for="ic">No. Kad Pengenalan</label>
-          <input type="text" id="ic" name="ic" inputmode="numeric"
-            autocomplete="off" placeholder="Contoh: 010101011234" required />
+          <div id="login-individu">
+            <label for="ic">No. Kad Pengenalan</label>
+            <input type="text" id="ic" name="ic" inputmode="numeric"
+              autocomplete="off" placeholder="Contoh: 010101011234" required />
 
-          <label for="nama">Nama Penuh</label>
-          <input type="text" id="nama" name="nama" autocomplete="name"
-            placeholder="Nama seperti dalam kad pengenalan" required />
+            <label for="nama">Nama Penuh</label>
+            <input type="text" id="nama" name="nama" autocomplete="name"
+              placeholder="Nama seperti dalam kad pengenalan" required />
+          </div>
+
+          <div id="login-pasukan" class="pasukan-ics" hidden>
+            <p class="pasukan-hint">Isi nombor kad pengenalan ketiga-tiga ahli pasukan. Butang cabutan aktif selepas ketiga-tiganya diisi.</p>
+            <label for="ic1">IC ahli 1</label>
+            <input type="text" id="ic1" name="ic1" inputmode="numeric"
+              autocomplete="off" placeholder="12 digit, tanpa sengkang" />
+            <label for="ic2">IC ahli 2</label>
+            <input type="text" id="ic2" name="ic2" inputmode="numeric"
+              autocomplete="off" placeholder="12 digit, tanpa sengkang" />
+            <label for="ic3">IC ahli 3</label>
+            <input type="text" id="ic3" name="ic3" inputmode="numeric"
+              autocomplete="off" placeholder="12 digit, tanpa sengkang" />
+          </div>
 
           <p id="login-error" class="error" hidden></p>
           <p id="login-wait" class="wait-msg" hidden></p>
@@ -99,6 +115,6 @@
 
     <script src="js/config.js?v=1" onerror="this.remove()"></script>
     <script src="js/config.example.js?v=10"></script>
-    <script src="js/app.js?v=10"></script>
+    <script src="js/app.js?v=11"></script>
   </body>
 </html>

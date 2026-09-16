@@ -5,7 +5,7 @@
   const $ = (s) => document.querySelector(s);
   const PERINGKAT_LABEL = {
     S1: "Saringan 1", S2: "Saringan 2", S3P1: "Saringan 3 — Pusingan 1",
-    S3P2: "Saringan 3 — Pusingan 2 (Rebutan)", S3P3: "Saringan 3 — Pusingan 3",
+    S3P2: "Saringan 3 — Pusingan 2", S3P3: "Saringan 3 — Pusingan 3",
     TUTUP: "Ditutup",
   };
   const STAGES = ["S1", "S2", "S3P1", "S3P2", "S3P3", "TUTUP"];
