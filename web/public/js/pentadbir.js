@@ -562,7 +562,8 @@
       const tr = document.createElement("tr");
       if (r.kedudukan <= 3) tr.className = "rank-top";
       tr.innerHTML = "<td>" + r.kedudukan + "</td><td>" + (r.nama_daerah || r.daerah) + "</td>" +
-        "<td>" + r.s3p1 + "</td><td>" + r.s3p2 + "</td><td>" + r.s3p3 + "</td><td><strong>" + r.jumlah + "</strong></td>";
+        "<td>" + r.s3p1 + "</td><td>" + r.s3p2 + "</td><td>" + r.s3p3 + "</td><td><strong>" + r.jumlah + "</strong></td>" +
+        "<td>" + (r.p1_tempoh_label || "-") + "</td>";
       tb.appendChild(tr);
     });
     $("#final-wrap").hidden = false;
@@ -744,9 +745,9 @@
     },
     final: {
       title: "Kedudukan Akhir",
-      headers: ["Kedudukan", "Daerah", "S3P1", "S3P2 Rebutan", "S3P3", "Jumlah"],
+      headers: ["Kedudukan", "Daerah", "S3P1", "S3P2 Rebutan", "S3P3", "Jumlah", "Masa (P1)"],
       rows: () => (lastFinal || []).map((r) =>
-        [r.kedudukan, r.nama_daerah || r.daerah, r.s3p1, r.s3p2, r.s3p3, r.jumlah]),
+        [r.kedudukan, r.nama_daerah || r.daerah, r.s3p1, r.s3p2, r.s3p3, r.jumlah, r.p1_tempoh_label || "-"]),
       stage: () => "S3-AKHIR",
     },
   };

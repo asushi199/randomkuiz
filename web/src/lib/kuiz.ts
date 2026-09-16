@@ -710,15 +710,17 @@ export async function adminSetManual(pin: unknown, peringkat: unknown, daerahRaw
 export async function adminFinal(pin: unknown) {
   const chk = requirePin(pin); if (!chk.ok) return chk;
   const namaMap = await daerahNamaMap();
-  const agg: Record<string, { daerah: string; nama_daerah: string; s3p1: number; s3p2: number; s3p3: number; s3p3_1: number; s3p3_2: number; s3p3_3: number; jumlah: number; kedudukan: number }> = {};
-  const ensure = (d: string) => (agg[d] = agg[d] || { daerah: d, nama_daerah: namaMap[d] || d, s3p1: 0, s3p2: 0, s3p3: 0, s3p3_1: 0, s3p3_2: 0, s3p3_3: 0, jumlah: 0, kedudukan: 0 });
-  (await loadKeputusan("S3P1")).forEach((r) => { ensure(r.daerah).s3p1 += r.mata; });
+  const agg: Record<string, { daerah: string; nama_daerah: string; s3p1: number; s3p2: number; s3p3: number; s3p3_1: number; s3p3_2: number; s3p3_3: number; jumlah: number; p1_tempoh_ms: number; p1_tempoh_label: string; kedudukan: number }> = {};
+  const ensure = (d: string) => (agg[d] = agg[d] || { daerah: d, nama_daerah: namaMap[d] || d, s3p1: 0, s3p2: 0, s3p3: 0, s3p3_1: 0, s3p3_2: 0, s3p3_3: 0, jumlah: 0, p1_tempoh_ms: Number.MAX_SAFE_INTEGER, p1_tempoh_label: "-", kedudukan: 0 });
+  // Pusingan 1: setiap daerah satu percubaan pasukan — simpan markah & tempoh (untuk pemecah seri).
+  (await loadKeputusan("S3P1")).forEach((r) => { const a = ensure(r.daerah); a.s3p1 += r.mata; a.p1_tempoh_ms = r.tempoh_ms; a.p1_tempoh_label = r.tempoh_label; });
   const { data: reb } = await db.from("rebutan_log").select("daerah,mata");
   (reb || []).forEach((r) => { if (r.daerah) ensure(normDaerah(r.daerah)).s3p2 += Number(r.mata || 0); });
   const { data: man } = await db.from("markah_manual").select("daerah,mata,mata1,mata2,mata3").eq("peringkat", "S3P3");
   (man || []).forEach((r) => { const a = ensure(normDaerah(r.daerah)); a.s3p3 += Number(r.mata || 0); a.s3p3_1 = Number(r.mata1 || 0); a.s3p3_2 = Number(r.mata2 || 0); a.s3p3_3 = Number(r.mata3 || 0); });
   const list = Object.values(agg).map((a) => { a.jumlah = a.s3p1 + a.s3p2 + a.s3p3; return a; });
-  list.sort((a, b) => b.jumlah - a.jumlah);
+  // Seri jumlah dipecahkan oleh tempoh Pusingan 1 yang lebih pantas.
+  list.sort((a, b) => (b.jumlah !== a.jumlah ? b.jumlah - a.jumlah : a.p1_tempoh_ms - b.p1_tempoh_ms));
   list.forEach((a, i) => { a.kedudukan = i + 1; });
   return { ok: true, kedudukan: list };
 }
