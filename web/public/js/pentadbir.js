@@ -569,7 +569,7 @@
   }
 
   async function reset() {
-    if (!confirm("Kosongkan SEMUA rekod peperiksaan (percubaan, keputusan, rebutan, markah, kelayakan)? Tindakan ini tidak boleh dibatalkan.")) return;
+    if (!confirm("Kosongkan SEMUA rekod peperiksaan (percubaan, keputusan, rebutan, markah, kelayakan)? Senarai peserta & bank soalan DIKEKALKAN. Tindakan ini tidak boleh dibatalkan.")) return;
     const data = await apiCall("adminReset", { pin, skop: "semua" });
     showOk($("#reset-msg"), data.ok ? data.mesej : (data.ralat || "Gagal."));
   }

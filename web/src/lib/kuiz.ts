@@ -520,7 +520,7 @@ export async function adminAutoLock(pin: unknown, peringkat: unknown) {
   await db.from("kelayakan").insert(list.map((d) => ({ peringkat: target, daerah: d })));
   const namaMap = await daerahNamaMap();
   return { ok: true, peringkat: target, daerah: list, nama_daerah: list.map((d) => namaMap[d] || d),
-           mesej: list.length + " pasukan teratas " + cfg.source + " dikunci ke " + target + "." };
+           mesej: list.length + " pasukan teratas " + (PERINGKAT_LABEL[cfg.source] || cfg.source) + " dikunci ke " + (PERINGKAT_LABEL[target] || target) + "." };
 }
 
 export async function adminLock(pin: unknown, peringkat: unknown, daerahList: unknown) {
@@ -532,7 +532,7 @@ export async function adminLock(pin: unknown, peringkat: unknown, daerahList: un
   if (!list.length) return { ok: false, ralat: "Senarai daerah kosong." };
   await db.from("kelayakan").delete().eq("peringkat", p);
   await db.from("kelayakan").insert(list.map((d) => ({ peringkat: p, daerah: d })));
-  return { ok: true, peringkat: p, daerah: list, mesej: list.length + " pasukan dikunci untuk " + p + "." };
+  return { ok: true, peringkat: p, daerah: list, mesej: list.length + " pasukan dikunci untuk " + (PERINGKAT_LABEL[p] || p) + "." };
 }
 
 const SKRIN_KEY = "rebutan_skrin";
@@ -743,7 +743,7 @@ export async function adminReset(pin: unknown, skop: unknown) {
     await db.from("markah_manual").delete().neq("daerah", "___none___");
     await db.from("kelayakan").delete().neq("daerah", "___none___");
   }
-  return { ok: true, mesej: "Reset (" + s + ") selesai. Bank soalan & daerah tidak diubah." };
+  return { ok: true, mesej: "Reset (" + s + ") selesai. Bank soalan, daerah & senarai peserta tidak diubah." };
 }
 
 // ================= PENTADBIR: Pengurusan Peserta =================
