@@ -711,7 +711,7 @@
       else if (b.dataset.csv) handleExport(b.dataset.csv, "csv");
     });
     $("#btn-reset").addEventListener("click", reset);
-    $("#btn-open-skrin").addEventListener("click", () => window.open("skrin.html?v=6", "_blank"));
+    $("#btn-open-skrin").addEventListener("click", () => window.open("skrin.html?v=7", "_blank"));
 
     // Auto log masuk jika PIN diingati (elak log masuk semula selepas muat semula / buka semula)
     const saved = loadPin();

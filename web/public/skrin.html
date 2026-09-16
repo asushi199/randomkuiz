@@ -148,7 +148,16 @@
       }
       .opt.betul:hover { background: var(--gold); }
       .opt.betul .huruf { background: var(--gold-ink); color: var(--gold); }
-      .opt.betul .tanda { display: inline; }
+      .opt.betul .tanda-betul { display: inline; }
+      .opt.salah {
+        background: #f4d0c8;
+        color: #7a2418;
+        border: 3px solid #b3402f;
+        border-bottom: 3px solid #b3402f;
+      }
+      .opt.salah:hover { background: #f4d0c8; }
+      .opt.salah .huruf { background: #b3402f; color: #fff; }
+      .opt.salah .tanda-salah { display: inline; }
 
       /* Papan markah — satu senarai pasukan, beri mata di sini */
       .papan {
@@ -319,6 +328,7 @@
         var skor = {};
         var lastAksi = [];
         var busy = false;
+        var salahTimer = null;
         var $ = function (id) { return document.getElementById(id); };
 
         async function api(action, payload) {
@@ -447,6 +457,7 @@
 
         function render() {
           revealed = false;
+          if (salahTimer) { clearTimeout(salahTimer); salahTimer = null; }
           var q = soalan[idx];
           $("prog").textContent = "Soalan " + (idx + 1) + " / " + soalan.length;
           $("topik").textContent = q.topik || "";
@@ -458,17 +469,36 @@
             btn.className = "opt";
             btn.dataset.huruf = l;
             btn.innerHTML = '<span class="huruf">' + l + '</span><span class="teks">' +
-              esc(q[l] || "") + '</span><span class="tanda">Jawapan</span>';
-            btn.addEventListener("click", reveal);
+              esc(q[l] || "") + '</span><span class="tanda tanda-betul">Jawapan</span>' +
+              '<span class="tanda tanda-salah">Salah</span>';
+            btn.addEventListener("click", function () { pilihOpt(l); });
             wrap.appendChild(btn);
           });
+        }
+        function pilihOpt(huruf) {
+          if (revealed) return;
+          var q = soalan[idx];
+          if (huruf === q.jawapan) { reveal(); return; }
+          var el = document.querySelector('.opt[data-huruf="' + huruf + '"]');
+          if (!el) return;
+          Array.prototype.forEach.call(document.querySelectorAll(".opt.salah"), function (n) {
+            n.classList.remove("salah");
+          });
+          el.classList.add("salah");
+          if (salahTimer) clearTimeout(salahTimer);
+          salahTimer = setTimeout(function () {
+            el.classList.remove("salah");
+            salahTimer = null;
+          }, 1200);
         }
         function reveal() {
           if (revealed) return;
           revealed = true;
+          if (salahTimer) { clearTimeout(salahTimer); salahTimer = null; }
           var q = soalan[idx];
           $("opsyen").classList.add("is-on");
           Array.prototype.forEach.call(document.querySelectorAll(".opt"), function (el) {
+            el.classList.remove("salah");
             if (el.dataset.huruf === q.jawapan) el.classList.add("betul");
           });
         }
