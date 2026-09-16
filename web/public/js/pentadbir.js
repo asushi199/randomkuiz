@@ -418,18 +418,30 @@
     } catch (e) { /* biar kekal */ }
   }
 
-  function nomborMarkah(v) {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : 0;
-  }
+  const S3P3_MATA = 6;
+  function qOn(btn) { return !!(btn && btn.classList.contains("is-on")); }
   function bacaManualRow(kod) {
     const wrap = $("#manual-rows");
-    const get = (c) => wrap && wrap.querySelector("." + c + '[data-daerah="' + kod + '"]');
+    const get = (n) => wrap && wrap.querySelector('.ml-q[data-daerah="' + kod + '"][data-q="' + n + '"]');
     return {
-      m1: nomborMarkah(get("m1") && get("m1").value),
-      m2: nomborMarkah(get("m2") && get("m2").value),
-      m3: nomborMarkah(get("m3") && get("m3").value),
+      m1: qOn(get(1)) ? S3P3_MATA : 0,
+      m2: qOn(get(2)) ? S3P3_MATA : 0,
+      m3: qOn(get(3)) ? S3P3_MATA : 0,
     };
+  }
+  function teksQ(n, on) { return "Soalan " + n + (on ? " · +6" : ""); }
+  function setQBtn(btn, on) {
+    if (!btn) return;
+    btn.classList.toggle("is-on", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    btn.textContent = teksQ(btn.dataset.q, on);
+  }
+  function refreshManualTotal(kod) {
+    const wrap = $("#manual-rows");
+    const el = wrap && wrap.querySelector('.manual-total[data-daerah="' + kod + '"]');
+    if (!el) return;
+    const m = bacaManualRow(kod);
+    el.textContent = (m.m1 + m.m2 + m.m3) + " / 18";
   }
   function setManualStatus(kod, text, kind) {
     const el = document.querySelector('.manual-status[data-daerah="' + kod + '"]');
@@ -456,10 +468,6 @@
       if (manualNeed[kod]) { manualNeed[kod] = false; simpanManual(kod); }
     }
   }
-  function jadualSimpanManual(kod) {
-    if (manualTimers[kod]) clearTimeout(manualTimers[kod]);
-    manualTimers[kod] = setTimeout(function () { simpanManual(kod); }, 450);
-  }
   function simpanManualSegera(kod) {
     if (manualTimers[kod]) { clearTimeout(manualTimers[kod]); manualTimers[kod] = null; }
     simpanManual(kod);
@@ -467,8 +475,8 @@
   function siramManualSemua() {
     const wrap = $("#manual-rows");
     if (!wrap) return;
-    wrap.querySelectorAll(".m1").forEach(function (el) {
-      const kod = el.dataset.daerah;
+    wrap.querySelectorAll(".manual-row").forEach(function (row) {
+      const kod = row.dataset.daerah;
       if (!kod) return;
       if (manualTimers[kod]) { clearTimeout(manualTimers[kod]); manualTimers[kod] = null; }
       simpanManual(kod);
@@ -481,39 +489,40 @@
     const note = $("#manual-note");
     if (!kods.length) { wrap.innerHTML = ""; if (note) note.hidden = false; return; }
     if (note) note.hidden = true;
-    const existing = Array.prototype.map.call(wrap.querySelectorAll(".manual-row .m1"), function (el) { return el.dataset.daerah; });
+    const existing = Array.prototype.map.call(wrap.querySelectorAll(".manual-row"), function (el) { return el.dataset.daerah; });
     if (existing.length === kods.length && kods.every(function (k, i) { return existing[i] === k; })) return;
     wrap.innerHTML = "";
     const saved = savedMap || {};
-    const val = (kod, c) => nomborMarkah((wrap.querySelector("." + c + '[data-daerah="' + kod + '"]') || {}).value);
-    const refreshTotal = (kod) => {
-      const el = wrap.querySelector('.manual-total[data-daerah="' + kod + '"]');
-      if (el) el.textContent = "Jumlah: " + (val(kod, "m1") + val(kod, "m2") + val(kod, "m3"));
+    const qBtn = (kod, n, v) => {
+      const on = Number(v) > 0;
+      return '<button type="button" class="ml-q' + (on ? " is-on" : "") + '" data-daerah="' + esc(kod) +
+        '" data-q="' + n + '" aria-pressed="' + (on ? "true" : "false") + '">' + teksQ(n, on) + "</button>";
     };
-    const field = (kod, c, n, v) =>
-      '<label class="ml-field"><span class="ml-lbl">Soalan ' + n + '</span>' +
-      '<input type="number" class="manual-input ' + c + '" data-daerah="' + kod + '" min="0" step="1" value="' + nomborMarkah(v) + '"></label>';
     kods.forEach((kod) => {
       const s = saved[kod] || {};
       const row = document.createElement("div");
       row.className = "manual-row";
+      row.dataset.daerah = kod;
       row.innerHTML =
-        '<span class="manual-daerah">' + daerahNama(kod) + "</span>" +
-        '<div class="ml-fields">' + field(kod, "m1", 1, s.mata1) + field(kod, "m2", 2, s.mata2) + field(kod, "m3", 3, s.mata3) + "</div>" +
-        '<span class="manual-total" data-daerah="' + kod + '">Jumlah: 0</span>' +
-        '<span class="manual-status" data-daerah="' + kod + '"></span>';
+        '<span class="manual-daerah">' + esc(daerahNama(kod)) + "</span>" +
+        '<div class="ml-fields">' + qBtn(kod, 1, s.mata1) + qBtn(kod, 2, s.mata2) + qBtn(kod, 3, s.mata3) + "</div>" +
+        '<span class="manual-total" data-daerah="' + esc(kod) + '">0 / 18</span>' +
+        '<span class="manual-status" data-daerah="' + esc(kod) + '"></span>';
       wrap.appendChild(row);
-      refreshTotal(kod);
+      refreshManualTotal(kod);
     });
-    wrap.querySelectorAll(".manual-input").forEach((inp) => {
-      inp.addEventListener("input", () => {
-        refreshTotal(inp.dataset.daerah);
-        setManualStatus(inp.dataset.daerah, "", "");
-        jadualSimpanManual(inp.dataset.daerah);
+    if (!wrap.dataset.bound) {
+      wrap.dataset.bound = "1";
+      wrap.addEventListener("click", function (e) {
+        const b = e.target.closest(".ml-q");
+        if (!b || !wrap.contains(b)) return;
+        const on = !qOn(b);
+        setQBtn(b, on);
+        setManualStatus(b.dataset.daerah, "", "");
+        refreshManualTotal(b.dataset.daerah);
+        simpanManualSegera(b.dataset.daerah);
       });
-      inp.addEventListener("change", () => simpanManualSegera(inp.dataset.daerah));
-      inp.addEventListener("blur", () => simpanManualSegera(inp.dataset.daerah));
-    });
+    }
   }
 
   async function loadRebutanMarkah() {
@@ -812,7 +821,7 @@
     if (btnResetP2) btnResetP2.addEventListener("click", resetS3p2);
     const btnResetP2set = $("#btn-reset-s3p2-set");
     if (btnResetP2set) btnResetP2set.addEventListener("click", resetS3p2);
-    $("#btn-open-skrin").addEventListener("click", () => window.open("skrin.html?v=9", "_blank"));
+    $("#btn-open-skrin").addEventListener("click", () => window.open("skrin.html?v=11", "_blank"));
     const btnS3p2 = $("#btn-s3p2-refresh");
     if (btnS3p2) btnS3p2.addEventListener("click", loadRebutanMarkah);
     document.addEventListener("visibilitychange", function () {

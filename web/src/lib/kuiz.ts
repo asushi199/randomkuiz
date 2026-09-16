@@ -500,32 +500,99 @@ export async function adminLock(pin: unknown, peringkat: unknown, daerahList: un
 
 const SKRIN_KEY = "rebutan_skrin";
 
-type SkrinState = { idx: number; revealed: number[]; pilihan: string };
+type RebutanFlow = {
+  fasa: string;
+  cuba1: string;
+  cuba2: string;
+  hasil: string;
+  log: { kod: string; mata: number; jenis: string }[];
+  undo: Record<string, unknown>[];
+  streak0: Record<string, number> | null;
+};
+
+type SkrinState = {
+  idx: number;
+  revealed: number[];
+  pilihan: string;
+  streak: Record<string, number>;
+  flow: Record<string, RebutanFlow>;
+};
+
+function emptySkrin(pilihan = ""): SkrinState {
+  return { idx: 0, revealed: [], pilihan, streak: {}, flow: {} };
+}
+
+function parseStreak(raw: unknown): Record<string, number> | null {
+  if (raw == null || raw === "") return null;
+  if (typeof raw !== "object" || Array.isArray(raw)) return {};
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    const n = Number(v);
+    if (k && Number.isFinite(n)) out[k] = Math.max(0, Math.min(3, Math.floor(n)));
+  }
+  return out;
+}
+
+function parseFlow(raw: unknown): Record<string, RebutanFlow> | null {
+  if (raw == null || raw === "") return null;
+  if (typeof raw !== "object" || Array.isArray(raw)) return {};
+  const out: Record<string, RebutanFlow> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (!k || typeof v !== "object" || !v || Array.isArray(v)) continue;
+    const o = v as Record<string, unknown>;
+    const log = Array.isArray(o.log) ? o.log.map((row) => {
+      const r = row as Record<string, unknown>;
+      return { kod: String(r.kod || ""), mata: Number(r.mata || 0), jenis: String(r.jenis || "") };
+    }).filter((r) => r.kod && Number.isFinite(r.mata) && r.mata !== 0) : [];
+    const undo = Array.isArray(o.undo) ? o.undo.filter((x) => x && typeof x === "object") as Record<string, unknown>[] : [];
+    out[k] = {
+      fasa: String(o.fasa || "tunggu1"),
+      cuba1: String(o.cuba1 || ""),
+      cuba2: String(o.cuba2 || ""),
+      hasil: String(o.hasil || ""),
+      log,
+      undo,
+      streak0: parseStreak(o.streak0),
+    };
+  }
+  return out;
+}
 
 async function loadSkrinState(): Promise<SkrinState> {
   try {
     const raw = await getTetapan(SKRIN_KEY, "");
-    if (!raw) return { idx: 0, revealed: [], pilihan: "" };
-    const o = JSON.parse(raw) as { idx?: unknown; revealed?: unknown; pilihan?: unknown };
+    if (!raw) return emptySkrin();
+    const o = JSON.parse(raw) as { idx?: unknown; revealed?: unknown; pilihan?: unknown; streak?: unknown; flow?: unknown };
     const revealed = Array.isArray(o.revealed)
       ? o.revealed.map((n) => Number(n)).filter((n) => Number.isFinite(n) && n > 0)
       : [];
-    return { idx: Math.max(0, Number(o.idx) || 0), revealed, pilihan: String(o.pilihan || "") };
+    return {
+      idx: Math.max(0, Number(o.idx) || 0),
+      revealed,
+      pilihan: String(o.pilihan || ""),
+      streak: parseStreak(o.streak) || {},
+      flow: parseFlow(o.flow) || {},
+    };
   } catch {
-    return { idx: 0, revealed: [], pilihan: "" };
+    return emptySkrin();
   }
 }
 
-export async function adminRebutanSkrin(pin: unknown, idxRaw: unknown, revealedRaw: unknown) {
+export async function adminRebutanSkrin(pin: unknown, idxRaw: unknown, revealedRaw: unknown, streakRaw?: unknown, flowRaw?: unknown) {
   const chk = requirePin(pin); if (!chk.ok) return chk;
   const pilihan = await getTetapan("rebutan_pilihan", "");
+  const prev = await loadSkrinState();
   const revealed = Array.isArray(revealedRaw)
     ? revealedRaw.map((n) => Number(n)).filter((n) => Number.isFinite(n) && n > 0)
     : [];
+  const streak = parseStreak(streakRaw);
+  const flow = parseFlow(flowRaw);
   await setTetapan(SKRIN_KEY, JSON.stringify({
     idx: Math.max(0, Number(idxRaw) || 0),
     revealed,
     pilihan,
+    streak: streak || prev.streak,
+    flow: flow || prev.flow,
   }));
   return { ok: true };
 }
@@ -542,32 +609,33 @@ export async function adminRebutanSoalan(pin: unknown, pilihSemula?: unknown) {
   if (semula) {
     pilihan = shuffle(bank.map((q) => String(q.no))).slice(0, REBUTAN_PILIH);
     await setTetapan("rebutan_pilihan", pilihan.join(","));
-    await setTetapan(SKRIN_KEY, JSON.stringify({ idx: 0, revealed: [], pilihan: pilihan.join(",") }));
+    await setTetapan(SKRIN_KEY, JSON.stringify(emptySkrin(pilihan.join(","))));
   }
   const byNo: Record<string, typeof bank[0]> = {}; bank.forEach((q) => { byNo[String(q.no)] = q; });
   const soalan = pilihan.map((no, i) => { const q = byNo[no]; return q ? { urutan: i + 1, ...q } : null; }).filter(Boolean);
   let skrin = await loadSkrinState();
   if (skrin.pilihan && skrin.pilihan !== pilihan.join(",")) {
-    skrin = { idx: 0, revealed: [], pilihan: pilihan.join(",") };
+    skrin = emptySkrin(pilihan.join(","));
     await setTetapan(SKRIN_KEY, JSON.stringify(skrin));
   }
   const maxIdx = Math.max(0, soalan.length - 1);
   return {
     ok: true, soalan, daerah_layak: Object.keys(await getKelayakan("S3P1")),
-    skrin: { idx: Math.min(maxIdx, skrin.idx), revealed: skrin.revealed },
+    skrin: { idx: Math.min(maxIdx, skrin.idx), revealed: skrin.revealed, streak: skrin.streak, flow: skrin.flow },
   };
 }
 
-export async function adminRebutanScore(pin: unknown, noSoalan: unknown, daerahRaw: unknown, betul: unknown, mata: unknown) {
+export async function adminRebutanScore(pin: unknown, noSoalan: unknown, daerahRaw: unknown, betul: unknown, mata: unknown, catatanRaw?: unknown) {
   const chk = requirePin(pin); if (!chk.ok) return chk;
   const daerah = normDaerah(daerahRaw);
   if (!daerah) return { ok: false, ralat: "Daerah diperlukan." };
   const isBetul = betul === true || String(betul) === "true";
-  const m = Number(mata != null ? mata : isBetul ? 5 : 0);
+  const m = Number(mata != null ? mata : isBetul ? 4 : 0);
   if (!Number.isFinite(m) || m === 0) return { ok: false, ralat: "Mata tidak sah." };
+  const catatan = String(catatanRaw || (m > 0 ? "betul" : "pindaan")).slice(0, 40);
   await db.from("rebutan_log").insert({
     no_soalan: noSoalan ? Number(noSoalan) : null, daerah, betul: m > 0, mata: m,
-    catatan: m > 0 ? "betul" : "pindaan", masa: new Date().toISOString(),
+    catatan, masa: new Date().toISOString(),
   });
   return { ok: true, mesej: "Direkod: " + daerah + " " + (m > 0 ? "+" : "") + m + " mata." };
 }
@@ -591,7 +659,8 @@ export async function adminSetManual(pin: unknown, peringkat: unknown, daerahRaw
   const p = String(peringkat || "S3P3").toUpperCase();
   const daerah = normDaerah(daerahRaw);
   if (!daerah) return { ok: false, ralat: "Daerah diperlukan." };
-  const m1 = Number(mata1 || 0), m2 = Number(mata2 || 0), m3 = Number(mata3 || 0);
+  const satu = (v: unknown) => (p === "S3P3" ? (Number(v) > 0 ? 6 : 0) : Number(v || 0));
+  const m1 = satu(mata1), m2 = satu(mata2), m3 = satu(mata3);
   const total = m1 + m2 + m3;
   await db.from("markah_manual").upsert(
     { peringkat: p, daerah, mata: total, mata1: m1, mata2: m2, mata3: m3, catatan: String(catatan || ""), masa: new Date().toISOString() },

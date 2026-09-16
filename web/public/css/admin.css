@@ -148,10 +148,24 @@ input[type="password"] { width: 100%; }
 }
 .manual-daerah { flex: 1 1 150px; font-weight: 600; }
 .ml-fields { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.ml-field { display: flex; flex-direction: column; gap: 2px; }
-.ml-lbl { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; }
-.manual-input { width: 84px; }
-.manual-total { min-width: 92px; font-weight: 700; color: var(--primary); }
+.ml-q {
+  font: inherit; font-weight: 700; font-size: 0.95rem;
+  min-width: 7.6rem; min-height: 2.7rem;
+  padding: 0.45rem 0.8rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--muted);
+  cursor: pointer;
+}
+.ml-q:hover { border-color: var(--primary); color: var(--primary); }
+.ml-q.is-on {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.ml-q:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.manual-total { min-width: 4.5rem; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; }
 .manual-status { min-width: 5.6rem; font-size: 0.82rem; font-weight: 600; color: var(--muted); }
 .manual-status.ok { color: var(--primary); }
 .manual-status.err { color: var(--danger); }

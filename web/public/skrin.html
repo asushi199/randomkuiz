@@ -84,10 +84,29 @@
           var(--hall);
       }
       .topik {
-        margin: 0 0 1.1rem;
+        margin: 0 0 0.55rem;
         color: var(--green);
         font-size: clamp(1.05rem, 1.6vw, 1.35rem);
         font-weight: 700;
+      }
+      .giliran {
+        display: inline-block;
+        margin: 0 0 1.15rem;
+        padding: 0.28rem 0.85rem;
+        border-radius: 6px;
+        font-weight: 800;
+        font-size: clamp(1.05rem, 1.9vw, 1.45rem);
+        background: var(--gold);
+        color: var(--gold-ink);
+      }
+      .giliran.wait {
+        background: transparent;
+        color: var(--green);
+        padding: 0.28rem 0;
+      }
+      .giliran.kunci {
+        background: var(--danger);
+        color: #fff;
       }
       .soalan {
         font-family: "Source Serif 4", Georgia, serif;
@@ -145,6 +164,8 @@
         letter-spacing: 0.02em;
         white-space: nowrap;
       }
+      .opsyen.is-wait .opt { opacity: 0.55; cursor: default; }
+      .opsyen.is-wait .opt:hover { background: transparent; border-bottom-color: var(--line); }
       .opsyen.is-on .opt:not(.betul) { opacity: 0.38; cursor: default; }
       .opsyen.is-on .opt:not(.betul):hover { background: transparent; border-bottom-color: var(--line); }
       .opt.betul {
@@ -183,16 +204,6 @@
         margin: 0; font-size: 0.82rem; font-weight: 700;
         letter-spacing: 0.04em; color: #9cb8ac;
       }
-      .papan-mata {
-        display: flex; align-items: center; gap: 0.35rem;
-        font-size: 0.85rem; color: #c5d9ce; margin-left: auto;
-      }
-      .papan-mata input {
-        width: 3.1rem; padding: 0.25rem 0.3rem;
-        border-radius: 4px; border: 1px solid rgba(255,255,255,.2);
-        background: rgba(0,0,0,.2); color: #fff;
-        font: inherit; font-weight: 700; text-align: center;
-      }
       .papan-list {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -201,15 +212,25 @@
       .pasukan {
         display: grid;
         grid-template-columns: 1fr auto;
-        grid-template-areas: "nama nama" "angka aksi";
+        grid-template-areas: "nama badge" "angka strikes";
         gap: 0.35rem 0.55rem;
         align-items: center;
         padding: 0.6rem 0.75rem;
         background: rgba(255,255,255,.06);
+        border: none;
         border-left: 3px solid transparent;
+        cursor: pointer;
+        text-align: left;
+        font: inherit;
+        color: inherit;
+        width: 100%;
       }
       .pasukan.lead { border-left-color: var(--gold); background: rgba(199,154,59,.16); }
+      .pasukan.aktif { border-left-color: var(--gold); background: rgba(199,154,59,.32); }
+      .pasukan.boleh:hover { background: rgba(255,255,255,.12); }
+      .pasukan.dahulu, .pasukan.mati { cursor: default; opacity: 0.55; }
       .pasukan.flash { background: rgba(199,154,59,.32); }
+      .pasukan:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
       .pasukan .nama {
         grid-area: nama;
         font-weight: 700; font-size: 1.02rem;
@@ -221,21 +242,29 @@
         font-weight: 800; font-size: 1.7rem; line-height: 1;
         font-variant-numeric: tabular-nums;
       }
-      .pasukan .aksi { grid-area: aksi; display: flex; gap: 0.3rem; }
-      .beri, .tolak {
-        font-family: inherit; font-weight: 800; font-size: 0.92rem;
-        padding: 0.4rem 0.5rem; min-width: 2.8rem;
-        border: none; border-radius: 4px; cursor: pointer;
+      .pasukan .badge {
+        grid-area: badge;
+        font-size: 0.72rem; font-weight: 800;
+        letter-spacing: 0.03em;
+        color: var(--gold);
+        white-space: nowrap;
       }
-      .beri { background: var(--gold); color: var(--gold-ink); }
-      .beri:hover { filter: brightness(1.08); }
-      .tolak {
-        background: transparent; color: #e7f3ed;
-        border: 1.5px solid rgba(255,255,255,.35);
+      .pasukan .strikes {
+        grid-area: strikes;
+        display: flex; gap: 0.28rem; justify-content: flex-end;
       }
-      .tolak:hover { background: rgba(255,255,255,.1); }
-      .tolak:disabled { opacity: 0.3; cursor: not-allowed; }
-      .beri:focus-visible, .tolak:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+      .pasukan .strikes i {
+        width: 0.48rem; height: 0.48rem; border-radius: 999px;
+        background: rgba(255,255,255,.22);
+        display: block;
+      }
+      .pasukan .strikes i.on { background: #e07a6a; }
+      .papan-status h2 { margin: 0 0 0.15rem; }
+      .status-rebutan {
+        margin: 0; font-size: 1rem; font-weight: 800;
+        color: #f3d48a; line-height: 1.3;
+      }
+      .papan-aksi { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
       .undo {
         font-family: inherit; font-weight: 700; font-size: 0.85rem;
         padding: 0.4rem 0.75rem; border-radius: 4px; cursor: pointer;
@@ -244,6 +273,8 @@
       }
       .undo:hover:not(:disabled) { background: rgba(255,255,255,.08); color: #fff; }
       .undo:disabled { opacity: 0.4; cursor: not-allowed; }
+      .undo-kuat { border-color: #f3d48a; color: #f3d48a; }
+      .undo-kuat:hover:not(:disabled) { background: rgba(243, 212, 138, 0.14); color: #fff; }
       .papan-empty { color: #f3d48a; font-size: 0.9rem; line-height: 1.4; grid-column: 1 / -1; }
 
       .kawalan {
@@ -302,15 +333,22 @@
       <div class="board">
         <div class="stage">
           <p class="topik" id="topik"></p>
+          <p class="giliran wait" id="giliran">Menunggu rebutan pertama · 4 mata</p>
           <div class="soalan" id="soalan"></div>
           <div class="opsyen" id="opsyen"></div>
         </div>
       </div>
       <div class="dock">
         <div class="papan-head">
-          <h2>Markah</h2>
-          <label class="papan-mata">Beri <input type="number" id="mata" value="5" min="1" /> mata</label>
-          <button type="button" class="undo" id="btn-undo" disabled>Batalkan terakhir</button>
+          <div class="papan-status">
+            <h2>Markah</h2>
+            <p class="status-rebutan" id="status-rebutan">Menunggu rebutan pertama · 4 mata</p>
+          </div>
+          <div class="papan-aksi">
+            <button type="button" class="undo" id="btn-bukan" disabled>Bukan pasukan ini</button>
+            <button type="button" class="undo" id="btn-undo" disabled>Batalkan terakhir</button>
+            <button type="button" class="undo undo-kuat" id="btn-reset-q" disabled>Set semula soalan ini</button>
+          </div>
         </div>
         <div class="papan-list" id="papan-list"></div>
         <div class="kawalan">
@@ -331,7 +369,8 @@
         var pin = "", soalan = [], idx = 0, revealed = false, teams = [];
         var daerahNama = {};
         var skor = {};
-        var lastAksi = [];
+        var streak = {};
+        var flow = {};
         var busy = false;
         var salahTimer = null;
         var revealedNos = {};
@@ -343,25 +382,39 @@
           var res = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: body });
           return JSON.parse(await res.text());
         }
-        function toast(msg) {
+        function toast(msg, ms) {
           var t = $("toast"); t.textContent = msg; t.classList.add("show");
-          setTimeout(function () { t.classList.remove("show"); }, 1600);
+          setTimeout(function () { t.classList.remove("show"); }, ms || 1800);
         }
         function esc(s) {
           return String(s).replace(/[&<>"']/g, function (c) {
             return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
           });
         }
-        function mataNilai() {
-          return Math.max(1, Number($("mata").value || 5));
+        function namaPasukan(kod) { return daerahNama[kod] || kod; }
+        function emptyFlow() {
+          return { fasa: "tunggu1", cuba1: "", cuba2: "", hasil: "", log: [], undo: [], streak0: null };
         }
-
+        function noKini() { return soalan[idx] ? soalan[idx].no : 0; }
+        function getFlow() {
+          var no = noKini();
+          if (!no) return emptyFlow();
+          if (!flow[no]) flow[no] = emptyFlow();
+          return flow[no];
+        }
+        function snapStreak(fl) {
+          if (fl.streak0) return;
+          fl.streak0 = {};
+          teams.forEach(function (k) { fl.streak0[k] = streak[k] || 0; });
+        }
         function senaraiRevealed() {
           return Object.keys(revealedNos).map(Number).filter(function (n) { return revealedNos[n]; });
         }
         function simpanSkrinSegera() {
           if (!pin) return;
-          api("adminRebutanSkrin", { pin: pin, idx: idx, revealed: senaraiRevealed() }).catch(function () {});
+          api("adminRebutanSkrin", {
+            pin: pin, idx: idx, revealed: senaraiRevealed(), streak: streak, flow: flow,
+          }).catch(function () {});
         }
         function simpanSkrin() {
           if (!pin) return;
@@ -369,10 +422,48 @@
           simpanTimer = setTimeout(simpanSkrinSegera, 150);
         }
         function lompat(n) {
-          if (n < 0 || n >= soalan.length) return;
+          if (n < 0 || n >= soalan.length || busy) return;
           idx = n;
           render();
           simpanSkrin();
+        }
+        function teksGiliran(fl) {
+          if (fl.fasa === "cuba1") return "Cuba pertama: " + namaPasukan(fl.cuba1) + " · 4 mata";
+          if (fl.fasa === "tunggu2") return "Menunggu rebutan kedua · 3 mata";
+          if (fl.fasa === "cuba2") return "Cuba kedua: " + namaPasukan(fl.cuba2) + " · 3 mata";
+          if (fl.fasa === "selesai") {
+            if (fl.hasil === "betul4") return "Selesai · " + namaPasukan(fl.cuba1) + " +4";
+            if (fl.hasil === "betul3") return "Selesai · " + namaPasukan(fl.cuba2) + " +3";
+            if (fl.hasil === "kunci") return "Soalan dikunci — tiada pasukan berjaya";
+            return "Jawapan dipapar";
+          }
+          return "Menunggu rebutan pertama · 4 mata";
+        }
+        function kelasGiliran(fl) {
+          if (fl.fasa === "selesai" && fl.hasil === "kunci") return "giliran kunci";
+          if (fl.fasa === "cuba1" || fl.fasa === "cuba2") return "giliran";
+          if (fl.fasa === "selesai" && (fl.hasil === "betul4" || fl.hasil === "betul3")) return "giliran";
+          return "giliran wait";
+        }
+        function adaTindakan(fl) {
+          return !!(fl && (fl.undo.length || fl.log.length || fl.fasa !== "tunggu1" || revealedNos[noKini()]));
+        }
+        function syncAksi() {
+          var fl = soalan[idx] ? getFlow() : emptyFlow();
+          if ($("btn-bukan")) $("btn-bukan").disabled = busy || (fl.fasa !== "cuba1" && fl.fasa !== "cuba2");
+          if ($("btn-undo")) $("btn-undo").disabled = busy || !fl.undo.length;
+          if ($("btn-reset-q")) $("btn-reset-q").disabled = busy || !adaTindakan(fl);
+        }
+        function flashPasukan(kod) {
+          var row = document.querySelector('.pasukan[data-daerah="' + kod + '"]');
+          if (!row) return;
+          row.classList.add("flash");
+          setTimeout(function () { row.classList.remove("flash"); }, 700);
+        }
+        function popLog(fl, kod, mata) {
+          for (var i = fl.log.length - 1; i >= 0; i--) {
+            if (fl.log[i].kod === kod && fl.log[i].mata === mata) { fl.log.splice(i, 1); return; }
+          }
         }
 
         async function masuk() {
@@ -392,10 +483,18 @@
             var st = data.skrin || {};
             idx = Math.min(soalan.length - 1, Math.max(0, Number(st.idx) || 0));
             (st.revealed || []).forEach(function (n) { revealedNos[Number(n)] = true; });
+            streak = st.streak || {};
+            flow = st.flow || {};
+            soalan.forEach(function (q) {
+              if (revealedNos[q.no] && (!flow[q.no] || flow[q.no].fasa === "tunggu1")) {
+                flow[q.no] = emptyFlow();
+                flow[q.no].fasa = "selesai";
+                flow[q.no].hasil = "dedah";
+              }
+            });
             $("gate").style.display = "none";
             $("main").style.display = "flex";
             render();
-            renderPapan();
             loadScores();
             setInterval(loadScores, 5000);
             if (idx > 0 || senaraiRevealed().length) {
@@ -405,6 +504,7 @@
         }
 
         async function loadScores() {
+          if (busy) return;
           try {
             var d = await api("adminRebutanState", { pin: pin });
             if (d && d.ok) {
@@ -420,18 +520,18 @@
           } catch (e) { /* biar */ }
         }
 
-        function syncUndo() {
-          var btn = $("btn-undo");
-          if (!btn) return;
-          btn.disabled = !lastAksi.length || busy;
-        }
-
         function renderPapan() {
           var list = $("papan-list");
-          var n = mataNilai();
+          var fl = soalan[idx] ? getFlow() : emptyFlow();
+          var teks = teksGiliran(fl);
+          if ($("status-rebutan")) $("status-rebutan").textContent = teks;
+          if ($("giliran")) {
+            $("giliran").textContent = teks;
+            $("giliran").className = kelasGiliran(fl);
+          }
           if (!teams.length) {
             list.innerHTML = '<p class="papan-empty">Belum ada pasukan layak. Kunci 4 teratas ke Saringan 3 dahulu.</p>';
-            syncUndo();
+            syncAksi();
             return;
           }
           var max = 0;
@@ -441,51 +541,240 @@
           });
           list.innerHTML = teams.map(function (kod) {
             var m = Number(skor[kod] || 0);
-            var lead = m > 0 && m === max ? " lead" : "";
-            var nama = esc(daerahNama[kod] || kod);
+            var cls = "pasukan";
+            if (m > 0 && m === max) cls += " lead";
+            var aktif = (fl.fasa === "cuba1" && kod === fl.cuba1) || (fl.fasa === "cuba2" && kod === fl.cuba2);
+            var dahulu = kod === fl.cuba1 && (fl.fasa === "tunggu2" || fl.fasa === "cuba2" || (fl.fasa === "selesai" && fl.cuba1 && fl.hasil !== "betul4"));
+            var boleh = (fl.fasa === "tunggu1") || (fl.fasa === "tunggu2" && kod !== fl.cuba1);
+            if (aktif) cls += " aktif";
+            else if (dahulu) cls += " dahulu";
+            else if (fl.fasa === "selesai" || !boleh) cls += " mati";
+            else cls += " boleh";
+            var badge = aktif ? (fl.fasa === "cuba1" ? "CUBA 1" : "CUBA 2") : (dahulu ? "SUDAH" : "");
+            var nStreak = Number(streak[kod] || 0);
+            var strikes = "";
+            for (var i = 0; i < 3; i++) strikes += "<i" + (i < nStreak ? ' class="on"' : "") + "></i>";
+            var nama = esc(namaPasukan(kod));
             var d = esc(kod);
-            return '<div class="pasukan' + lead + '" data-daerah="' + d + '">' +
+            return '<button type="button" class="' + cls + '" data-daerah="' + d + '"' +
+              (boleh || aktif ? "" : " disabled") +
+              ' aria-label="' + nama + (badge ? ", " + badge : "") + '">' +
               '<span class="nama">' + nama + "</span>" +
+              (badge ? '<span class="badge">' + badge + "</span>" : "<span></span>") +
               '<span class="angka">' + m + "</span>" +
-              '<span class="aksi">' +
-              '<button type="button" class="tolak" data-daerah="' + d + '" ' + (m <= 0 ? "disabled " : "") +
-              'aria-label="Tolak ' + n + " mata daripada " + nama + '">−' + n + "</button>" +
-              '<button type="button" class="beri" data-daerah="' + d + '" aria-label="Beri ' + n + " mata kepada " + nama + '">+' + n + "</button>" +
-              "</span></div>";
+              '<span class="strikes" aria-label="' + nStreak + " daripada 3 salah pertama\">" + strikes + "</span>" +
+              "</button>";
           }).join("");
-          syncUndo();
+          syncAksi();
         }
 
-        async function ubahMata(kod, delta, fromUndo) {
-          if (busy || !delta) return;
-          var cur = Number(skor[kod] || 0);
-          if (delta < 0 && cur + delta < 0) delta = -cur;
-          if (!delta) return;
+        async function rekodMata(kod, delta, jenis, fromUndo) {
+          if (!delta) return false;
+          var q = soalan[idx];
+          var fl = getFlow();
           busy = true;
-          syncUndo();
+          syncAksi();
           try {
-            var q = soalan[idx];
             var data = await api("adminRebutanScore", {
-              pin: pin, no_soalan: q.no, daerah: kod, betul: delta > 0, mata: delta,
+              pin: pin, no_soalan: q.no, daerah: kod, betul: delta > 0, mata: delta, catatan: jenis,
             });
-            if (!data || !data.ok) { toast(data && data.ralat ? data.ralat : "Gagal merekod"); return; }
-            skor[kod] = cur + delta;
-            if (!fromUndo) lastAksi.push({ kod: kod, mata: delta });
+            if (!data || !data.ok) { toast(data && data.ralat ? data.ralat : "Gagal merekod"); return false; }
+            skor[kod] = Number(skor[kod] || 0) + delta;
+            if (!fromUndo) fl.log.push({ kod: kod, mata: delta, jenis: jenis });
+            else popLog(fl, kod, -delta);
             renderPapan();
-            var row = document.querySelector('.pasukan[data-daerah="' + kod + '"]');
-            if (row) {
-              row.classList.add("flash");
-              setTimeout(function () { row.classList.remove("flash"); }, 700);
+            flashPasukan(kod);
+            return true;
+          } catch (e) { toast("Gagal merekod"); return false; }
+          finally { busy = false; syncAksi(); }
+        }
+
+        function pilihPasukan(kod) {
+          if (busy) return;
+          var fl = getFlow();
+          if (fl.fasa === "selesai") return;
+          if (fl.fasa === "tunggu1") {
+            snapStreak(fl);
+            fl.cuba1 = kod;
+            fl.fasa = "cuba1";
+            fl.undo.push({ type: "pilih1", kod: kod });
+          } else if (fl.fasa === "cuba1") {
+            if (kod === fl.cuba1) batalPasukan();
+            return;
+          } else if (fl.fasa === "tunggu2") {
+            if (kod === fl.cuba1) { toast("Pasukan ini sudah cuba."); return; }
+            snapStreak(fl);
+            fl.cuba2 = kod;
+            fl.fasa = "cuba2";
+            fl.undo.push({ type: "pilih2", kod: kod });
+          } else if (fl.fasa === "cuba2") {
+            if (kod === fl.cuba2) batalPasukan();
+            return;
+          }
+          render();
+          simpanSkrin();
+        }
+        function batalPasukan() {
+          if (busy) return;
+          var fl = getFlow();
+          if (fl.fasa === "cuba1") {
+            fl.cuba1 = "";
+            fl.fasa = "tunggu1";
+            if (fl.undo.length && fl.undo[fl.undo.length - 1].type === "pilih1") fl.undo.pop();
+          } else if (fl.fasa === "cuba2") {
+            fl.cuba2 = "";
+            fl.fasa = "tunggu2";
+            if (fl.undo.length && fl.undo[fl.undo.length - 1].type === "pilih2") fl.undo.pop();
+          } else return;
+          render();
+          simpanSkrin();
+        }
+
+        function flashSalah(huruf) {
+          var el = document.querySelector('.opt[data-huruf="' + huruf + '"]');
+          if (!el) return;
+          Array.prototype.forEach.call(document.querySelectorAll(".opt.salah"), function (n) {
+            n.classList.remove("salah");
+          });
+          el.classList.add("salah");
+          if (salahTimer) clearTimeout(salahTimer);
+          salahTimer = setTimeout(function () {
+            el.classList.remove("salah");
+            salahTimer = null;
+          }, 1100);
+        }
+
+        async function pilihOpt(huruf) {
+          if (busy || revealed) return;
+          var fl = getFlow();
+          var q = soalan[idx];
+          if (fl.fasa !== "cuba1" && fl.fasa !== "cuba2") {
+            toast("Pilih pasukan rebutan dahulu.");
+            return;
+          }
+          if (huruf === q.jawapan) {
+            var kod = fl.fasa === "cuba1" ? fl.cuba1 : fl.cuba2;
+            var mata = fl.fasa === "cuba1" ? 4 : 3;
+            var jenis = fl.fasa === "cuba1" ? "betul4" : "betul3";
+            var streakBefore = streak[kod] || 0;
+            if (fl.fasa === "cuba1") streak[kod] = 0;
+            var ok = await rekodMata(kod, mata, jenis, false);
+            if (!ok) {
+              if (jenis === "betul4") streak[kod] = streakBefore;
+              return;
             }
-            toast((daerahNama[kod] || kod) + " " + (delta > 0 ? "+" : "") + delta);
-          } catch (e) { toast("Gagal merekod"); }
-          finally { busy = false; syncUndo(); }
+            fl.hasil = jenis;
+            fl.fasa = "selesai";
+            fl.undo.push({ type: "betul", kod: kod, mata: mata, streakBefore: streakBefore });
+            revealJawapan();
+            toast(namaPasukan(kod) + " +" + mata);
+            renderPapan();
+            simpanSkrin();
+            return;
+          }
+          if (fl.fasa === "cuba1") {
+            var kod1 = fl.cuba1;
+            var before = streak[kod1] || 0;
+            var penalti = before + 1 >= 3;
+            if (penalti) {
+              var okP = await rekodMata(kod1, -1, "penalti", false);
+              if (!okP) return;
+              streak[kod1] = 0;
+              toast("Penalti −1. Kiraan salah pertama bermula semula.", 2400);
+            } else {
+              streak[kod1] = before + 1;
+            }
+            flashSalah(huruf);
+            fl.fasa = "tunggu2";
+            fl.undo.push({ type: "salah1", kod: kod1, streakBefore: before, penalti: penalti });
+            $("opsyen").classList.add("is-wait");
+            renderPapan();
+            simpanSkrin();
+            return;
+          }
+          flashSalah(huruf);
+          fl.fasa = "selesai";
+          fl.hasil = "kunci";
+          fl.undo.push({ type: "salah2", kod: fl.cuba2 });
+          renderPapan();
+          simpanSkrin();
+          if (salahTimer) clearTimeout(salahTimer);
+          salahTimer = setTimeout(function () {
+            revealJawapan();
+            toast("Soalan dikunci — tiada pasukan berjaya.", 2400);
+            renderPapan();
+          }, 700);
         }
 
         async function undoTerakhir() {
-          var last = lastAksi.pop();
-          if (!last) { toast("Tiada tindakan untuk dibatalkan."); syncUndo(); return; }
-          await ubahMata(last.kod, -last.mata, true);
+          var fl = getFlow();
+          if (busy || !fl.undo.length) { toast("Tiada tindakan untuk dibatalkan."); return; }
+          var last = fl.undo.pop();
+          if (last.type === "pilih1") {
+            fl.cuba1 = "";
+            fl.fasa = "tunggu1";
+          } else if (last.type === "pilih2") {
+            fl.cuba2 = "";
+            fl.fasa = "tunggu2";
+          } else if (last.type === "salah1") {
+            streak[last.kod] = last.streakBefore || 0;
+            if (last.penalti) {
+              var ok = await rekodMata(last.kod, 1, "pindaan", true);
+              if (!ok) { fl.undo.push(last); return; }
+            }
+            fl.fasa = "cuba1";
+            fl.cuba1 = last.kod;
+          } else if (last.type === "salah2") {
+            unreveal();
+            fl.hasil = "";
+            fl.fasa = "cuba2";
+          } else if (last.type === "betul") {
+            var okB = await rekodMata(last.kod, -last.mata, "pindaan", true);
+            if (!okB) { fl.undo.push(last); return; }
+            unreveal();
+            fl.hasil = "";
+            fl.fasa = last.mata === 4 ? "cuba1" : "cuba2";
+            if (last.mata === 4) streak[last.kod] = last.streakBefore || 0;
+          } else if (last.type === "dedah") {
+            unreveal();
+            fl.hasil = "";
+            fl.fasa = last.fasaWas || "tunggu1";
+          } else {
+            toast("Tidak dapat dibatalkan.");
+            return;
+          }
+          render();
+          simpanSkrin();
+        }
+
+        async function resetSoalanIni() {
+          var fl = getFlow();
+          if (busy || !adaTindakan(fl)) return;
+          if (!confirm("Set semula soalan ini? Markah soalan ini akan dibatalkan. Pasukan boleh dipilih semula.")) return;
+          busy = true;
+          syncAksi();
+          var gagal = false;
+          for (var i = fl.log.length - 1; i >= 0; i--) {
+            var L = fl.log[i];
+            try {
+              var data = await api("adminRebutanScore", {
+                pin: pin, no_soalan: noKini(), daerah: L.kod, betul: L.mata < 0, mata: -L.mata, catatan: "pindaan",
+              });
+              if (!data || !data.ok) { gagal = true; break; }
+              skor[L.kod] = Number(skor[L.kod] || 0) - L.mata;
+            } catch (e) { gagal = true; break; }
+          }
+          busy = false;
+          if (gagal) { toast("Gagal set semula. Cuba lagi."); syncAksi(); return; }
+          if (fl.streak0) {
+            teams.forEach(function (k) { streak[k] = fl.streak0[k] || 0; });
+          }
+          revealedNos[noKini()] = false;
+          flow[noKini()] = emptyFlow();
+          revealed = false;
+          render();
+          simpanSkrinSegera();
+          toast("Soalan ini diset semula.");
         }
 
         function renderProgNav() {
@@ -507,6 +796,7 @@
           revealed = false;
           if (salahTimer) { clearTimeout(salahTimer); salahTimer = null; }
           var q = soalan[idx];
+          var fl = getFlow();
           $("prog").textContent = "Soalan " + (idx + 1) + " / " + soalan.length;
           $("topik").textContent = q.topik || "";
           $("soalan").textContent = q.soalan;
@@ -522,30 +812,17 @@
             btn.addEventListener("click", function () { pilihOpt(l); });
             wrap.appendChild(btn);
           });
+          if (fl.fasa === "selesai" && revealedNos[q.no]) applyReveal();
+          else if (fl.fasa !== "cuba1" && fl.fasa !== "cuba2") wrap.classList.add("is-wait");
           renderProgNav();
-          if (revealedNos[q.no]) applyReveal();
-        }
-        function pilihOpt(huruf) {
-          if (revealed) return;
-          var q = soalan[idx];
-          if (huruf === q.jawapan) { reveal(); return; }
-          var el = document.querySelector('.opt[data-huruf="' + huruf + '"]');
-          if (!el) return;
-          Array.prototype.forEach.call(document.querySelectorAll(".opt.salah"), function (n) {
-            n.classList.remove("salah");
-          });
-          el.classList.add("salah");
-          if (salahTimer) clearTimeout(salahTimer);
-          salahTimer = setTimeout(function () {
-            el.classList.remove("salah");
-            salahTimer = null;
-          }, 1200);
+          renderPapan();
         }
         function applyReveal() {
           var q = soalan[idx];
           if (!q) return;
           revealed = true;
           if (salahTimer) { clearTimeout(salahTimer); salahTimer = null; }
+          $("opsyen").classList.remove("is-wait");
           $("opsyen").classList.add("is-on");
           Array.prototype.forEach.call(document.querySelectorAll(".opt"), function (el) {
             el.classList.remove("salah");
@@ -553,32 +830,56 @@
           });
           renderProgNav();
         }
-        function reveal() {
-          if (revealed) return;
+        function revealJawapan() {
           var q = soalan[idx];
           if (q) revealedNos[q.no] = true;
           applyReveal();
           if (simpanTimer) clearTimeout(simpanTimer);
           simpanSkrinSegera();
         }
+        function unreveal() {
+          var q = soalan[idx];
+          if (q) revealedNos[q.no] = false;
+          revealed = false;
+        }
+        function paparJawapanManual() {
+          var fl = getFlow();
+          if (fl.fasa === "selesai") {
+            if (!revealedNos[noKini()]) revealJawapan();
+            return;
+          }
+          fl.undo.push({ type: "dedah", fasaWas: fl.fasa });
+          fl.fasa = "selesai";
+          fl.hasil = "dedah";
+          revealJawapan();
+          renderPapan();
+          simpanSkrin();
+        }
         $("btn-masuk").addEventListener("click", masuk);
         $("pin").addEventListener("keydown", function (e) { if (e.key === "Enter") masuk(); });
         $("btn-prev").addEventListener("click", function () { lompat(idx - 1); });
         $("btn-next").addEventListener("click", function () { lompat(idx + 1); });
-        $("btn-reveal").addEventListener("click", reveal);
-        $("mata").addEventListener("input", renderPapan);
+        $("btn-reveal").addEventListener("click", paparJawapanManual);
         $("btn-undo").addEventListener("click", undoTerakhir);
+        $("btn-bukan").addEventListener("click", batalPasukan);
+        $("btn-reset-q").addEventListener("click", resetSoalanIni);
         $("papan-list").addEventListener("click", function (e) {
-          var b = e.target.closest(".beri, .tolak");
+          var b = e.target.closest(".pasukan");
           if (!b || !b.dataset.daerah || b.disabled) return;
-          var n = mataNilai();
-          ubahMata(b.dataset.daerah, b.classList.contains("tolak") ? -n : n, false);
+          pilihPasukan(b.dataset.daerah);
         });
         document.addEventListener("keydown", function (e) {
           if ($("main").style.display !== "flex") return;
+          if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
           if (e.key === "ArrowRight") lompat(idx + 1);
           if (e.key === "ArrowLeft") lompat(idx - 1);
-          if (e.key === " " || e.key === "Enter") { e.preventDefault(); reveal(); }
+          if (e.key === " " || e.key === "Enter") {
+            if (e.target && e.target.tagName === "BUTTON") return;
+            e.preventDefault();
+            paparJawapanManual();
+          }
+          if (e.key === "Backspace" || e.key === "u" || e.key === "U") { e.preventDefault(); undoTerakhir(); }
+          if (e.key === "Escape") { e.preventDefault(); batalPasukan(); }
         });
         document.addEventListener("visibilitychange", function () {
           if (document.visibilityState === "hidden") simpanSkrinSegera();
