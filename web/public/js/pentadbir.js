@@ -4,12 +4,12 @@
   const API_RETRIES = 2;
   const $ = (s) => document.querySelector(s);
   const PERINGKAT_LABEL = {
-    S1: "Saringan 1", S2: "Saringan 2", S3P1: "Saringan 3 — Pusingan 1",
-    S3P2: "Saringan 3 — Pusingan 2", S3P3: "Saringan 3 — Pusingan 3",
+    S1: "Saringan 1", S2: "Saringan 2", S3P1: "Saringan 2 — Pusingan 1",
+    S3P2: "Saringan 2 — Pusingan 2", S3P3: "Saringan 2 — Pusingan 3",
     TUTUP: "Ditutup",
   };
-  const STAGES = ["S1", "S2", "S3P1", "S3P2", "S3P3", "TUTUP"];
-  const RANK_STAGES = ["S1", "S2", "S3P1"];
+  const STAGES = ["S1", "S3P1", "S3P2", "S3P3", "TUTUP"];
+  const RANK_STAGES = ["S1", "S3P1"];
 
   let pin = "";
   let daerahList = [];
@@ -88,8 +88,8 @@
 
   // Rel progres peringkat (stage rail)
   const STAGE_SHORT = {
-    S1: "Saringan 1", S2: "Saringan 2", S3P1: "S3 · Pusingan 1",
-    S3P2: "S3 · Pusingan 2", S3P3: "S3 · Pusingan 3", TUTUP: "Ditutup",
+    S1: "Saringan 1", S2: "Saringan 2", S3P1: "S2 · Pusingan 1",
+    S3P2: "S2 · Pusingan 2", S3P3: "S2 · Pusingan 3", TUTUP: "Ditutup",
   };
   let liveStage = "";
   let pendingStage = "";
@@ -162,12 +162,11 @@
   }
 
   // ---------- Tab setiap saringan ----------
-  const TAB_PERINGKAT = { s1: "S1", s2: "S2", s3: "S3P1" };
+  const TAB_PERINGKAT = { s1: "S1", s3: "S3P1" };
   let s3Round = "S3P1";
 
   function tabForLiveStage(p) {
     if (p === "S1") return "s1";
-    if (p === "S2") return "s2";
     if (p === "S3P1" || p === "S3P2" || p === "S3P3") return "s3";
     return "";
   }
@@ -209,7 +208,7 @@
       $("#review-result").hidden = true; showErr($("#review-error"), "");
       const ic = $("#review-ic"); if (ic) ic.value = "";
     }
-    if (tab === "s1" || tab === "s2") {
+    if (tab === "s1") {
       curRankPeringkat = TAB_PERINGKAT[tab];
       const title = $("#rank-title");
       if (title) title.textContent = "Kedudukan";
@@ -248,8 +247,8 @@
   }
 
   function renderPasukan(list, peringkat) {
-    const lockTarget = peringkat === "S1" ? "S2" : peringkat === "S2" ? "S3P1" : "";
-    const lockN = peringkat === "S1" ? 6 : peringkat === "S2" ? 4 : 0;
+    const lockTarget = peringkat === "S1" ? "S3P1" : "";
+    const lockN = peringkat === "S1" ? 4 : 0;
     const showLock = !!lockTarget;
 
     document.querySelectorAll(".col-lock").forEach((el) => (el.hidden = !showLock));
@@ -272,7 +271,7 @@
     });
 
     if (showLock) {
-      const dest = peringkat === "S1" ? "Saringan 2" : "Saringan 3";
+      const dest = "Saringan 2";
       const sel = $("#lock-target"); sel.innerHTML = "";
       opt(sel, lockTarget, PERINGKAT_LABEL[lockTarget]);
       const title = $("#lock-title");
@@ -537,7 +536,7 @@
     }
     const list = data.pasukan || [];
     if (!list.length) {
-      if (empty) { empty.hidden = false; empty.textContent = "Belum ada pasukan layak. Kunci 4 teratas ke Saringan 3 dahulu."; }
+      if (empty) { empty.hidden = false; empty.textContent = "Belum ada pasukan layak. Kunci 4 teratas ke Saringan 2 dahulu."; }
       return;
     }
     if (empty) empty.hidden = true;

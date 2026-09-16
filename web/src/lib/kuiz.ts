@@ -9,10 +9,10 @@ const S3P1_SOALAN = 10;
 const S3P1_SAAT = 20;
 const S3P1_MATA = 2;
 const REBUTAN_PILIH = 8;
-const PERINGKAT_PELAJAR = ["S1", "S2", "S3P1"];
+const PERINGKAT_PELAJAR = ["S1", "S3P1"];
 export const PERINGKAT_LABEL: Record<string, string> = {
-  S1: "Saringan 1", S2: "Saringan 2", S3P1: "Saringan 3 — Pusingan 1",
-  S3P2: "Saringan 3 — Pusingan 2", S3P3: "Saringan 3 — Pusingan 3",
+  S1: "Saringan 1", S2: "Saringan 2", S3P1: "Saringan 2 — Pusingan 1",
+  S3P2: "Saringan 2 — Pusingan 2", S3P3: "Saringan 2 — Pusingan 3",
   TUTUP: "Ditutup",
 };
 const MSJ_TERIMA_KASIH =
@@ -181,8 +181,8 @@ async function servedIdsForIc(ic: string): Promise<Record<string, boolean>> {
 export async function getInit() {
   const peringkat = await getPeringkatAktif();
   let daerah = await getDaerahList();
-  // S2/S3P1: hanya papar daerah yang LAYAK (pasukan yang lolos) untuk dipilih pelajar.
-  if (peringkat === "S2" || peringkat === "S3P1") {
+  // S3P1: hanya papar daerah yang LAYAK (pasukan finalis) untuk dipilih pelajar.
+  if (peringkat === "S3P1") {
     const layak = await getKelayakan(peringkat);
     daerah = daerah.filter((d) => layak[d.kod]);
   }
@@ -201,10 +201,10 @@ function parseIcs(icsRaw: unknown, icRaw: unknown): string[] {
   return arr.map(normIc).filter(Boolean);
 }
 
-async function ahliPasukanS2(daerah: string): Promise<{ ic: string; nama: string }[]> {
+async function ahliPasukanS1(daerah: string): Promise<{ ic: string; nama: string }[]> {
   const { data } = await db.from("percubaan")
     .select("ic,nama,skor,masa_mula,masa_hantar")
-    .eq("peringkat", "S2").eq("status", "selesai").eq("daerah", daerah);
+    .eq("peringkat", "S1").eq("status", "selesai").eq("daerah", daerah);
   const best: Record<string, { ic: string; nama: string; skor: number; tempoh: number }> = {};
   (data || []).forEach((r) => {
     const ic = normIc(r.ic);
@@ -278,7 +278,7 @@ async function startS1S2(peringkat: string, ic: string, nama: string, daerah: st
 }
 
 async function startS3P1(ics: string[], daerah: string) {
-  const ahli = await ahliPasukanS2(daerah);
+  const ahli = await ahliPasukanS1(daerah);
   if (ahli.length < 3) return { ok: false, ralat: "Ahli pasukan belum lengkap. Sila hubungi pentadbir." };
   const expected = new Set(ahli.map((a) => a.ic));
   if (!ics.every((ic) => expected.has(ic))) {
@@ -414,7 +414,7 @@ export async function adminState(pin: unknown) {
   const counts: Record<string, number> = {};
   (data || []).forEach((r) => { const p = String(r.peringkat).toUpperCase(); counts[p] = (counts[p] || 0) + 1; });
   return { ok: true, peringkat_aktif: await getPeringkatAktif(), peringkat_label: PERINGKAT_LABEL, jumlah_keputusan: counts,
-           daerah: await getDaerahList(), kelayakan: { S2: Object.keys(await getKelayakan("S2")), S3P1: Object.keys(await getKelayakan("S3P1")) },
+           daerah: await getDaerahList(), kelayakan: { S3P1: Object.keys(await getKelayakan("S3P1")) },
            s3p3: await loadS3p3Marks() };
 }
 
@@ -432,7 +432,7 @@ async function loadS3p3Marks(): Promise<Record<string, { mata1: number; mata2: n
 export async function adminSetPeringkat(pin: unknown, peringkat: unknown) {
   const chk = requirePin(pin); if (!chk.ok) return chk;
   const p = String(peringkat || "").toUpperCase();
-  if (!["S1", "S2", "S3P1", "S3P2", "S3P3", "TUTUP"].includes(p)) return { ok: false, ralat: "Peringkat tidak sah." };
+  if (!["S1", "S3P1", "S3P2", "S3P3", "TUTUP"].includes(p)) return { ok: false, ralat: "Peringkat tidak sah." };
   await setTetapan("peringkat_aktif", p);
   return { ok: true, peringkat_aktif: p, mesej: "Peringkat aktif: " + (PERINGKAT_LABEL[p] || p) };
 }
@@ -468,14 +468,13 @@ export async function adminReview(pin: unknown, peringkat: unknown, icRaw: unkno
 
 // Auto-kunci N pasukan teratas berdasarkan ranking peringkat sebelumnya.
 const ADVANCE: Record<string, { source: string; n: number }> = {
-  S2: { source: "S1", n: 6 },
-  S3P1: { source: "S2", n: 4 },
+  S3P1: { source: "S1", n: 4 },
 };
 export async function adminAutoLock(pin: unknown, peringkat: unknown) {
   const chk = requirePin(pin); if (!chk.ok) return chk;
   const target = String(peringkat || "").toUpperCase();
   const cfg = ADVANCE[target];
-  if (!cfg) return { ok: false, ralat: "Hanya S2 atau S3P1 boleh dikunci." };
+  if (!cfg) return { ok: false, ralat: "Hanya S3P1 boleh dikunci." };
   const rk = await buildRanking(cfg.source);
   if (!rk.pasukan.length) return { ok: false, ralat: "Tiada keputusan " + cfg.source + " untuk menentukan kelayakan." };
   const list = rk.pasukan.slice(0, cfg.n).map((p) => p.daerah);
@@ -489,7 +488,7 @@ export async function adminAutoLock(pin: unknown, peringkat: unknown) {
 export async function adminLock(pin: unknown, peringkat: unknown, daerahList: unknown) {
   const chk = requirePin(pin); if (!chk.ok) return chk;
   const p = String(peringkat || "").toUpperCase();
-  if (!["S2", "S3P1"].includes(p)) return { ok: false, ralat: "Hanya S2 atau S3P1 boleh dikunci." };
+  if (p !== "S3P1") return { ok: false, ralat: "Hanya S3P1 boleh dikunci." };
   let list: string[] = typeof daerahList === "string" ? daerahList.split(",") : (daerahList as string[]) || [];
   list = list.map(normDaerah).filter(Boolean);
   if (!list.length) return { ok: false, ralat: "Senarai daerah kosong." };
