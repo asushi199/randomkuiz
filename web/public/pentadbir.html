@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pentadbir — Kuiz Ilmuan Cilik</title>
     <link rel="stylesheet" href="css/style.css?v=6" />
-    <link rel="stylesheet" href="css/admin.css?v=16" />
+    <link rel="stylesheet" href="css/admin.css?v=17" />
   </head>
   <body>
     <header class="header header-admin">
@@ -210,6 +210,37 @@
           </div>
         </section>
 
+        <!-- Pengurusan peserta -->
+        <section class="card tab-sec" id="sec-peserta" data-show="set">
+          <h2>Peserta</h2>
+          <p class="hint">Daftar / betulkan senarai peserta (nama, daerah, IC, sekolah). Senarai ini juga digunakan untuk sahkan log masuk peserta.</p>
+          <div class="inline-controls">
+            <select id="ps-daerah" aria-label="Daerah peserta"></select>
+            <input type="text" id="ps-ic" placeholder="No. IC" inputmode="numeric" autocomplete="off" />
+            <input type="text" id="ps-nama" placeholder="Nama penuh" autocomplete="off" />
+            <input type="text" id="ps-sekolah" placeholder="Sekolah" autocomplete="off" />
+            <button type="button" class="btn btn-primary btn-sm" id="ps-save">Tambah</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="ps-cancel" hidden>Batal</button>
+          </div>
+          <p id="ps-err" class="error" hidden></p>
+          <p id="ps-msg" class="success" hidden></p>
+          <div class="sec-head" style="margin-top:1rem">
+            <label class="rank-filter" for="ps-filter">Daerah
+              <select id="ps-filter"></select>
+            </label>
+            <span id="ps-count" class="hint"></span>
+          </div>
+          <div class="table-wrap">
+            <table class="ranking-table" id="table-peserta">
+              <thead>
+                <tr><th>#</th><th>Nama</th><th>IC</th><th>Daerah</th><th>Sekolah</th><th>Tindakan</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p id="ps-empty" class="hint" hidden>Belum ada peserta didaftarkan.</p>
+        </section>
+
         <!-- Zon bahaya -->
         <section class="card danger-zone tab-sec" id="sec-reset" data-show="set">
           <h2>Reset Data</h2>
@@ -229,6 +260,6 @@
 
     <script src="js/config.js?v=1" onerror="this.remove()"></script>
     <script src="js/config.example.js?v=10"></script>
-    <script src="js/pentadbir.js?v=34"></script>
+    <script src="js/pentadbir.js?v=35"></script>
   </body>
 </html>

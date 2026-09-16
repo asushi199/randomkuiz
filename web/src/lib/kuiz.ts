@@ -707,3 +707,53 @@ export async function adminReset(pin: unknown, skop: unknown) {
   }
   return { ok: true, mesej: "Reset (" + s + ") selesai. Bank soalan & daerah tidak diubah." };
 }
+
+// ================= PENTADBIR: Pengurusan Peserta =================
+// Senarai peserta ini (daerah + IC + nama + sekolah) juga menjadi senarai putih
+// untuk sahkan log masuk peserta kelak.
+export async function adminPesertaList(pin: unknown) {
+  const chk = requirePin(pin); if (!chk.ok) return chk;
+  const { data, error } = await db.from("peserta").select("id,daerah,ic,nama,sekolah").order("daerah").order("nama");
+  if (error) return { ok: false, ralat: error.message };
+  const namaMap = await daerahNamaMap();
+  const peserta = (data || []).map((r) => {
+    const d = normDaerah(r.daerah);
+    return { id: r.id, daerah: d, nama_daerah: namaMap[d] || d,
+             ic: normIc(r.ic), nama: String(r.nama || ""), sekolah: String(r.sekolah || "") };
+  });
+  return { ok: true, peserta, daerah: await getDaerahList() };
+}
+
+export async function adminPesertaSave(pin: unknown, idRaw: unknown, daerahRaw: unknown, icRaw: unknown, namaRaw: unknown, sekolahRaw: unknown) {
+  const chk = requirePin(pin); if (!chk.ok) return chk;
+  const daerah = normDaerah(daerahRaw);
+  const ic = normIc(icRaw);
+  const nama = normNama(namaRaw);
+  const sekolah = String(sekolahRaw ?? "").trim();
+  const id = String(idRaw ?? "").trim();
+  if (!daerah) return { ok: false, ralat: "Sila pilih daerah." };
+  if (!(await isValidDaerah(daerah))) return { ok: false, ralat: "Daerah tidak sah." };
+  if (!ic || ic.length < 6) return { ok: false, ralat: "No. Kad Pengenalan tidak sah." };
+  if (!nama) return { ok: false, ralat: "Nama penuh diperlukan." };
+  // Halang IC pendua (milik rekod lain)
+  const { data: dup } = await db.from("peserta").select("id").eq("ic", ic).maybeSingle();
+  if (dup && dup.id !== id) return { ok: false, ralat: "IC ini sudah didaftarkan untuk peserta lain." };
+  const row = { daerah, ic, nama, sekolah };
+  if (id) {
+    const { error } = await db.from("peserta").update(row).eq("id", id);
+    if (error) return { ok: false, ralat: error.message };
+    return { ok: true, mesej: "Peserta dikemas kini." };
+  }
+  const { error } = await db.from("peserta").insert(row);
+  if (error) return { ok: false, ralat: error.message };
+  return { ok: true, mesej: "Peserta ditambah." };
+}
+
+export async function adminPesertaDelete(pin: unknown, idRaw: unknown) {
+  const chk = requirePin(pin); if (!chk.ok) return chk;
+  const id = String(idRaw ?? "").trim();
+  if (!id) return { ok: false, ralat: "id diperlukan." };
+  const { error } = await db.from("peserta").delete().eq("id", id);
+  if (error) return { ok: false, ralat: error.message };
+  return { ok: true, mesej: "Peserta dipadam." };
+}

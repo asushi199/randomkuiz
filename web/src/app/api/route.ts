@@ -26,6 +26,9 @@ async function dispatch(action: string, p: Payload) {
     case "adminSetManual": return K.adminSetManual(p.pin, p.peringkat, p.daerah, p.mata1, p.mata2, p.mata3, p.catatan);
     case "adminFinal": return K.adminFinal(p.pin);
     case "adminReset": return K.adminReset(p.pin, p.skop);
+    case "adminPesertaList": return K.adminPesertaList(p.pin);
+    case "adminPesertaSave": return K.adminPesertaSave(p.pin, p.id, p.daerah, p.ic, p.nama, p.sekolah);
+    case "adminPesertaDelete": return K.adminPesertaDelete(p.pin, p.id);
     default: return { ok: false, ralat: "Tindakan tidak dikenali." };
   }
 }

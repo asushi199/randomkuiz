@@ -21,6 +21,9 @@
   const manualTimers = {};
   const manualBusy = {};
   const manualNeed = {};
+  let pesertaList = [];
+  let pesertaEditId = "";
+  let pesertaSelFilled = false;
 
   function getApiUrl() { return ((window.EXAM_CONFIG || {}).API_URL || "").trim(); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -216,6 +219,8 @@
     } else if (tab === "s3") {
       setS3Round(s3Round || "S3P1");
       refreshManualTeams();
+    } else if (tab === "set") {
+      loadPeserta();
     }
   }
 
@@ -765,6 +770,98 @@
     }
   }
 
+  // ---------- Pengurusan Peserta ----------
+  function fillPesertaDaerah() {
+    if (pesertaSelFilled || !daerahList.length) return;
+    const sel = $("#ps-daerah"), fil = $("#ps-filter");
+    if (!sel || !fil) return;
+    sel.innerHTML = ""; fil.innerHTML = "";
+    opt(sel, "", "— Pilih daerah —");
+    opt(fil, "", "Semua daerah");
+    daerahList.forEach((d) => { opt(sel, d.kod, d.nama); opt(fil, d.kod, d.nama); });
+    pesertaSelFilled = true;
+  }
+
+  async function loadPeserta() {
+    fillPesertaDaerah();
+    try {
+      const data = await apiCall("adminPesertaList", { pin });
+      if (!data.ok) { showErr($("#ps-err"), data.ralat || "Gagal memuatkan peserta."); return; }
+      if (data.daerah && data.daerah.length) { daerahList = data.daerah; fillPesertaDaerah(); }
+      pesertaList = data.peserta || [];
+      renderPeserta();
+    } catch (e) { showErr($("#ps-err"), e.message || "Ralat sambungan."); }
+  }
+
+  function renderPeserta() {
+    const filter = ($("#ps-filter") && $("#ps-filter").value) || "";
+    const shown = filter ? pesertaList.filter((r) => r.daerah === filter) : pesertaList;
+    const tb = $("#table-peserta").querySelector("tbody"); tb.innerHTML = "";
+    shown.forEach((r, i) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML =
+        "<td>" + (i + 1) + "</td><td>" + esc(r.nama) + "</td><td>" + esc(r.ic) + "</td>" +
+        "<td>" + esc(r.nama_daerah || r.daerah) + "</td><td>" + esc(r.sekolah || "-") + "</td>" +
+        '<td class="ps-actions">' +
+          '<button type="button" class="btn btn-secondary btn-sm" data-ps-edit="' + esc(r.id) + '">Edit</button> ' +
+          '<button type="button" class="btn btn-danger btn-sm" data-ps-del="' + esc(r.id) + '">Padam</button></td>';
+      tb.appendChild(tr);
+    });
+    const empty = $("#ps-empty"); if (empty) empty.hidden = shown.length > 0;
+    const count = $("#ps-count");
+    if (count) count.textContent = pesertaList.length + " peserta" + (filter ? " · " + shown.length + " dipapar" : "");
+  }
+
+  function resetPesertaForm() {
+    pesertaEditId = "";
+    $("#ps-ic").value = ""; $("#ps-nama").value = ""; $("#ps-sekolah").value = "";
+    const btn = $("#ps-save"); if (btn) btn.textContent = "Tambah";
+    const cancel = $("#ps-cancel"); if (cancel) cancel.hidden = true;
+  }
+
+  async function savePeserta() {
+    showErr($("#ps-err"), "");
+    const daerah = ($("#ps-daerah") && $("#ps-daerah").value) || "";
+    const ic = $("#ps-ic").value.trim();
+    const nama = $("#ps-nama").value.trim();
+    const sekolah = $("#ps-sekolah").value.trim();
+    if (!daerah) { showErr($("#ps-err"), "Sila pilih daerah."); return; }
+    if (!ic || !nama) { showErr($("#ps-err"), "Sila isi IC dan nama."); return; }
+    const btn = $("#ps-save"); if (btn) btn.disabled = true;
+    try {
+      const data = await apiCall("adminPesertaSave", { pin, id: pesertaEditId, daerah, ic, nama, sekolah });
+      if (!data.ok) { showErr($("#ps-err"), data.ralat || "Gagal menyimpan."); return; }
+      showOk($("#ps-msg"), data.mesej || "Disimpan.");
+      resetPesertaForm();
+      await loadPeserta();
+    } catch (e) { showErr($("#ps-err"), e.message || "Ralat sambungan."); }
+    finally { if (btn) btn.disabled = false; }
+  }
+
+  function editPeserta(id) {
+    const r = pesertaList.find((x) => x.id === id);
+    if (!r) return;
+    pesertaEditId = id;
+    if ($("#ps-daerah")) $("#ps-daerah").value = r.daerah;
+    $("#ps-ic").value = r.ic; $("#ps-nama").value = r.nama; $("#ps-sekolah").value = r.sekolah || "";
+    const btn = $("#ps-save"); if (btn) btn.textContent = "Simpan";
+    const cancel = $("#ps-cancel"); if (cancel) cancel.hidden = false;
+    showErr($("#ps-err"), "");
+    const nama = $("#ps-nama"); if (nama) nama.focus();
+  }
+
+  async function deletePeserta(id) {
+    const r = pesertaList.find((x) => x.id === id);
+    if (!confirm("Padam peserta " + (r ? r.nama : "") + "?")) return;
+    try {
+      const data = await apiCall("adminPesertaDelete", { pin, id });
+      if (!data.ok) { showErr($("#ps-err"), data.ralat || "Gagal memadam."); return; }
+      showOk($("#ps-msg"), data.mesej || "Dipadam.");
+      if (pesertaEditId === id) resetPesertaForm();
+      await loadPeserta();
+    } catch (e) { showErr($("#ps-err"), e.message || "Ralat sambungan."); }
+  }
+
   // ---------- Init ----------
   function init() {
     if (!getApiUrl()) { $("#config-warning").hidden = false; return; }
@@ -815,6 +912,22 @@
       if (b.dataset.print) handleExport(b.dataset.print, "print");
       else if (b.dataset.csv) handleExport(b.dataset.csv, "csv");
     });
+    // Pengurusan peserta
+    const psSave = $("#ps-save"); if (psSave) psSave.addEventListener("click", savePeserta);
+    const psCancel = $("#ps-cancel"); if (psCancel) psCancel.addEventListener("click", resetPesertaForm);
+    const psFilter = $("#ps-filter"); if (psFilter) psFilter.addEventListener("change", renderPeserta);
+    const tblPeserta = $("#table-peserta");
+    if (tblPeserta) tblPeserta.addEventListener("click", (e) => {
+      const ed = e.target.closest("[data-ps-edit]");
+      const dl = e.target.closest("[data-ps-del]");
+      if (ed) editPeserta(ed.getAttribute("data-ps-edit"));
+      else if (dl) deletePeserta(dl.getAttribute("data-ps-del"));
+    });
+    ["#ps-ic", "#ps-nama", "#ps-sekolah"].forEach((s) => {
+      const el = $(s);
+      if (el) el.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); savePeserta(); } });
+    });
+
     $("#btn-reset").addEventListener("click", reset);
     const btnResetP2 = $("#btn-reset-s3p2");
     if (btnResetP2) btnResetP2.addEventListener("click", resetS3p2);

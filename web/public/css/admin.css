@@ -20,6 +20,7 @@ input[type="password"] { width: 100%; }
 }
 .inline-controls { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .inline-controls .btn { margin-top: 0; }
+.btn[hidden] { display: none; }
 .inline-controls[hidden] { display: none; }
 .inline-controls input[type="text"] { width: auto; min-width: 180px; }
 .sr-inline { margin: 0; font-weight: 600; }
