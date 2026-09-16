@@ -190,6 +190,7 @@
       if (title) title.textContent = "Kedudukan Pusingan 1";
       loadRanking();
     }
+    if (p2) loadRebutanMarkah();
   }
 
   function activateTab(tab) {
@@ -453,6 +454,30 @@
     });
   }
 
+  async function loadRebutanMarkah() {
+    const empty = $("#s3p2-empty");
+    const tb = $("#table-s3p2") && $("#table-s3p2").querySelector("tbody");
+    if (!tb) return;
+    tb.innerHTML = "";
+    const data = await apiCall("adminRebutanState", { pin });
+    if (!data.ok) {
+      if (empty) { empty.hidden = false; empty.textContent = data.ralat || "Gagal memuatkan markah."; }
+      return;
+    }
+    const list = data.pasukan || [];
+    if (!list.length) {
+      if (empty) { empty.hidden = false; empty.textContent = "Belum ada pasukan layak. Kunci 4 teratas ke Saringan 3 dahulu."; }
+      return;
+    }
+    if (empty) empty.hidden = true;
+    list.forEach((r, i) => {
+      const tr = document.createElement("tr");
+      if (i === 0 && Number(r.mata) > 0) tr.className = "rank-top";
+      tr.innerHTML = "<td>" + (i + 1) + "</td><td>" + (r.nama_daerah || r.daerah) + "</td><td><strong>" + (r.mata || 0) + "</strong></td>";
+      tb.appendChild(tr);
+    });
+  }
+
   async function final() {
     const data = await apiCall("adminFinal", { pin });
     if (!data.ok) { showOk($("#manual-msg"), data.ralat || "Gagal."); return; }
@@ -712,6 +737,8 @@
     });
     $("#btn-reset").addEventListener("click", reset);
     $("#btn-open-skrin").addEventListener("click", () => window.open("skrin.html?v=7", "_blank"));
+    const btnS3p2 = $("#btn-s3p2-refresh");
+    if (btnS3p2) btnS3p2.addEventListener("click", loadRebutanMarkah);
 
     // Auto log masuk jika PIN diingati (elak log masuk semula selepas muat semula / buka semula)
     const saved = loadPin();
