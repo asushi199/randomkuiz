@@ -67,7 +67,6 @@
       renderPanel(data);
       $("#view-pin").hidden = true;
       $("#view-panel").hidden = false;
-      activateTab("s1");
     } catch (e) {
       if (isAuto) $("#view-pin").hidden = false;
       else showErr($("#pin-error"), e.message || "Ralat sambungan.");
@@ -77,13 +76,9 @@
   function logout() { clearPin(); pin = ""; location.reload(); }
 
   function renderPanel(state) {
-    // Peringkat: rel progres (stage rail)
-    setPeringkatSemasa(state.peringkat_aktif);
-
     const revSel = $("#review-peringkat");
     if (revSel && !revSel.options.length) RANK_STAGES.forEach((s) => opt(revSel, s, PERINGKAT_LABEL[s]));
-
-    // Markah manual: hanya pasukan layak S3P1 (finalis)
+    setPeringkatSemasa(state.peringkat_aktif);
     renderManualTeams(state.kelayakan && state.kelayakan.S3P1);
   }
 
@@ -152,6 +147,7 @@
     el.textContent = PERINGKAT_LABEL[p] || p;
     el.dataset.p = p;
     buildStageRail();
+    syncRankTabToLive();
   }
 
   async function setPeringkat(s) {
@@ -164,6 +160,19 @@
   // ---------- Tab setiap saringan ----------
   const TAB_PERINGKAT = { s1: "S1", s2: "S2", s3: "S3P1" };
   let s3Round = "S3P1";
+
+  function tabForLiveStage(p) {
+    if (p === "S1") return "s1";
+    if (p === "S2") return "s2";
+    if (p === "S3P1" || p === "S3P2" || p === "S3P3") return "s3";
+    return "";
+  }
+
+  function syncRankTabToLive() {
+    const tab = tabForLiveStage(liveStage) || "s1";
+    if (tab === "s3") s3Round = liveStage;
+    activateTab(tab);
+  }
 
   function setS3Round(round) {
     s3Round = round;
