@@ -69,51 +69,88 @@
 
       .stage {
         display: flex; flex-direction: column; justify-content: center;
-        padding: 4vh 4vw 3vh; min-width: 0;
+        padding: 3vh 3.2vw 2.5vh; min-width: 0;
         background:
           radial-gradient(1200px 500px at 10% -10%, rgba(255,255,255,.45), transparent 55%),
           var(--hall);
       }
       .topik {
-        margin: 0 0 0.85rem;
+        margin: 0 0 1.1rem;
         color: var(--green);
-        font-size: 0.95rem;
+        font-size: clamp(1.05rem, 1.6vw, 1.35rem);
         font-weight: 700;
       }
       .soalan {
         font-family: "Source Serif 4", Georgia, serif;
-        font-size: clamp(1.7rem, 3.4vw, 2.85rem);
+        font-size: clamp(2.4rem, 5.4vw, 4.5rem);
         font-weight: 700;
-        line-height: 1.28;
-        letter-spacing: -0.015em;
-        margin: 0 0 4vh;
-        max-width: 38ch;
+        line-height: 1.22;
+        letter-spacing: -0.02em;
+        margin: 0 0 4.5vh;
+        max-width: none;
       }
       .opsyen {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 1.1rem 1.6rem;
+        gap: 1.8rem 2.4rem;
       }
       .opt {
         display: grid;
-        grid-template-columns: 2.1rem 1fr;
-        gap: 0.75rem;
-        align-items: start;
-        padding: 0.15rem 0.15rem 0.35rem;
-        border-bottom: 1.5px solid var(--line);
-        font-size: clamp(1.05rem, 1.8vw, 1.45rem);
-        font-weight: 600;
-        line-height: 1.35;
+        grid-template-columns: 3.1rem 1fr auto;
+        gap: 1rem;
+        align-items: center;
+        padding: 0.85rem 1rem;
+        border: 2px solid transparent;
+        border-bottom: 2px solid var(--line);
+        border-radius: 10px;
+        font-size: clamp(1.55rem, 2.8vw, 2.45rem);
+        font-weight: 700;
+        line-height: 1.32;
+        cursor: pointer;
+        text-align: left;
+        font-family: inherit;
+        color: inherit;
+        background: transparent;
+        width: 100%;
+      }
+      .opt:hover {
+        background: rgba(14, 107, 79, 0.08);
+        border-bottom-color: var(--green);
       }
       .opt .huruf {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 2.6rem; height: 2.6rem;
+        border-radius: 8px;
+        background: var(--green);
+        color: #fff;
         font-weight: 800;
-        color: var(--green);
+        font-size: 0.85em;
         font-variant-numeric: tabular-nums;
+        flex: none;
       }
-      .opt.betul { border-bottom-color: var(--gold); }
-      .opt.betul .huruf { color: var(--gold-ink); }
+      .opt .teks { min-width: 0; }
+      .opt .tanda {
+        display: none;
+        font-size: 0.72em;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+      }
+      .opsyen.is-on .opt:not(.betul) { opacity: 0.38; cursor: default; }
+      .opsyen.is-on .opt:not(.betul):hover { background: transparent; border-bottom-color: var(--line); }
+      .opt.betul {
+        background: var(--gold);
+        color: var(--gold-ink);
+        border: 3px solid #8e6c18;
+        border-bottom: 3px solid #8e6c18;
+        box-shadow: 0 8px 22px rgba(62, 46, 8, 0.22);
+        cursor: default;
+      }
+      .opt.betul:hover { background: var(--gold); }
+      .opt.betul .huruf { background: var(--gold-ink); color: var(--gold); }
+      .opt.betul .tanda { display: inline; }
 
-      /* Kedudukan — satu senarai pasukan, beri markah di sini */
+      /* Papan markah — satu senarai pasukan, beri mata di sini */
       .papan {
         background: var(--green-d);
         color: #e7f3ed;
@@ -237,9 +274,9 @@
           <div class="soalan" id="soalan"></div>
           <div class="opsyen" id="opsyen"></div>
         </div>
-        <aside class="papan" aria-label="Kedudukan pasukan">
+        <aside class="papan" aria-label="Markah pasukan">
           <div class="papan-head">
-            <h2>Kedudukan</h2>
+            <h2>Markah</h2>
             <label class="papan-mata">Beri <input type="number" id="mata" value="5" min="1" /> mata</label>
           </div>
           <div class="papan-list" id="papan-list"></div>
@@ -350,18 +387,23 @@
           $("prog").textContent = "Soalan " + (idx + 1) + " / " + soalan.length;
           $("topik").textContent = q.topik || "";
           $("soalan").textContent = q.soalan;
-          var wrap = $("opsyen"); wrap.innerHTML = "";
+          var wrap = $("opsyen"); wrap.innerHTML = ""; wrap.className = "opsyen";
           ["A", "B", "C", "D"].forEach(function (l) {
-            var div = document.createElement("div");
-            div.className = "opt"; div.dataset.huruf = l;
-            div.innerHTML = '<span class="huruf">' + l + "</span><span>" + esc(q[l] || "") + "</span>";
-            wrap.appendChild(div);
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "opt";
+            btn.dataset.huruf = l;
+            btn.innerHTML = '<span class="huruf">' + l + '</span><span class="teks">' +
+              esc(q[l] || "") + '</span><span class="tanda">Jawapan</span>';
+            btn.addEventListener("click", reveal);
+            wrap.appendChild(btn);
           });
         }
         function reveal() {
           if (revealed) return;
           revealed = true;
           var q = soalan[idx];
+          $("opsyen").classList.add("is-on");
           Array.prototype.forEach.call(document.querySelectorAll(".opt"), function (el) {
             if (el.dataset.huruf === q.jawapan) el.classList.add("betul");
           });
