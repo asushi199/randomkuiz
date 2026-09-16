@@ -3,134 +3,253 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Skrin Rebutan — Kuiz Ilmuan Cilik</title>
+    <title>Skrin Pusingan 2 — Kuiz Ilmuan Cilik</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet" />
     <style>
       :root {
-        --cream: #f7f3e8; --white: #ffffff; --ink: #123a2e;
-        --green: #0e6b4f; --green-d: #0a5540; --green-l: #e6f1ea;
-        --gold: #c79a3b; --gold-d: #a67d24; --line: #e6dfcc; --muted: #5f7168;
+        --hall: #d7e4dc;
+        --paper: #f4f8f5;
+        --ink: #14342a;
+        --green: #0e6b4f;
+        --green-d: #0a4636;
+        --muted: #4d645a;
+        --gold: #c79a3b;
+        --gold-ink: #3d2e08;
+        --line: #c5d5cc;
+        --white: #ffffff;
+        --danger: #b3402f;
       }
       * { box-sizing: border-box; }
+      html, body { height: 100%; }
       body {
-        margin: 0; min-height: 100vh; background: var(--cream); color: var(--ink);
-        font-family: "Segoe UI", system-ui, sans-serif; display: flex; flex-direction: column;
+        margin: 0;
+        background: var(--hall);
+        color: var(--ink);
+        font-family: "Source Sans 3", "Segoe UI", sans-serif;
+        display: flex;
+        flex-direction: column;
       }
+
       /* Gate */
-      .gate { margin: auto; text-align: center; padding: 2rem; }
-      .gate h2 { color: var(--green); font-size: 2rem; margin: 0 0 .5rem; }
-      .gate input { padding: .75rem 1rem; font-size: 1.1rem; border-radius: 10px; border: 2px solid var(--line); width: 280px; }
-      .gate button { margin-top: 1rem; padding: .75rem 1.8rem; font-size: 1.1rem; border: none; border-radius: 10px; background: var(--green); color: #fff; cursor: pointer; font-weight: 600; }
-      .gate .err { color: #b3402f; margin-top: .75rem; min-height: 1.2em; }
-
-      /* Top bar */
-      .topbar {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 1rem 1.6rem; background: linear-gradient(100deg, var(--green), var(--green-d)); color: #fff;
+      .gate { margin: auto; text-align: center; padding: 2rem 1.25rem; max-width: 26rem; }
+      .gate h2 {
+        font-family: "Source Serif 4", Georgia, serif;
+        font-size: 2rem; font-weight: 700; margin: 0 0 0.4rem; color: var(--green-d);
       }
-      .topbar .tajuk { font-size: 1.2rem; font-weight: 700; letter-spacing: .01em; }
-      .topbar .prog { font-size: 1.2rem; font-weight: 800; color: #ffe6a6; }
-
-      /* Stage */
-      .stage { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 3vh 5vw; gap: 2.6vh; }
-      .topik-badge {
-        align-self: flex-start; padding: .35rem 1.1rem; border-radius: 999px;
-        background: var(--green-l); border: 1px solid var(--green); color: var(--green-d);
-        font-size: 1.25rem; font-weight: 700; letter-spacing: .03em;
+      .gate p { color: var(--muted); margin: 0 0 1.1rem; }
+      .gate input {
+        width: 100%; padding: 0.8rem 1rem; font-size: 1.05rem;
+        border-radius: 8px; border: 1.5px solid var(--line); font-family: inherit;
       }
-      .soalan { font-size: clamp(1.9rem, 4vw, 3.3rem); font-weight: 800; line-height: 1.32; color: var(--ink); }
-      .opsyen { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6vh 2vw; }
+      .gate button {
+        margin-top: 0.85rem; width: 100%; padding: 0.8rem 1.4rem; font-size: 1.05rem;
+        border: none; border-radius: 8px; background: var(--green); color: #fff;
+        cursor: pointer; font-weight: 700; font-family: inherit;
+      }
+      .gate button:hover { background: var(--green-d); }
+      .gate .err { color: var(--danger); margin-top: 0.75rem; min-height: 1.2em; font-weight: 600; }
+
+      /* Papan */
+      #main { display: none; flex: 1; flex-direction: column; min-height: 0; }
+      .mast {
+        display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
+        padding: 0.7rem 1.4rem 0.55rem;
+        background: var(--green-d); color: #e7f3ed;
+      }
+      .mast .tajuk { font-weight: 700; font-size: 1.05rem; }
+      .mast .prog { font-weight: 800; font-size: 1.05rem; color: #f3d48a; font-variant-numeric: tabular-nums; }
+
+      .board {
+        flex: 1; min-height: 0; display: grid;
+        grid-template-columns: minmax(0, 1fr) 17.5rem;
+        gap: 0;
+      }
+
+      .stage {
+        display: flex; flex-direction: column; justify-content: center;
+        padding: 4vh 4vw 3vh; min-width: 0;
+        background:
+          radial-gradient(1200px 500px at 10% -10%, rgba(255,255,255,.45), transparent 55%),
+          var(--hall);
+      }
+      .topik {
+        margin: 0 0 0.85rem;
+        color: var(--green);
+        font-size: 0.95rem;
+        font-weight: 700;
+      }
+      .soalan {
+        font-family: "Source Serif 4", Georgia, serif;
+        font-size: clamp(1.7rem, 3.4vw, 2.85rem);
+        font-weight: 700;
+        line-height: 1.28;
+        letter-spacing: -0.015em;
+        margin: 0 0 4vh;
+        max-width: 38ch;
+      }
+      .opsyen {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.1rem 1.6rem;
+      }
       .opt {
-        display: flex; align-items: center; gap: 1rem; padding: 1.5vh 1.5vw;
-        background: var(--white); border: 2px solid var(--line); border-radius: 16px;
-        font-size: clamp(1.3rem, 2.4vw, 2rem); box-shadow: 0 2px 8px rgba(18,58,46,.06);
+        display: grid;
+        grid-template-columns: 2.1rem 1fr;
+        gap: 0.75rem;
+        align-items: start;
+        padding: 0.15rem 0.15rem 0.35rem;
+        border-bottom: 1.5px solid var(--line);
+        font-size: clamp(1.05rem, 1.8vw, 1.45rem);
+        font-weight: 600;
+        line-height: 1.35;
       }
       .opt .huruf {
-        display: inline-flex; align-items: center; justify-content: center;
-        width: 2.5rem; height: 2.5rem; border-radius: 10px; background: var(--green); color: #fff;
-        font-weight: 800; flex-shrink: 0;
+        font-weight: 800;
+        color: var(--green);
+        font-variant-numeric: tabular-nums;
       }
-      .opt.betul { background: var(--green-l); border-color: var(--green); }
-      .opt.betul .huruf { background: var(--gold); color: #3a2c05; }
+      .opt.betul { border-bottom-color: var(--gold); }
+      .opt.betul .huruf { color: var(--gold-ink); }
 
-      /* Papan skor */
-      .skor-strip {
-        display: flex; gap: 1rem; padding: .9rem 1.6rem; background: #efe8d5;
-        border-top: 1px solid var(--line); overflow-x: auto;
+      /* Kedudukan — satu senarai pasukan, beri markah di sini */
+      .papan {
+        background: var(--green-d);
+        color: #e7f3ed;
+        display: flex;
+        flex-direction: column;
+        padding: 1.1rem 1rem 1rem;
+        border-left: 1px solid rgba(255,255,255,.08);
       }
-      .skor-card {
-        flex: 1 1 0; min-width: 150px; background: var(--white); border: 2px solid var(--line);
-        border-radius: 14px; padding: .6rem 1rem; text-align: center;
+      .papan-head {
+        display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem;
+        margin-bottom: 0.85rem;
       }
-      .skor-card.lead { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(199,154,59,.25); }
-      .skor-nama { font-size: .95rem; font-weight: 700; color: var(--green-d); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .skor-mata { font-size: 2.1rem; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1.1; }
-      .skor-mata small { font-size: .9rem; color: var(--muted); font-weight: 600; }
+      .papan-head h2 {
+        margin: 0; font-size: 0.78rem; font-weight: 700;
+        letter-spacing: 0.04em; color: #9cb8ac;
+      }
+      .papan-mata {
+        display: flex; align-items: center; gap: 0.35rem;
+        font-size: 0.78rem; color: #c5d9ce;
+      }
+      .papan-mata input {
+        width: 3.1rem; padding: 0.2rem 0.3rem;
+        border-radius: 4px; border: 1px solid rgba(255,255,255,.2);
+        background: rgba(0,0,0,.2); color: #fff;
+        font: inherit; font-weight: 700; text-align: center;
+      }
+      .papan-list { display: flex; flex-direction: column; gap: 0.55rem; flex: 1; }
+      .pasukan {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 0.55rem;
+        align-items: center;
+        padding: 0.7rem 0.65rem 0.7rem 0.8rem;
+        background: rgba(255,255,255,.06);
+        border-left: 3px solid transparent;
+      }
+      .pasukan.lead { border-left-color: var(--gold); background: rgba(199,154,59,.16); }
+      .pasukan.flash { background: rgba(199,154,59,.32); }
+      .pasukan .nama {
+        font-weight: 700; font-size: 0.95rem;
+        min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      }
+      .pasukan .angka {
+        font-weight: 800; font-size: 1.55rem; line-height: 1;
+        font-variant-numeric: tabular-nums;
+        min-width: 1.6rem; text-align: right;
+      }
+      .beri {
+        font-family: inherit; font-weight: 800; font-size: 0.92rem;
+        padding: 0.38rem 0.55rem; min-width: 3.1rem;
+        border: none; border-radius: 4px; cursor: pointer;
+        background: var(--gold); color: var(--gold-ink);
+      }
+      .beri:hover { filter: brightness(1.08); }
+      .beri:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+      .papan-hint {
+        margin: 0.85rem 0 0;
+        font-size: 0.78rem; line-height: 1.4; color: #9cb8ac;
+      }
+      .papan-empty { color: #f3d48a; font-size: 0.9rem; line-height: 1.4; }
 
-      /* Kawalan */
+      /* Kawalan: soalan sahaja */
       .kawalan {
-        display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
-        padding: .85rem 1.6rem; background: var(--white); border-top: 1px solid var(--line);
+        display: flex; align-items: center; justify-content: center; gap: 0.65rem;
+        padding: 0.65rem 1rem;
+        background: var(--paper);
+        border-top: 1px solid var(--line);
       }
-      .kawalan button { padding: .6rem 1.1rem; font-size: 1rem; border: none; border-radius: 9px; cursor: pointer; background: #e7ecea; color: var(--ink); font-weight: 600; }
-      .kawalan button.primary { background: var(--green); color: #fff; }
-      .kawalan button.reveal { background: var(--gold); color: #3a2c05; }
-      .kawalan .sep { flex: 1; }
-      .kawalan .mata-input { width: 64px; padding: .5rem; border-radius: 8px; border: 2px solid var(--line); font-size: 1rem; }
-      .team-btns { display: flex; gap: .6rem; flex-wrap: wrap; }
-      .team-btns button {
-        display: inline-flex; align-items: center; gap: .5rem;
-        background: var(--white); color: var(--green-d); border: 2px solid var(--green);
-        padding: .5rem .95rem; border-radius: 999px; font-weight: 700; font-size: 1.02rem;
-        box-shadow: 0 2px 7px rgba(14,107,79,.16); transition: transform .08s, background .14s, color .14s;
+      .kawalan button {
+        font-family: inherit; font-weight: 700; font-size: 0.95rem;
+        padding: 0.55rem 1.15rem; border-radius: 6px; cursor: pointer;
+        border: 1.5px solid var(--line); background: var(--white); color: var(--ink);
       }
-      .team-btns button:hover { background: var(--green); color: #fff; transform: translateY(-2px); box-shadow: 0 5px 14px rgba(14,107,79,.28); }
-      .team-btns button:active { transform: scale(.96); }
-      .team-btns button .tk {
-        display: inline-flex; align-items: center; justify-content: center;
-        width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--green); color: #fff;
-        font-size: .85rem; flex: none;
-      }
-      .team-btns button:hover .tk { background: #fff; color: var(--green); }
-      .team-note { color: #9a5b12; font-size: .95rem; }
+      .kawalan button:hover { border-color: var(--green); color: var(--green); }
+      .kawalan button.reveal { background: var(--gold); border-color: var(--gold); color: var(--gold-ink); }
+      .kawalan button.reveal:hover { filter: brightness(1.05); color: var(--gold-ink); }
+      .kawalan button.primary { background: var(--green); border-color: var(--green); color: #fff; }
+      .kawalan button.primary:hover { background: var(--green-d); color: #fff; }
 
       .toast {
-        position: fixed; bottom: 130px; left: 50%; transform: translateX(-50%);
-        background: var(--green-d); color: #fff; padding: .7rem 1.4rem; border-radius: 10px;
-        font-size: 1.05rem; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none;
+        position: fixed; top: 4.2rem; right: 1.2rem;
+        background: var(--gold); color: var(--gold-ink);
+        padding: 0.55rem 0.95rem; border-radius: 6px;
+        font-weight: 800; font-size: 1rem;
+        opacity: 0; transition: opacity .2s; pointer-events: none;
       }
       .toast.show { opacity: 1; }
-      @media (max-width: 700px) { .opsyen { grid-template-columns: 1fr; } }
+
+      @media (max-width: 900px) {
+        .board { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+        .papan { border-left: none; border-top: 1px solid rgba(255,255,255,.08); }
+        .papan-list { flex-direction: row; flex-wrap: wrap; }
+        .pasukan { flex: 1 1 10rem; }
+        .soalan { max-width: none; }
+      }
+      @media (max-width: 640px) {
+        .opsyen { grid-template-columns: 1fr; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .toast, .pasukan { transition: none; }
+      }
     </style>
   </head>
   <body>
     <div id="gate" class="gate">
-      <h2>Skrin Rebutan</h2>
+      <h2>Skrin Pusingan 2</h2>
       <p>Masukkan PIN pentadbir untuk memuatkan soalan.</p>
       <input type="password" id="pin" placeholder="PIN pentadbir" />
-      <br />
-      <button id="btn-masuk">Muat Soalan</button>
+      <button type="button" id="btn-masuk">Muat Soalan</button>
       <div class="err" id="err"></div>
     </div>
 
-    <div id="main" style="display:none; flex:1; flex-direction:column;">
-      <div class="topbar">
-        <span class="tajuk">Saringan 3 — Pusingan 2 · Rebutan</span>
+    <div id="main">
+      <div class="mast">
+        <span class="tajuk">Saringan 3 — Pusingan 2</span>
         <span class="prog" id="prog"></span>
       </div>
-      <div class="stage">
-        <span class="topik-badge" id="topik"></span>
-        <div class="soalan" id="soalan"></div>
-        <div class="opsyen" id="opsyen"></div>
+      <div class="board">
+        <div class="stage">
+          <p class="topik" id="topik"></p>
+          <div class="soalan" id="soalan"></div>
+          <div class="opsyen" id="opsyen"></div>
+        </div>
+        <aside class="papan" aria-label="Kedudukan pasukan">
+          <div class="papan-head">
+            <h2>Kedudukan</h2>
+            <label class="papan-mata">Beri <input type="number" id="mata" value="5" min="1" /> mata</label>
+          </div>
+          <div class="papan-list" id="papan-list"></div>
+          <p class="papan-hint">Tekan + pada pasukan yang menjawab betul.</p>
+        </aside>
       </div>
-      <div class="skor-strip" id="skor-strip"></div>
       <div class="kawalan">
-        <button id="btn-prev">◀ Sebelum</button>
-        <button id="btn-reveal" class="reveal">Papar Jawapan</button>
-        <button id="btn-next" class="primary">Seterusnya ▶</button>
-        <span class="sep"></span>
-        <span>Mata betul:</span>
-        <input type="number" id="mata" class="mata-input" value="5" min="1" />
-        <div class="team-btns" id="team-btns"></div>
+        <button type="button" id="btn-prev">Soalan sebelum</button>
+        <button type="button" id="btn-reveal" class="reveal">Papar jawapan</button>
+        <button type="button" id="btn-next" class="primary">Soalan seterusnya</button>
       </div>
     </div>
     <div class="toast" id="toast"></div>
@@ -143,6 +262,7 @@
         var API = ((window.EXAM_CONFIG || {}).API_URL || "").trim();
         var pin = "", soalan = [], idx = 0, revealed = false, teams = [];
         var daerahNama = {};
+        var skor = {};
         var $ = function (id) { return document.getElementById(id); };
 
         async function api(action, payload) {
@@ -158,6 +278,9 @@
           return String(s).replace(/[&<>"']/g, function (c) {
             return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
           });
+        }
+        function mataNilai() {
+          return Math.max(1, Number($("mata").value || 5));
         }
 
         async function masuk() {
@@ -175,46 +298,49 @@
             if (!soalan.length) { $("err").textContent = "Tiada soalan rebutan."; return; }
             $("gate").style.display = "none";
             $("main").style.display = "flex";
-            renderTeams();
             idx = 0; render();
+            renderPapan();
             loadScores();
-            setInterval(loadScores, 5000); // segar papan skor
+            setInterval(loadScores, 5000);
           } catch (e) { $("err").textContent = "Ralat sambungan."; }
-        }
-
-        function renderTeams() {
-          var wrap = $("team-btns"); wrap.innerHTML = "";
-          if (!teams.length) {
-            var note = document.createElement("span");
-            note.className = "team-note";
-            note.textContent = "Belum ada pasukan layak S3P1. Sila 'Auto-kunci' di panel pentadbir dahulu.";
-            wrap.appendChild(note);
-            return;
-          }
-          teams.forEach(function (kod) {
-            var b = document.createElement("button");
-            b.innerHTML = '<span class="tk">✔</span>' + esc(daerahNama[kod] || kod);
-            b.title = "Rekod jawapan BETUL untuk " + (daerahNama[kod] || kod);
-            b.addEventListener("click", function () { score(kod); });
-            wrap.appendChild(b);
-          });
         }
 
         async function loadScores() {
           try {
             var d = await api("adminRebutanState", { pin: pin });
-            if (d && d.ok) renderScores(d.pasukan || []);
+            if (d && d.ok) {
+              (d.pasukan || []).forEach(function (p) {
+                skor[p.daerah] = p.mata;
+                if (p.nama_daerah) daerahNama[p.daerah] = p.nama_daerah;
+              });
+              if (!teams.length) {
+                teams = (d.pasukan || []).map(function (p) { return p.daerah; });
+              }
+              renderPapan();
+            }
           } catch (e) { /* biar */ }
         }
-        function renderScores(list) {
-          var strip = $("skor-strip");
-          if (!list.length) { strip.style.display = "none"; return; }
-          strip.style.display = "flex";
-          var max = Math.max.apply(null, list.map(function (p) { return p.mata; }).concat([0]));
-          strip.innerHTML = list.map(function (p) {
-            var lead = p.mata > 0 && p.mata === max ? " lead" : "";
-            return '<div class="skor-card' + lead + '"><div class="skor-nama">' + esc(p.nama_daerah) +
-              '</div><div class="skor-mata">' + p.mata + ' <small>mata</small></div></div>';
+
+        function renderPapan() {
+          var list = $("papan-list");
+          var n = mataNilai();
+          if (!teams.length) {
+            list.innerHTML = '<p class="papan-empty">Belum ada pasukan layak. Kunci 4 teratas ke Saringan 3 dahulu.</p>';
+            return;
+          }
+          var max = 0;
+          teams.forEach(function (kod) {
+            var m = Number(skor[kod] || 0);
+            if (m > max) max = m;
+          });
+          list.innerHTML = teams.map(function (kod) {
+            var m = Number(skor[kod] || 0);
+            var lead = m > 0 && m === max ? " lead" : "";
+            return '<div class="pasukan' + lead + '" data-daerah="' + esc(kod) + '">' +
+              '<span class="nama">' + esc(daerahNama[kod] || kod) + "</span>" +
+              '<span class="angka">' + m + "</span>" +
+              '<button type="button" class="beri" data-daerah="' + esc(kod) + '" aria-label="Beri ' + n + " mata kepada " + esc(daerahNama[kod] || kod) + '">+' + n + "</button>" +
+              "</div>";
           }).join("");
         }
 
@@ -242,11 +368,17 @@
         }
         async function score(kod) {
           var q = soalan[idx];
-          var mata = Number($("mata").value || 5);
+          var mata = mataNilai();
           try {
             await api("adminRebutanScore", { pin: pin, no_soalan: q.no, daerah: kod, betul: true, mata: mata });
-            toast((daerahNama[kod] || kod) + " +" + mata + " mata");
-            loadScores();
+            skor[kod] = Number(skor[kod] || 0) + mata;
+            renderPapan();
+            var row = document.querySelector('.pasukan[data-daerah="' + kod + '"]');
+            if (row) {
+              row.classList.add("flash");
+              setTimeout(function () { row.classList.remove("flash"); }, 700);
+            }
+            toast((daerahNama[kod] || kod) + " +" + mata);
           } catch (e) { toast("Gagal merekod"); }
         }
 
@@ -255,8 +387,13 @@
         $("btn-prev").addEventListener("click", function () { if (idx > 0) { idx--; render(); } });
         $("btn-next").addEventListener("click", function () { if (idx < soalan.length - 1) { idx++; render(); } });
         $("btn-reveal").addEventListener("click", reveal);
+        $("mata").addEventListener("input", renderPapan);
+        $("papan-list").addEventListener("click", function (e) {
+          var b = e.target.closest(".beri");
+          if (b && b.dataset.daerah) score(b.dataset.daerah);
+        });
         document.addEventListener("keydown", function (e) {
-          if ($("main").style.display === "none") return;
+          if ($("main").style.display !== "flex") return;
           if (e.key === "ArrowRight") { if (idx < soalan.length - 1) { idx++; render(); } }
           if (e.key === "ArrowLeft") { if (idx > 0) { idx--; render(); } }
           if (e.key === " " || e.key === "Enter") { e.preventDefault(); reveal(); }
