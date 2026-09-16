@@ -77,21 +77,23 @@
 
       .stage {
         flex: 1;
-        display: flex; flex-direction: column; justify-content: center;
+        display: flex; flex-direction: column; justify-content: safe center;
+        gap: clamp(0.4rem, 1.5vh, 1rem);
         padding: 3vh 3.2vw 2.5vh; min-width: 0; min-height: 0;
+        overflow-y: auto;
         background:
           radial-gradient(1200px 500px at 10% -10%, rgba(255,255,255,.45), transparent 55%),
           var(--hall);
       }
       .topik {
-        margin: 0 0 0.55rem;
+        margin: 0;
         color: var(--green);
         font-size: clamp(1.05rem, 1.6vw, 1.35rem);
         font-weight: 700;
       }
       .giliran {
         display: inline-block;
-        margin: 0 0 1.15rem;
+        margin: 0;
         padding: 0.28rem 0.85rem;
         border-radius: 6px;
         font-weight: 800;
@@ -110,17 +112,17 @@
       }
       .soalan {
         font-family: "Source Serif 4", Georgia, serif;
-        font-size: clamp(2.4rem, 5.4vw, 4.5rem);
+        font-size: clamp(1.8rem, min(5.4vw, 7vh), 4.5rem);
         font-weight: 700;
         line-height: 1.22;
         letter-spacing: -0.02em;
-        margin: 0 0 4.5vh;
+        margin: 0 0 clamp(1rem, 3vh, 4.5vh);
         max-width: none;
       }
       .opsyen {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 1.8rem 2.4rem;
+        gap: clamp(0.6rem, 1.6vh, 1.8rem) 2.4rem;
       }
       .opt {
         display: grid;
@@ -131,7 +133,7 @@
         border: 2px solid transparent;
         border-bottom: 2px solid var(--line);
         border-radius: 10px;
-        font-size: clamp(1.55rem, 2.8vw, 2.45rem);
+        font-size: clamp(1.2rem, min(2.8vw, 4.2vh), 2.45rem);
         font-weight: 700;
         line-height: 1.32;
         cursor: pointer;
@@ -301,6 +303,16 @@
       }
       .toast.show { opacity: 1; }
 
+      /* Skrin pendek (mis. laptop 1366×768): rapatkan jarak & kecilkan dock */
+      @media (max-height: 820px) {
+        .stage { padding: 1.6vh 3.2vw; }
+        .opt { padding: 0.55rem 0.85rem; }
+        .opt .huruf { width: 2.2rem; height: 2.2rem; }
+        .dock { padding: 0.45rem 1.15rem 0.5rem; }
+        .papan-head { margin-bottom: 0.35rem; }
+        .pasukan .angka { font-size: 1.35rem; }
+        .kawalan { padding: 0.4rem 0 0.05rem; }
+      }
       @media (max-width: 900px) {
         .papan-list { grid-template-columns: 1fr 1fr; }
       }
