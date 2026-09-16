@@ -509,8 +509,12 @@ export async function adminRebutanScore(pin: unknown, noSoalan: unknown, daerahR
   if (!daerah) return { ok: false, ralat: "Daerah diperlukan." };
   const isBetul = betul === true || String(betul) === "true";
   const m = Number(mata != null ? mata : isBetul ? 5 : 0);
-  await db.from("rebutan_log").insert({ no_soalan: noSoalan ? Number(noSoalan) : null, daerah, betul: isBetul, mata: m, catatan: isBetul ? "betul" : "salah/tiada", masa: new Date().toISOString() });
-  return { ok: true, mesej: "Direkod: " + daerah + " " + (m >= 0 ? "+" : "") + m + " mata." };
+  if (!Number.isFinite(m) || m === 0) return { ok: false, ralat: "Mata tidak sah." };
+  await db.from("rebutan_log").insert({
+    no_soalan: noSoalan ? Number(noSoalan) : null, daerah, betul: m > 0, mata: m,
+    catatan: m > 0 ? "betul" : "pindaan", masa: new Date().toISOString(),
+  });
+  return { ok: true, mesej: "Direkod: " + daerah + " " + (m > 0 ? "+" : "") + m + " mata." };
 }
 
 // Markah rebutan semasa setiap pasukan finalis (untuk papan skor di skrin).

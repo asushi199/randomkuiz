@@ -181,9 +181,9 @@
       .pasukan {
         display: grid;
         grid-template-columns: 1fr auto auto;
-        gap: 0.55rem;
+        gap: 0.45rem;
         align-items: center;
-        padding: 0.7rem 0.65rem 0.7rem 0.8rem;
+        padding: 0.7rem 0.55rem 0.7rem 0.75rem;
         background: rgba(255,255,255,.06);
         border-left: 3px solid transparent;
       }
@@ -198,16 +198,32 @@
         font-variant-numeric: tabular-nums;
         min-width: 1.6rem; text-align: right;
       }
-      .beri {
-        font-family: inherit; font-weight: 800; font-size: 0.92rem;
-        padding: 0.38rem 0.55rem; min-width: 3.1rem;
+      .pasukan .aksi { display: flex; gap: 0.3rem; }
+      .beri, .tolak {
+        font-family: inherit; font-weight: 800; font-size: 0.88rem;
+        padding: 0.38rem 0.45rem; min-width: 2.7rem;
         border: none; border-radius: 4px; cursor: pointer;
-        background: var(--gold); color: var(--gold-ink);
       }
+      .beri { background: var(--gold); color: var(--gold-ink); }
       .beri:hover { filter: brightness(1.08); }
-      .beri:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+      .tolak {
+        background: transparent; color: #e7f3ed;
+        border: 1.5px solid rgba(255,255,255,.35);
+      }
+      .tolak:hover { background: rgba(255,255,255,.1); }
+      .tolak:disabled { opacity: 0.3; cursor: not-allowed; }
+      .beri:focus-visible, .tolak:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+      .undo {
+        margin-top: 0.7rem; width: 100%;
+        font-family: inherit; font-weight: 700; font-size: 0.82rem;
+        padding: 0.45rem 0.5rem; border-radius: 4px; cursor: pointer;
+        border: 1.5px solid rgba(255,255,255,.28);
+        background: transparent; color: #c5d9ce;
+      }
+      .undo:hover:not(:disabled) { background: rgba(255,255,255,.08); color: #fff; }
+      .undo:disabled { opacity: 0.4; cursor: not-allowed; }
       .papan-hint {
-        margin: 0.85rem 0 0;
+        margin: 0.55rem 0 0;
         font-size: 0.78rem; line-height: 1.4; color: #9cb8ac;
       }
       .papan-empty { color: #f3d48a; font-size: 0.9rem; line-height: 1.4; }
@@ -280,7 +296,8 @@
             <label class="papan-mata">Beri <input type="number" id="mata" value="5" min="1" /> mata</label>
           </div>
           <div class="papan-list" id="papan-list"></div>
-          <p class="papan-hint">Tekan + pada pasukan yang menjawab betul.</p>
+          <button type="button" class="undo" id="btn-undo" disabled>Batalkan terakhir</button>
+          <p class="papan-hint">+ beri markah. − atau Batalkan jika tertekan silap.</p>
         </aside>
       </div>
       <div class="kawalan">
@@ -300,6 +317,8 @@
         var pin = "", soalan = [], idx = 0, revealed = false, teams = [];
         var daerahNama = {};
         var skor = {};
+        var lastAksi = [];
+        var busy = false;
         var $ = function (id) { return document.getElementById(id); };
 
         async function api(action, payload) {
@@ -358,11 +377,18 @@
           } catch (e) { /* biar */ }
         }
 
+        function syncUndo() {
+          var btn = $("btn-undo");
+          if (!btn) return;
+          btn.disabled = !lastAksi.length || busy;
+        }
+
         function renderPapan() {
           var list = $("papan-list");
           var n = mataNilai();
           if (!teams.length) {
             list.innerHTML = '<p class="papan-empty">Belum ada pasukan layak. Kunci 4 teratas ke Saringan 3 dahulu.</p>';
+            syncUndo();
             return;
           }
           var max = 0;
@@ -373,12 +399,50 @@
           list.innerHTML = teams.map(function (kod) {
             var m = Number(skor[kod] || 0);
             var lead = m > 0 && m === max ? " lead" : "";
-            return '<div class="pasukan' + lead + '" data-daerah="' + esc(kod) + '">' +
-              '<span class="nama">' + esc(daerahNama[kod] || kod) + "</span>" +
+            var nama = esc(daerahNama[kod] || kod);
+            var d = esc(kod);
+            return '<div class="pasukan' + lead + '" data-daerah="' + d + '">' +
+              '<span class="nama">' + nama + "</span>" +
               '<span class="angka">' + m + "</span>" +
-              '<button type="button" class="beri" data-daerah="' + esc(kod) + '" aria-label="Beri ' + n + " mata kepada " + esc(daerahNama[kod] || kod) + '">+' + n + "</button>" +
-              "</div>";
+              '<span class="aksi">' +
+              '<button type="button" class="tolak" data-daerah="' + d + '" ' + (m <= 0 ? "disabled " : "") +
+              'aria-label="Tolak ' + n + " mata daripada " + nama + '">−' + n + "</button>" +
+              '<button type="button" class="beri" data-daerah="' + d + '" aria-label="Beri ' + n + " mata kepada " + nama + '">+' + n + "</button>" +
+              "</span></div>";
           }).join("");
+          syncUndo();
+        }
+
+        async function ubahMata(kod, delta, fromUndo) {
+          if (busy || !delta) return;
+          var cur = Number(skor[kod] || 0);
+          if (delta < 0 && cur + delta < 0) delta = -cur;
+          if (!delta) return;
+          busy = true;
+          syncUndo();
+          try {
+            var q = soalan[idx];
+            var data = await api("adminRebutanScore", {
+              pin: pin, no_soalan: q.no, daerah: kod, betul: delta > 0, mata: delta,
+            });
+            if (!data || !data.ok) { toast(data && data.ralat ? data.ralat : "Gagal merekod"); return; }
+            skor[kod] = cur + delta;
+            if (!fromUndo) lastAksi.push({ kod: kod, mata: delta });
+            renderPapan();
+            var row = document.querySelector('.pasukan[data-daerah="' + kod + '"]');
+            if (row) {
+              row.classList.add("flash");
+              setTimeout(function () { row.classList.remove("flash"); }, 700);
+            }
+            toast((daerahNama[kod] || kod) + " " + (delta > 0 ? "+" : "") + delta);
+          } catch (e) { toast("Gagal merekod"); }
+          finally { busy = false; syncUndo(); }
+        }
+
+        async function undoTerakhir() {
+          var last = lastAksi.pop();
+          if (!last) { toast("Tiada tindakan untuk dibatalkan."); syncUndo(); return; }
+          await ubahMata(last.kod, -last.mata, true);
         }
 
         function render() {
@@ -408,31 +472,18 @@
             if (el.dataset.huruf === q.jawapan) el.classList.add("betul");
           });
         }
-        async function score(kod) {
-          var q = soalan[idx];
-          var mata = mataNilai();
-          try {
-            await api("adminRebutanScore", { pin: pin, no_soalan: q.no, daerah: kod, betul: true, mata: mata });
-            skor[kod] = Number(skor[kod] || 0) + mata;
-            renderPapan();
-            var row = document.querySelector('.pasukan[data-daerah="' + kod + '"]');
-            if (row) {
-              row.classList.add("flash");
-              setTimeout(function () { row.classList.remove("flash"); }, 700);
-            }
-            toast((daerahNama[kod] || kod) + " +" + mata);
-          } catch (e) { toast("Gagal merekod"); }
-        }
-
         $("btn-masuk").addEventListener("click", masuk);
         $("pin").addEventListener("keydown", function (e) { if (e.key === "Enter") masuk(); });
         $("btn-prev").addEventListener("click", function () { if (idx > 0) { idx--; render(); } });
         $("btn-next").addEventListener("click", function () { if (idx < soalan.length - 1) { idx++; render(); } });
         $("btn-reveal").addEventListener("click", reveal);
         $("mata").addEventListener("input", renderPapan);
+        $("btn-undo").addEventListener("click", undoTerakhir);
         $("papan-list").addEventListener("click", function (e) {
-          var b = e.target.closest(".beri");
-          if (b && b.dataset.daerah) score(b.dataset.daerah);
+          var b = e.target.closest(".beri, .tolak");
+          if (!b || !b.dataset.daerah || b.disabled) return;
+          var n = mataNilai();
+          ubahMata(b.dataset.daerah, b.classList.contains("tolak") ? -n : n, false);
         });
         document.addEventListener("keydown", function (e) {
           if ($("main").style.display !== "flex") return;
