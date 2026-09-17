@@ -18,6 +18,7 @@
   let lastRanking = null;  // { pasukan, individu, peringkat } terakhir (cetak / CSV)
   let individuFilter = ""; // kod daerah untuk tapisan kedudukan individu
   let lastFinal = null;    // senarai kedudukan akhir terakhir (cetak / CSV)
+  let lastRebutan = null;  // senarai markah Pusingan 2 (rebutan) terakhir (cetak / CSV)
   const manualTimers = {};
   const manualBusy = {};
   const manualNeed = {};
@@ -545,6 +546,7 @@
       return;
     }
     const list = data.pasukan || [];
+    lastRebutan = list;
     if (!list.length) {
       if (empty) { empty.hidden = false; empty.textContent = "Belum ada pasukan layak. Kunci 4 teratas ke Saringan 2 dahulu."; }
       return;
@@ -754,6 +756,27 @@
       rows: () => (lastFinal || []).map((r) =>
         [r.kedudukan, r.nama_daerah || r.daerah, r.s3p1, r.s3p2, r.s3p3, r.jumlah, r.p1_tempoh_label || "-"]),
       stage: () => "S3-AKHIR",
+    },
+    s3p2: {
+      title: "Markah Pusingan 2 (Rebutan)",
+      headers: ["Kedudukan", "Daerah", "Markah"],
+      rows: () => (lastRebutan || []).map((r, i) =>
+        [i + 1, r.nama_daerah || r.daerah, r.mata || 0]),
+      stage: () => "S3P2",
+    },
+    s3p3: {
+      title: "Markah Pusingan 3",
+      headers: ["Bil", "Daerah", "Soalan 1", "Soalan 2", "Soalan 3", "Jumlah"],
+      rows: () => {
+        const wrap = $("#manual-rows");
+        if (!wrap) return [];
+        return Array.prototype.map.call(wrap.querySelectorAll(".manual-row"), (row, i) => {
+          const kod = row.dataset.daerah;
+          const m = bacaManualRow(kod);
+          return [i + 1, daerahNama(kod) || kod, m.m1, m.m2, m.m3, m.m1 + m.m2 + m.m3];
+        });
+      },
+      stage: () => "S3P3",
     },
   };
 
