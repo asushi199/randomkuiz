@@ -422,30 +422,26 @@
     } catch (e) { /* biar kekal */ }
   }
 
-  const S3P3_MATA = 6;
-  function qOn(btn) { return !!(btn && btn.classList.contains("is-on")); }
-  function bacaManualRow(kod) {
+  // Markah bebas: setiap soalan satu kotak nombor (integer, tidak negatif).
+  function bacaSatu(kod, n) {
     const wrap = $("#manual-rows");
-    const get = (n) => wrap && wrap.querySelector('.ml-q[data-daerah="' + kod + '"][data-q="' + n + '"]');
-    return {
-      m1: qOn(get(1)) ? S3P3_MATA : 0,
-      m2: qOn(get(2)) ? S3P3_MATA : 0,
-      m3: qOn(get(3)) ? S3P3_MATA : 0,
-    };
+    const el = wrap && wrap.querySelector('.ml-q[data-daerah="' + kod + '"][data-q="' + n + '"]');
+    const v = el ? Math.trunc(Number(el.value)) : 0;
+    return Number.isFinite(v) && v > 0 ? v : 0;
   }
-  function teksQ(n, on) { return "Soalan " + n + (on ? " · +6" : ""); }
-  function setQBtn(btn, on) {
-    if (!btn) return;
-    btn.classList.toggle("is-on", on);
-    btn.setAttribute("aria-pressed", on ? "true" : "false");
-    btn.textContent = teksQ(btn.dataset.q, on);
+  function bacaManualRow(kod) {
+    return { m1: bacaSatu(kod, 1), m2: bacaSatu(kod, 2), m3: bacaSatu(kod, 3) };
   }
   function refreshManualTotal(kod) {
     const wrap = $("#manual-rows");
     const el = wrap && wrap.querySelector('.manual-total[data-daerah="' + kod + '"]');
     if (!el) return;
     const m = bacaManualRow(kod);
-    el.textContent = (m.m1 + m.m2 + m.m3) + " / 18";
+    el.textContent = "Jumlah: " + (m.m1 + m.m2 + m.m3);
+  }
+  function jadualSimpanManual(kod) {
+    if (manualTimers[kod]) clearTimeout(manualTimers[kod]);
+    manualTimers[kod] = setTimeout(function () { manualTimers[kod] = null; simpanManual(kod); }, 600);
   }
   function setManualStatus(kod, text, kind) {
     const el = document.querySelector('.manual-status[data-daerah="' + kod + '"]');
@@ -497,10 +493,11 @@
     if (existing.length === kods.length && kods.every(function (k, i) { return existing[i] === k; })) return;
     wrap.innerHTML = "";
     const saved = savedMap || {};
-    const qBtn = (kod, n, v) => {
-      const on = Number(v) > 0;
-      return '<button type="button" class="ml-q' + (on ? " is-on" : "") + '" data-daerah="' + esc(kod) +
-        '" data-q="' + n + '" aria-pressed="' + (on ? "true" : "false") + '">' + teksQ(n, on) + "</button>";
+    const qInput = (kod, n, v) => {
+      const val = Number(v) > 0 ? Math.trunc(Number(v)) : "";
+      return '<label class="ml-q-wrap">Soalan ' + n +
+        '<input type="number" inputmode="numeric" min="0" step="1" class="ml-q" data-daerah="' + esc(kod) +
+        '" data-q="' + n + '" value="' + val + '"></label>';
     };
     kods.forEach((kod) => {
       const s = saved[kod] || {};
@@ -509,20 +506,28 @@
       row.dataset.daerah = kod;
       row.innerHTML =
         '<span class="manual-daerah">' + esc(daerahNama(kod)) + "</span>" +
-        '<div class="ml-fields">' + qBtn(kod, 1, s.mata1) + qBtn(kod, 2, s.mata2) + qBtn(kod, 3, s.mata3) + "</div>" +
-        '<span class="manual-total" data-daerah="' + esc(kod) + '">0 / 18</span>' +
+        '<div class="ml-fields">' + qInput(kod, 1, s.mata1) + qInput(kod, 2, s.mata2) + qInput(kod, 3, s.mata3) + "</div>" +
+        '<span class="manual-total" data-daerah="' + esc(kod) + '">Jumlah: 0</span>' +
         '<span class="manual-status" data-daerah="' + esc(kod) + '"></span>';
       wrap.appendChild(row);
       refreshManualTotal(kod);
     });
     if (!wrap.dataset.bound) {
       wrap.dataset.bound = "1";
-      wrap.addEventListener("click", function (e) {
+      // Menaip: kemas kini jumlah & simpan (nyah-lantun 600ms).
+      wrap.addEventListener("input", function (e) {
         const b = e.target.closest(".ml-q");
         if (!b || !wrap.contains(b)) return;
-        const on = !qOn(b);
-        setQBtn(b, on);
         setManualStatus(b.dataset.daerah, "", "");
+        refreshManualTotal(b.dataset.daerah);
+        jadualSimpanManual(b.dataset.daerah);
+      });
+      // Selesai edit (blur/enter): bersihkan nilai & simpan segera.
+      wrap.addEventListener("change", function (e) {
+        const b = e.target.closest(".ml-q");
+        if (!b || !wrap.contains(b)) return;
+        const v = Math.trunc(Number(b.value));
+        b.value = Number.isFinite(v) && v > 0 ? String(v) : "";
         refreshManualTotal(b.dataset.daerah);
         simpanManualSegera(b.dataset.daerah);
       });

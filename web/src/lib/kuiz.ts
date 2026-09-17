@@ -696,7 +696,8 @@ export async function adminSetManual(pin: unknown, peringkat: unknown, daerahRaw
   const p = String(peringkat || "S3P3").toUpperCase();
   const daerah = normDaerah(daerahRaw);
   if (!daerah) return { ok: false, ralat: "Daerah diperlukan." };
-  const satu = (v: unknown) => (p === "S3P3" ? (Number(v) > 0 ? 6 : 0) : Number(v || 0));
+  // Markah bebas (integer, tidak negatif) — pegawai boleh beri nilai berbeza setiap soalan.
+  const satu = (v: unknown) => { const n = Math.trunc(Number(v)); return Number.isFinite(n) && n > 0 ? n : 0; };
   const m1 = satu(mata1), m2 = satu(mata2), m3 = satu(mata3);
   const total = m1 + m2 + m3;
   await db.from("markah_manual").upsert(

@@ -149,23 +149,22 @@ input[type="password"] { width: 100%; }
 }
 .manual-daerah { flex: 1 1 150px; font-weight: 600; }
 .ml-fields { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.ml-q-wrap {
+  display: inline-flex; flex-direction: column; gap: 0.2rem;
+  font-size: 0.78rem; font-weight: 600; color: var(--muted);
+}
 .ml-q {
-  font: inherit; font-weight: 700; font-size: 0.95rem;
-  min-width: 7.6rem; min-height: 2.7rem;
-  padding: 0.45rem 0.8rem;
+  font: inherit; font-weight: 700; font-size: 1rem;
+  width: 5rem; min-height: 2.7rem;
+  padding: 0.4rem 0.6rem;
   border: 1.5px solid var(--border);
   border-radius: 8px;
   background: #fff;
-  color: var(--muted);
-  cursor: pointer;
+  color: var(--fg, #222);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
-.ml-q:hover { border-color: var(--primary); color: var(--primary); }
-.ml-q.is-on {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #fff;
-}
-.ml-q:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.ml-q:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-color: var(--primary); }
 .manual-total { min-width: 4.5rem; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; }
 .manual-status { min-width: 5.6rem; font-size: 0.82rem; font-weight: 600; color: var(--muted); }
 .manual-status.ok { color: var(--primary); }
